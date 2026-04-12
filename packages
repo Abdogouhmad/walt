@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+# echo "🚀 Adding all required packages for Finance Tracker..."
+
+# flutter pub add \
+#   dynamic_color \
+#   flutter_riverpod \
+#   hooks_riverpod \
+#   go_router \
+#   sqflite \
+#   hive_flutter \
+#   shared_preferences \
+#   fl_chart \
+#   pdf \
+#   share_plus \
+#   path_provider \
+#   intl \
+#   freezed_annotation \
+#   json_annotation \
+#   local_auth \
+#   flutter_local_notifications \
+#   permission_handler
+
+# echo "🔧 Adding dev dependencies..."
+
+# flutter pub add --dev \
+#   freezed \
+#   build_runner \
+#   json_serializable
+
+# echo "✅ All packages added successfully!"
+# echo "Now run: flutter pub get"
+# create a files within lib/providers
+
+touch lib/providers/category_provider.dart
+touch lib/providers/transaction_provider.dart
+touch lib/providers/settings_provider.dart
+touch lib/providers/budget_provider.dart
+touch lib/providers/export_provider.dart
+touch lib/providers/account_provider.dart
+touch lib/providers/report_provider.dart

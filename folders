@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+echo "🚀 Creating folder structure for Finance Tracker..."
+
+# Core folders
+mkdir -p lib/core/constants
+mkdir -p lib/core/theme
+mkdir -p lib/core/utils
+mkdir -p lib/core/extensions
+
+mkdir -p lib/data/models
+mkdir -p lib/data/local
+mkdir -p lib/data/repositories
+mkdir -p lib/data/services
+
+mkdir -p lib/providers
+
+mkdir -p lib/features/home/widgets
+mkdir -p lib/features/transactions/widgets
+mkdir -p lib/features/reports/widgets
+mkdir -p lib/features/budgets/widgets
+mkdir -p lib/features/categories
+mkdir -p lib/features/export/widgets
+mkdir -p lib/features/settings/widgets
+mkdir -p lib/features/onboarding
+
+mkdir -p lib/shared
+
+# Assets folders
+mkdir -p assets/icons
+mkdir -p assets/fonts
+
+# Android specific for FileProvider
+mkdir -p android/app/src/main/res/xml
+
+# Test folder (already exists usually, but safe)
+mkdir -p test
+
+echo "✅ Folder structure created successfully!"
+
+echo ""
+echo "Created folders:"
+echo "   lib/core/          → constants, theme, utils, extensions"
+echo "   lib/data/          → models, local (DAOs), repositories, services"
+echo "   lib/providers/     → Riverpod providers"
+echo "   lib/features/      → home, transactions, reports, budgets, etc."
+echo "   lib/shared/        → reusable widgets"
+echo "   assets/            → icons and fonts"
+echo "   android/.../xml/   → for file_provider_paths.xml"
+
+echo ""
+echo "Next steps:"
+echo "1. Run: chmod +x create_folders.sh     (make it executable)"
+echo "2. Run: ./create_folders.sh"
+echo "3. Put your file_provider_paths.xml inside android/app/src/main/res/xml/"
+echo ""
+echo "You're ready for v0.1 Foundation! 🎉"

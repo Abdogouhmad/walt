@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- For temporary files created by path_provider (recommended for export) -->
+    <cache-path name="cache" path="." />
+    
+    <!-- For files in app's internal files directory -->
+    <files-path name="files" path="." />
+    
+    <!-- For external storage (if needed on older Android) -->
+    <external-path name="external" path="." />
+    
+    <!-- Optional: external files directory -->
+    <external-files-path name="external_files" path="." />
+</paths>

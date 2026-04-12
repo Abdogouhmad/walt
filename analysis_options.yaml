@@ -1,0 +1,28 @@
+include: package:flutter_lints/flutter.yaml
+
+# Customize lint rules here
+linter:
+  rules:
+    # You can enable/disable specific rules
+    # avoid_print: false
+    # prefer_single_quotes: true
+    # unnecessary_brace_in_string_interps: false
+    # sort_pub_dependencies: false   # useful when you have many packages
+
+analyzer:
+  errors:
+    # Required for Freezed + json_serializable
+    invalid_annotation_target: ignore
+
+  # Optional but recommended: exclude generated files from analysis
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "build/**"
+    - "lib/**/*.g.dart"      # safety
+    - "lib/**/*.freezed.dart"
+
+  # Optional: Enable stricter checks (good for production apps)
+  # language:
+  #   strict-casts: true
+  #   strict-raw-types: true
