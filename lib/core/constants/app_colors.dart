@@ -13,17 +13,19 @@ extension ListColors on BuildContext {
   Color get listExpense => Colors.red[400] ?? Colors.red;
   Color get listColorLinks => _colorApp.primary;
 }
+
 // colors of summary card within home screen
-extension SummaryCardColors on BuildContext {
+extension CardColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
   Color get primaryCardBackground => _colorApp.primaryContainer.withAlpha(200);
   Color get secondaryCardBackground =>
       _colorApp.primaryContainer.withAlpha(200);
   Color get cardTextPrimary => _colorApp.primary;
-  Color get cardTextSecondary => _colorApp.primary.withAlpha(100);
+  Color get cardTextSecondary => _colorApp.onPrimaryContainer;
   Color get cardIncome => Colors.lightGreen[500] ?? Colors.green;
   Color get cardExpense => Colors.red[400] ?? Colors.red;
 }
+
 // colors of buttons
 extension ButtonColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;

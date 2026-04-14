@@ -45,6 +45,23 @@ final recentTransactionsProvider = Provider<List<WaltTransaction>>((ref) {
   );
 });
 
+// load the transactions by week
+final weeklyTransactionsProvider = Provider<List<WaltTransaction>>((ref) {
+  final transactionsAsync = ref.watch(transactionProvider);
+
+  return transactionsAsync.maybeWhen(
+    data: (transactions) {
+      final now = DateTime.now();
+      // Start of the week (Monday)
+      final startOfWeek =
+          now.subtract(Duration(days: now.weekday - 1)); // Monday is 1
+
+      return transactions.where((tx) => tx.date.isAfter(startOfWeek)).toList();
+    },
+    orElse: () => [],
+  );
+});
+
 // Summary Provider (Kept as you have it)
 final summaryProvider =
     Provider<({double income, double expenses, double balance})>((ref) {

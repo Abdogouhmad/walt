@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walt/features/settings/settings_screen.dart';
 import 'package:walt/shared/bottom_nav.dart';
 // Providers
 import 'providers/settings_provider.dart';
@@ -26,7 +27,7 @@ final GoRouter appRouter = GoRouter(
 
     // If user has completed onboarding but is still on onboarding page → go to home
     if (isOnboardingCompleted && state.matchedLocation == '/onboarding') {
-      return '/home';
+      return '/';
     }
 
     return null; // No redirect needed
@@ -43,7 +44,7 @@ final GoRouter appRouter = GoRouter(
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
       routes: [
-        GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+        GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
         GoRoute(
           path: '/transactions',
           builder: (context, state) => const TransactionListScreen(),
@@ -51,6 +52,10 @@ final GoRouter appRouter = GoRouter(
         GoRoute(
           path: '/reports',
           builder: (context, state) => const ReportsScreen(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
         ),
         GoRoute(
           path: '/budgets',

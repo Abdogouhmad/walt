@@ -1,21 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:walt/data/models/walt_category.dart';
-
-// Maps the string stored in WaltCategory.icon → MaterialIcons codepoint
-IconData _iconFromName(String name) {
-  const map = <String, IconData>{
-    'restaurant': Icons.restaurant,
-    'account_balance_wallet': Icons.account_balance_wallet,
-    'coffee': Icons.coffee,
-    'directions_car': Icons.directions_car,
-    'shopping_bag': Icons.shopping_bag,
-    'favorite': Icons.favorite,
-    'bolt': Icons.bolt,
-    'laptop': Icons.laptop,
-    'category': Icons.category,
-  };
-  return map[name] ?? Icons.label_outline;
-}
+import 'package:walt/core/utils/category_icon.dart'; // Import mapper
 
 class CategoryPicker extends StatelessWidget {
   final List<WaltCategory> categories;
@@ -33,52 +18,58 @@ class CategoryPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
+    // debugPrint("Categories count: ${categories.length}"); // Add this to check console
+
     if (categories.isEmpty) {
-      return Text(
-        'No categories available',
-        style: TextStyle(fontSize: 13, color: cs.onSurface.withOpacity(0.5)),
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          'No categories found. Check database seed.',
+          style: TextStyle(color: cs.error),
+        ),
       );
     }
 
     return Wrap(
       spacing: 8,
-      runSpacing: 8,
+      runSpacing: 5, // Increased spacing for better touch targets
       children: categories.map((cat) {
         final isSelected = selected == cat.id;
-
         return GestureDetector(
           onTap: () => onChanged(cat.id),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: isSelected
                   ? cs.primaryContainer
                   : cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected ? cs.primary : Colors.transparent,
+                width: 2,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  _iconFromName(cat.icon),
-                  size: 16,
+                  CategoryIcons.getIcon(cat.icon),
+                  size: 18,
                   color: isSelected
-                      ? cs.primary
-                      : cs.onSurface.withOpacity(0.5),
+                      ? cs.onPrimaryContainer
+                      : cs.onSurfaceVariant,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
                 Text(
                   cat.name,
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                     color: isSelected
-                        ? cs.primary
-                        : cs.onSurface.withOpacity(0.7),
+                        ? cs.onPrimaryContainer
+                        : cs.onSurfaceVariant,
                   ),
                 ),
               ],

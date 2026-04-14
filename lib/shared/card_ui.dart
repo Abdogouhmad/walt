@@ -97,7 +97,7 @@ class SummaryCard extends ConsumerWidget {
             text: "${value.toStringAsFixed(0)} MAD",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: SummaryCardColors(context).cardTextSecondary,
+              color: CardColors(context).cardTextSecondary,
             ),
           ),
         ],

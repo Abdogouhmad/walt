@@ -10,18 +10,16 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'data/local/database_helper.dart';
 import 'data/local/hive_service.dart';
 import 'core/theme/app_theme.dart';
-import 'app_router.dart';           // ← Add this
+import 'app_router.dart';
+// Providers
+//import 'providers/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await _initializeApp();
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 Future<void> _initializeApp() async {
@@ -49,22 +47,30 @@ Future<void> _initializeApp() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+// Change MyApp from StatelessWidget to ConsumerWidget
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 1. Watch the settings provider
+    //final settings = ref.watch(settingsProvider);
+
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
         return MaterialApp.router(
           title: 'Walt',
           debugShowCheckedModeBanner: false,
+
+          // 2. Use the values from your Hive/Riverpod state
+        themeMode: ThemeMode.system,
+
           theme: AppTheme.lightTheme(lightDynamic),
           darkTheme: AppTheme.darkTheme(darkDynamic),
-          themeMode: ThemeMode.system,
 
-          // Router Configuration
-          routerConfig: appRouter,        // ← This was missing
+          // 3. The Router will now automatically re-evaluate
+          // when settings.isOnboardingCompleted changes
+          routerConfig: appRouter,
         );
       },
     );

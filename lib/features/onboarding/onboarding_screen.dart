@@ -53,7 +53,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _completeOnboarding() async {
     await ref.read(settingsProvider.notifier).completeOnboarding();
-    if (mounted) context.go('/home');
+    if (mounted) context.go('/');
   }
 
   @override
@@ -68,7 +68,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // 2. Immediate redirect if already completed
     if (settings.isOnboardingCompleted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/home');
+        context.go('/');
       });
       return const Scaffold();
     }
