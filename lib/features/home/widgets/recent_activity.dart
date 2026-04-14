@@ -5,15 +5,18 @@ import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:walt/providers/transaction_provider.dart'; // Ensure this is imported
+import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt/providers/category_provider.dart'; // Import category provider
+import 'package:walt/core/utils/category_icon.dart'; // Import mapper
 
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the specialized provider for the last 2 days
     final transactions = ref.watch(recentTransactionsProvider);
+    // Access categories to map IDs to Names/Icons
+    final categoriesAsync = ref.watch(categoryProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,14 +29,29 @@ class RecentActivity extends ConsumerWidget {
         Expanded(
           child: transactions.isEmpty
               ? _buildEmptyState(context)
-              : ListView.separated(
-                  itemCount: transactions.length,
-                  separatorBuilder: (_, _) =>
-                      const Divider(height: 1, indent: 72),
-                  itemBuilder: (context, index) {
-                    final tx = transactions[index];
-                    return _transactionTile(context, tx);
-                  },
+              : categoriesAsync.when(
+                  data: (categories) => ListView.separated(
+                    itemCount: transactions.length,
+                    separatorBuilder: (_, _) =>
+                        const Divider(height: 1, indent: 72),
+                    itemBuilder: (context, index) {
+                      final tx = transactions[index];
+                      // Find category details from the provider
+                      final category = categories.firstWhere(
+                        (c) => c.id == tx.categoryId,
+                        orElse: () => categories.last, // Fallback to 'Other'
+                      );
+                      return _transactionTile(
+                        context,
+                        tx,
+                        category.name,
+                        category.icon,
+                      );
+                    },
+                  ),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, _) => _buildEmptyState(context),
                 ),
         ),
       ],
@@ -45,11 +63,7 @@ class RecentActivity extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.history_rounded,
-            size: 48,
-            color: context.listSubLabel.withAlpha(1),
-          ),
+          Icon(Icons.history_rounded, size: 48, color: context.listSubLabel),
           const SizedBox(height: 12),
           Text(
             "No activity in the last 2 days",
@@ -60,24 +74,28 @@ class RecentActivity extends ConsumerWidget {
     );
   }
 
-  Widget _transactionTile(BuildContext context, WaltTransaction tx) {
+  Widget _transactionTile(
+    BuildContext context,
+    WaltTransaction tx,
+    String catName,
+    String catIcon,
+  ) {
     final isIncome = tx.type.toLowerCase() == 'income';
     final amount = '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} MAD';
     final formattedDate = DateFormat('MMM dd, yyyy').format(tx.date);
-    final paymentMethod = _paymentLabel(tx.categoryId);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       leading: CircleAvatar(
         backgroundColor: context.listContainer,
-        child: Icon(_categoryIcon(tx.categoryId), color: context.listIconBk),
+        child: Icon(CategoryIcons.getIcon(catIcon), color: context.listIconBk),
       ),
       title: Text(
         tx.merchant ?? 'Unknown',
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
-        '$formattedDate • ${_categoryLabel(tx.categoryId)}',
+        '$formattedDate • $catName',
         style: TextStyle(color: context.listSubLabel, fontSize: 12),
       ),
       trailing: Column(
@@ -92,45 +110,14 @@ class RecentActivity extends ConsumerWidget {
             ),
           ),
           Text(
-            paymentMethod,
+            tx.type
+                .toUpperCase(), // Showing type instead of hardcoded payment label
             style: TextStyle(fontSize: 10, color: context.listSubLabel),
           ),
         ],
       ),
       onTap: () => context.go('/transactions'),
     );
-  }
-
-  // --- Helper Methods ---
-
-  IconData _categoryIcon(int categoryId) {
-    return switch (categoryId) {
-      1 => Icons.shopping_basket_outlined,
-      2 => Icons.work_outline,
-      3 => Icons.restaurant_outlined,
-      4 => Icons.directions_car_outlined,
-      _ => Icons.attach_money,
-    };
-  }
-
-  String _categoryLabel(int categoryId) {
-    return switch (categoryId) {
-      1 => 'Shopping',
-      2 => 'Work',
-      3 => 'Food',
-      4 => 'Travel',
-      _ => 'Other',
-    };
-  }
-
-  String _paymentLabel(int categoryId) {
-    return switch (categoryId) {
-      1 => 'DEBIT CARD',
-      2 => 'DIRECT DEP.',
-      3 => 'MOBILE PAY',
-      4 => 'CREDIT',
-      _ => 'CASH',
-    };
   }
 }
 

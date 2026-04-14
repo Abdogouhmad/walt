@@ -13,12 +13,7 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
-  final List<String> _routes = [
-    '/home',
-    '/transactions',
-    '/reports',
-    '/budgets',
-  ];
+  final List<String> _routes = ['/', '/transactions', '/reports', '/budgets'];
 
   void _onItemTapped(int index) {
     setState(() => _currentIndex = index);
@@ -41,23 +36,23 @@ class _MainShellState extends State<MainShell> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
+            activeIcon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list_alt_outlined),
-            activeIcon: Icon(Icons.list_alt),
+            activeIcon: Icon(Icons.list_alt_rounded),
             label: 'Activity',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.analytics_outlined),
-            activeIcon: Icon(Icons.analytics),
+            activeIcon: Icon(Icons.analytics_rounded),
             label: 'Reports',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet_outlined),
-            activeIcon: Icon(Icons.account_balance_wallet),
-            label: 'Budgets',
+            activeIcon: Icon(Icons.account_balance_wallet_rounded),
+            label: 'Budget',
           ),
         ],
       ),
