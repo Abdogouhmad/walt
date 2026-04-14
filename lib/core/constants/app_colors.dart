@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:walt/core/utils/context.dart';
-
+// colors of appBar
+extension AppBarColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get appBarBackground => _colorApp.primaryContainer.withAlpha(200);
+  Color get appBarText => _colorApp.primary;
+  Color get appBarIcon => _colorApp.primary;
+}
 // colors of list within home screen
 extension ListColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
