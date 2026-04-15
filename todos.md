@@ -72,12 +72,12 @@ A step-by-step checklist to build the app version by version.
   - Income/Expense summary cards
   - Recent transactions list
   - Floating Action Button
-- [ ] Transaction list screen (grouped by date)
-- [ ] Add transaction screen (expense/income toggle, amount, category, account, date, note)
-- [ ] Form validation + error snackbars
+- [x] Transaction list screen (grouped by date)
+- [x] Add transaction screen (expense/income toggle, amount, category, account, date, note)
+- [x] Form validation + error snackbars
 - [ ] Swipe to delete transaction with undo snackbar
 - [ ] Empty states for transaction list and first-launch home
-- [ ] Seed default categories on first launch
+- [x] Seed default categories on first launch
 
 ---
 
