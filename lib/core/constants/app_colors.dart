@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:walt/core/utils/context.dart';
+
 // colors of appBar
 extension AppBarColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
@@ -7,6 +8,7 @@ extension AppBarColors on BuildContext {
   Color get appBarText => _colorApp.primary;
   Color get appBarIcon => _colorApp.primary;
 }
+
 // colors of list within home screen
 extension ListColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
@@ -18,6 +20,8 @@ extension ListColors on BuildContext {
   Color get listIncome => Colors.lightGreen[300] ?? Colors.green;
   Color get listExpense => Colors.red[400] ?? Colors.red;
   Color get listColorLinks => _colorApp.primary;
+  Color get swipeRightBackground => Colors.green.shade500;
+  Color get swipeLeftBackground => Colors.red.shade600;
 }
 
 // colors of summary card within home screen
