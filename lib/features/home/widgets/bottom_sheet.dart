@@ -6,6 +6,7 @@ import 'package:walt/features/home/widgets/category_widget.dart';
 import 'package:walt/features/home/widgets/date.dart';
 import 'package:walt/features/home/widgets/txtype_picker.dart';
 import 'package:walt/providers/category_provider.dart';
+import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/input_ui.dart';
@@ -85,7 +86,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       // access it via a provider depending on your setup.
       final dao = TransactionDao();
       await dao.insertTransaction(transaction);
-
+      ref.invalidate(reportProvider);
       // 3. REFRESH THE PROVIDER
       // This is the "magic" step that updates the SummaryCard automatically
       ref.read(transactionProvider.notifier).refresh();
