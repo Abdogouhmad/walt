@@ -12,64 +12,72 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
+  late final PageController _controller;
+  int _page = 0;
 
-  // ── DATA DEFINITIONS ──────────────────────────────────────────────────────
-  final List<OnboardingPage> _pages = [
-    OnboardingPage(
-      title: "Welcome to Walt",
-      description:
-          "Your simple, private, and beautiful personal finance tracker",
-      icon: Icons.account_balance_wallet_rounded,
-      color: Colors.blue.shade700,
+  final _pages = const [
+    _PageData(
+      "Welcome to Walt",
+      "Your simple, private, and beautiful personal finance tracker",
+      Icons.account_balance_wallet_rounded,
+      Colors.blue,
     ),
-    OnboardingPage(
-      title: "Track Every Penny",
-      description:
-          "Easily record income and expenses with categories and accounts",
-      icon: Icons.receipt_long_rounded,
-      color: Colors.green.shade700,
+    _PageData(
+      "Track Every Penny",
+      "Easily record income and expenses with categories and accounts",
+      Icons.receipt_long_rounded,
+      Colors.green,
     ),
-    OnboardingPage(
-      title: "Take Control",
-      description:
-          "Get clear insights with charts, budgets, and monthly reports",
-      icon: Icons.analytics_rounded,
-      color: Colors.purple.shade700,
+    _PageData(
+      "Take Control",
+      "Get clear insights with charts, budgets, and monthly reports",
+      Icons.analytics_rounded,
+      Colors.purple,
     ),
   ];
 
-  void _nextPage() {
-    if (_currentPage < _pages.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // ✅ important
+    super.dispose();
+  }
+
+  void _next() {
+    if (_page < _pages.length - 1) {
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
       );
     } else {
-      _completeOnboarding();
+      _finish();
     }
   }
 
-  Future<void> _completeOnboarding() async {
+  Future<void> _finish() async {
     await ref.read(settingsProvider.notifier).completeOnboarding();
     if (mounted) context.go('/');
   }
 
   @override
   Widget build(BuildContext context) {
-    final settings = ref.watch(settingsProvider);
+    // ✅ optimized Riverpod watching
+    final isLoaded = ref.watch(settingsProvider.select((s) => s.isLoaded));
+    final isDone = ref.watch(
+      settingsProvider.select((s) => s.isOnboardingCompleted),
+    );
 
-    // 1. Wait for Hive to finish loading
-    if (!settings.isLoaded) {
+    if (!isLoaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    // 2. Immediate redirect if already completed
-    if (settings.isOnboardingCompleted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.go('/');
-      });
+    if (isDone) {
+      Future.microtask(() => context.go('/')); // ✅ safe redirect
       return const Scaffold();
     }
 
@@ -77,55 +85,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Skip
             Align(
               alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8, right: 8),
-                child: TextButton(
-                  onPressed: _completeOnboarding,
-                  child: const Text("Skip", style: TextStyle(fontSize: 16)),
-                ),
-              ),
+              child: TextButton(onPressed: _finish, child: const Text("Skip")),
             ),
+
+            // Pages
             Expanded(
               child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) => setState(() => _currentPage = index),
+                controller: _controller,
                 itemCount: _pages.length,
-                itemBuilder: (context, index) =>
-                    OnboardingPageWidget(page: _pages[index]),
+                physics: const BouncingScrollPhysics(),
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (_, i) => _PageViewItem(data: _pages[i]),
               ),
             ),
+
+            // Bottom UI
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: Column(
                 children: [
-                  // Progress Dots
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _pages.length,
-                      (index) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        width: _currentPage == index ? 28 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == index
-                              ? Colors.blue.shade700
-                              : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 50),
-
+                  _Dots(current: _page, total: _pages.length),
+                  const SizedBox(height: 40),
                   AppButton(
-                    label: _currentPage == _pages.length - 1
-                        ? "Get Started"
-                        : "Next",
-                    onPressed: _nextPage,
+                    label: _page == _pages.length - 1 ? "Get Started" : "Next",
+                    onPressed: _next,
                     type: ButtonType.primary,
                     isFullWidth: true,
                     size: ButtonSize.large,
@@ -140,50 +126,73 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-// ── MODELS & HELPER WIDGETS ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 
-class OnboardingPage {
-  final String title;
-  final String description;
+class _PageData {
+  final String title, desc;
   final IconData icon;
   final Color color;
 
-  OnboardingPage({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.color,
-  });
+  const _PageData(this.title, this.desc, this.icon, this.color);
 }
 
-class OnboardingPageWidget extends StatelessWidget {
-  final OnboardingPage page;
+// ─────────────────────────────────────────────────────────────
 
-  const OnboardingPageWidget({super.key, required this.page});
+class _PageViewItem extends StatelessWidget {
+  final _PageData data;
+  const _PageViewItem({required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final secondary = Theme.of(context).colorScheme.secondary;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(page.icon, size: 110, color: page.color),
-          const SizedBox(height: 60),
+          Icon(data.icon, size: 110, color: data.color),
+          const SizedBox(height: 50),
           Text(
-            page.title,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            data.title,
             textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Text(
-            page.description,
-            style: TextStyle(fontSize: 17, height: 1.5, color: secondaryColor),
+            data.desc,
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, height: 1.5, color: secondary),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+
+class _Dots extends StatelessWidget {
+  final int current, total;
+
+  const _Dots({required this.current, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        total,
+        (i) => AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: current == i ? 24 : 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: current == i ? Colors.blue : Colors.grey.shade300,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
       ),
     );
   }
