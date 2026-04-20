@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:walt/features/reports/widgets/barchart.dart';
+import 'package:walt/features/reports/widgets/piechart.dart';
 import 'package:walt/features/reports/widgets/secondary_cards.dart';
 import 'package:walt/features/reports/widgets/summary_ui.dart';
 
@@ -18,6 +19,8 @@ class ReportsScreen extends StatelessWidget {
             BarChartWidget(),
             const SizedBox(height: 20),
             SecondaryReportCardUi(),
+            const SizedBox(height: 20),
+            const PieChartWidget(),
           ],
         ),
       ),

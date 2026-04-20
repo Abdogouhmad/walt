@@ -22,13 +22,14 @@ class SecondaryReportCardUi extends ConsumerWidget {
 Widget _avargeSpendingPerDay(BuildContext ctx, WidgetRef ref) {
   return M3Ecard(
     variant: M3ECardVariant.filled,
-
+    padding: const EdgeInsets.all(20),
     data: AppCardData(
       title: null,
+      colorCard: ctx.colorAppScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
-          color: ctx.colorAppScheme.secondary,
+          color: ctx.colorAppScheme.secondary.withAlpha(50),
         ), // 20% opacity border
       ),
       child: Column(
@@ -67,11 +68,13 @@ Widget _avargeSpendingPerDay(BuildContext ctx, WidgetRef ref) {
 Widget _savingRate(BuildContext ctx, WidgetRef ref) {
   return M3Ecard(
     variant: M3ECardVariant.filled,
+    padding: const EdgeInsets.all(20),
     data: AppCardData(
       title: null,
+      colorCard: ctx.colorAppScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: ctx.colorAppScheme.secondary),
+        side: BorderSide(color: ctx.colorAppScheme.secondary.withAlpha(50)),
       ), // 20% opacity border
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
