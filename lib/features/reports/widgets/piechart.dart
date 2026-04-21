@@ -3,19 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/m3e_card.dart';
+import 'package:walt/providers/report_provider.dart';
+import 'package:walt/core/utils/category_icon.dart';
 
 class PieChartWidget extends ConsumerWidget {
   const PieChartWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Define your data in a list to map through it (Cleaner & easier to maintain)
-    final chartData = [
-      _ChartData(40, 'Food', context.colorAppScheme.primary),
-      _ChartData(30, 'Transport', context.colorAppScheme.secondary),
-      _ChartData(20, 'Entertainment', context.colorAppScheme.tertiary),
-      _ChartData(10, 'Others', context.colorAppScheme.error),
-    ];
+    final report = ref.watch(reportProvider);
 
     return M3Ecard(
       variant: M3ECardVariant.filled,
@@ -31,49 +27,81 @@ class PieChartWidget extends ConsumerWidget {
             width: 1,
           ), // Subtle border for better definition
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. AspectRatio ensures the chart is a square without hardcoded height
-            AspectRatio(
-              aspectRatio:
-                  1.3, // Slightly wider than tall looks better with center text
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 4,
-                  centerSpaceRadius: double
-                      .infinity, // Set to infinity with an AspectRatio/Expanded wrapper
-                  sections: chartData
-                      .map((data) => _buildSection(data))
-                      .toList(),
+        child: report.categoryData.when(
+          data: (data) {
+            if (data.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Text("No expenses for this period"),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // 2. Legend Section (Mapped for scalability)
-            ...chartData.map(
-              (data) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: _LegendItem(color: data.color, text: data.label),
-              ),
-            ),
-          ],
+              );
+            }
+
+            final total = data.fold(0.0, (sum, item) => sum + item.amount);
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 1. AspectRatio ensures the chart is a square without hardcoded height
+                AspectRatio(
+                  aspectRatio: 1.3,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 4,
+                      centerSpaceRadius: double.infinity,
+                      sections:
+                          data.map((item) {
+                            final percentage = (item.amount / total) * 100;
+                            final color = CategoryIcons.getColor(item.icon);
+                            return _buildSection(
+                              item.amount,
+                              percentage,
+                              color,
+                            );
+                          }).toList(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // 2. Legend Section
+                ...data.map(
+                  (item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: _LegendItem(
+                      color: CategoryIcons.getColor(item.icon),
+                      text: item.name == 'Unknown' 
+                          ? CategoryIcons.getName(item.icon) 
+                          : item.name,
+                      amount: item.amount,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Center(child: Text("Error: $err")),
         ),
       ),
     );
   }
 
-  PieChartSectionData _buildSection(_ChartData data) {
+  PieChartSectionData _buildSection(
+    double value,
+    double percentage,
+    Color color,
+  ) {
     return PieChartSectionData(
-      value: data.value,
-      color: data.color,
-      title: '${data.value.toInt()}%',
+      value: value,
+      color: color,
+      title: '${percentage.toStringAsFixed(0)}%',
       radius: 40, // Slightly smaller radius for a cleaner "donut" look
       titleStyle: const TextStyle(
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: FontWeight.bold,
-        color: Colors.black,
+        color: Colors.white,
       ),
     );
   }
@@ -83,35 +111,43 @@ class PieChartWidget extends ConsumerWidget {
 class _LegendItem extends StatelessWidget {
   final Color color;
   final String text;
+  final double amount;
 
-  const _LegendItem({required this.color, required this.text});
+  const _LegendItem({
+    required this.color,
+    required this.text,
+    required this.amount,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              text,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
         Text(
-          text,
+          "${amount.toStringAsFixed(2)} MAD",
           style: Theme.of(
             context,
-          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
-}
-
-// Simple data class to hold the logic
-class _ChartData {
-  final double value;
-  final String label;
-  final Color color;
-  _ChartData(this.value, this.label, this.color);
 }

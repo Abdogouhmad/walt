@@ -3,23 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/m3e_card.dart';
 import 'package:walt/shared/text_ui.dart';
+import 'package:walt/providers/report_provider.dart';
 
 class SecondaryReportCardUi extends ConsumerWidget {
   const SecondaryReportCardUi({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final report = ref.watch(reportProvider);
+
     return Row(
       children: [
-        Expanded(child: _avargeSpendingPerDay(context, ref)),
-        SizedBox(width: 12), // Space between cards
-        Expanded(child: _savingRate(context, ref)),
+        Expanded(child: _avargeSpendingPerDay(context, report.averageDailySpending)),
+        const SizedBox(width: 12), // Space between cards
+        Expanded(child: _savingRate(context, report.savingRate)),
       ],
     );
   }
 }
 
-Widget _avargeSpendingPerDay(BuildContext ctx, WidgetRef ref) {
+Widget _avargeSpendingPerDay(BuildContext ctx, AsyncValue<double> averageDaily) {
   return M3Ecard(
     variant: M3ECardVariant.filled,
     padding: const EdgeInsets.all(20),
@@ -48,10 +51,14 @@ Widget _avargeSpendingPerDay(BuildContext ctx, WidgetRef ref) {
             style: TextStyle(color: ctx.colorAppScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 4),
-          UiText(
-            text: "50 MAD",
-            type: UiTextType.headlineSmall, // Use a larger type for the amount
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          averageDaily.when(
+            data: (amount) => UiText(
+              text: "${amount.toStringAsFixed(0)} MAD",
+              type: UiTextType.headlineSmall, // Use a larger type for the amount
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            loading: () => const CircularProgressIndicator(),
+            error: (err, _) => const UiText(text: "Error", type: UiTextType.headlineSmall),
           ),
           const SizedBox(height: 4),
           UiText(
@@ -65,7 +72,7 @@ Widget _avargeSpendingPerDay(BuildContext ctx, WidgetRef ref) {
   );
 }
 
-Widget _savingRate(BuildContext ctx, WidgetRef ref) {
+Widget _savingRate(BuildContext ctx, AsyncValue<double> savingRate) {
   return M3Ecard(
     variant: M3ECardVariant.filled,
     padding: const EdgeInsets.all(20),
@@ -91,16 +98,19 @@ Widget _savingRate(BuildContext ctx, WidgetRef ref) {
             style: TextStyle(color: ctx.colorAppScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 4),
-
-          UiText(
-            text: "28%".toUpperCase(),
-            type: UiTextType.headlineSmall, // Use a larger type for the amount
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          savingRate.when(
+            data: (rate) => UiText(
+              text: "${rate.toStringAsFixed(0)}%",
+              type: UiTextType.headlineSmall, // Use a larger type for the amount
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            loading: () => const CircularProgressIndicator(),
+            error: (err, _) => const UiText(text: "Error", type: UiTextType.headlineSmall),
           ),
           const SizedBox(height: 4),
 
           UiText(
-            text: "+2 last month".toUpperCase(),
+            text: "Selected Period",
             type: UiTextType.labelSmall,
             style: TextStyle(color: ctx.colorAppScheme.outline),
           ),

@@ -4,15 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/constants/app_colors.dart'; // Ensure these extensions are defined
 import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/m3e_card.dart';
+import 'package:walt/providers/report_provider.dart';
 
 class BarChartWidget extends ConsumerWidget {
   const BarChartWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Centralize data
-    final barData = [0.4, 0.55, 1.0, 0.5, 0.6, 0.3];
-    final labels = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
+    final report = ref.watch(reportProvider);
+    final filterIndex = ref.watch(reportFilterProvider);
 
     return M3Ecard(
       variant: M3ECardVariant.filled,
@@ -20,7 +20,7 @@ class BarChartWidget extends ConsumerWidget {
       data: AppCardData(
         colorCard: context.colorAppScheme.surface,
         title: 'Monthly Overview',
-        subtitle: "Expenses over 6 months",
+        subtitle: filterIndex == 0 ? "Expenses over 6 months" : "Expenses over 12 months",
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
           side: BorderSide(
@@ -33,10 +33,24 @@ class BarChartWidget extends ConsumerWidget {
           children: [
             AspectRatio(
               aspectRatio: 1.7,
-              child: _BarChartContent(
-                data: barData,
-                labels: labels,
-                selectedIndex: 2,
+              child: report.monthlyData.when(
+                data: (data) {
+                  if (data.isEmpty) {
+                    return const Center(child: Text("No data available"));
+                  }
+                  final maxExpense = data.fold(
+                    0.0,
+                    (max, e) => e.expense > max ? e.expense : max,
+                  );
+                  return _BarChartContent(
+                    data: data.map((e) => e.expense).toList(),
+                    labels: data.map((e) => e.month).toList(),
+                    maxExpense: maxExpense,
+                    selectedIndex: data.length - 1,
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text("Error: $err")),
               ),
             ),
           ],
@@ -49,46 +63,40 @@ class BarChartWidget extends ConsumerWidget {
 class _BarChartContent extends StatelessWidget {
   final List<double> data;
   final List<String> labels;
+  final double maxExpense;
   final int selectedIndex;
 
   const _BarChartContent({
     required this.data,
     required this.labels,
+    required this.maxExpense,
     required this.selectedIndex,
   });
 
   @override
   Widget build(BuildContext context) {
+    final yAxisMax = maxExpense == 0 ? 1.0 : maxExpense * 1.2;
+
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
-        maxY: 1.0,
+        maxY: yAxisMax,
         gridData: const FlGridData(show: false),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
           show: true,
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          leftTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 32,
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
-
-                // Fix: Wrapped in block braces to satisfy linter
                 if (index < 0 || index >= labels.length) {
                   return const SizedBox();
                 }
-
-                // Fix: Added required 'meta' argument
                 return SideTitleWidget(
                   meta: meta,
                   space: 8,
@@ -97,9 +105,8 @@ class _BarChartContent extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: context.labelBarColor,
-                      fontWeight: index == selectedIndex
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight:
+                          index == selectedIndex ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 );
@@ -114,21 +121,15 @@ class _BarChartContent extends StatelessWidget {
             x: i,
             barRods: [
               BarChartRodData(
-                toY: 1.0,
+                toY: data[i],
                 width: 22,
                 borderRadius: BorderRadius.circular(8),
-                color: isSelected
-                    ? context.currentMonthColor
-                    : context.emptyGapBar,
-                rodStackItems: isSelected
-                    ? []
-                    : [
-                        BarChartRodStackItem(
-                          0,
-                          data[i],
-                          context.otherMonthsColor,
-                        ),
-                      ],
+                color: isSelected ? context.currentMonthColor : context.otherMonthsColor,
+                backDrawRodData: BackgroundBarChartRodData(
+                  show: true,
+                  toY: yAxisMax,
+                  color: context.emptyGapBar,
+                ),
               ),
             ],
           );
