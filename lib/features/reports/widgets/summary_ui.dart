@@ -4,6 +4,7 @@ import 'package:walt/providers/report_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/text_ui.dart';
 import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/features/reports/widgets/export_button.dart';
 
 class SummaryReportUi extends ConsumerWidget {
   const SummaryReportUi({super.key});
@@ -18,12 +19,14 @@ class SummaryReportUi extends ConsumerWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             summaryAmountByMonth(context, report.totalSpending),
-            buttonFilter(context, ref, selectedIndex),
+            const ExportPdfButton(),
           ],
         ),
+        const SizedBox(height: 16),
+        buttonFilter(context, ref, selectedIndex),
         const SizedBox(height: 24),
       ],
     );

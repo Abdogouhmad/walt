@@ -23,10 +23,12 @@ class AiService {
 
   Future<String> getSpendingInsights(List<WaltTransaction> transactions) async {
     final apiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
-    if (apiKey.isEmpty)
+    if (apiKey.isEmpty) {
       return "API Key not found. Please check your .env file.";
-    if (transactions.isEmpty)
+    }
+    if (transactions.isEmpty) {
       return "No transactions yet. Start adding some to get insights!";
+    }
 
     final prompt =
         """
