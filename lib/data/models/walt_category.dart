@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hive_ce/hive_ce.dart'; // Use hive_ce
+import 'package:hive_ce/hive_ce.dart';
 
 part 'walt_category.freezed.dart';
 part 'walt_category.g.dart';
