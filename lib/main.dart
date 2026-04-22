@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
 import 'package:dynamic_color/dynamic_color.dart';
 
@@ -24,6 +25,9 @@ Future<void> main() async {
 
 Future<void> _initializeApp() async {
   try {
+    // Initialize dotenv
+    await dotenv.load(fileName: ".env");
+
     // SQLite Initialization for Desktop
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       sqfliteFfiInit();

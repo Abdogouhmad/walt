@@ -122,4 +122,24 @@ class TransactionDao {
       date: DateTime.fromMillisecondsSinceEpoch(map['date']),
     );
   }
+
+  // ============== GET BY DATE ===================
+  Future<List<WaltTransaction>> getTransactionsBetween(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final db = await _dbHelper.database;
+
+    final start = startDate.millisecondsSinceEpoch;
+    final end = endDate.millisecondsSinceEpoch;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'transactions',
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [start, end],
+      orderBy: 'date DESC',
+    );
+
+    return maps.map((map) => _mapToTransaction(map)).toList();
+  }
 }

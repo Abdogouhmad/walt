@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:walt/core/utils/context.dart';
 
+// colors of appBar
+extension AppBarColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get appBarBackground => _colorApp.primaryContainer.withAlpha(200);
+  Color get appBarText => _colorApp.primary;
+  Color get appBarIcon => _colorApp.primary;
+}
+
 // colors of list within home screen
 extension ListColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
@@ -12,6 +20,8 @@ extension ListColors on BuildContext {
   Color get listIncome => Colors.lightGreen[300] ?? Colors.green;
   Color get listExpense => Colors.red[400] ?? Colors.red;
   Color get listColorLinks => _colorApp.primary;
+  Color get swipeRightBackground => Colors.green.shade500;
+  Color get swipeLeftBackground => Colors.red.shade600;
 }
 
 // colors of summary card within home screen
@@ -42,4 +52,25 @@ extension BottomSheetColor on BuildContext {
   Color get textPrimary => _colorApp.primary;
   Color get textSecondary => _colorApp.primaryFixed;
   Color get textonError => _colorApp.error;
+}
+
+// colors Reports Screen
+extension ReportColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get summaryCardBackground => _colorApp.primaryContainer.withAlpha(200);
+  Color get summaryCardTextPrimary => _colorApp.primary;
+  Color get summaryCardTextSecondary => _colorApp.onPrimaryContainer;
+  Color get summaryCardIncome => Colors.lightGreen[500] ?? Colors.green;
+  Color get summaryCardExpense => Colors.red[400] ?? Colors.red;
+  Color get filterButtonBackgroundInActive => _colorApp.onSurface;
+  Color get filterButtonBackgroundActive => _colorApp.primary;
+}
+
+// Chart bar colors
+extension BarChartColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get currentMonthColor => _colorApp.primary;
+  Color get otherMonthsColor => _colorApp.secondary;
+  Color get labelBarColor => _colorApp.onPrimaryContainer;
+  Color get emptyGapBar => _colorApp.onSecondary;
 }
