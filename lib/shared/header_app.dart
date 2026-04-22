@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/providers/ai_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
-class HeaderApp extends StatelessWidget {
+class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
   final String title;
   const HeaderApp({super.key, required this.title});
 
   @override
-  Widget build(BuildContext context) {
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final iconColor = context.appBarIcon;
 
     // Logic for the greeting text
@@ -22,11 +27,9 @@ class HeaderApp extends StatelessWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       elevation: 0,
-      // We use 'title' here to hold the entire top row
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // LEFT SIDE: Image + Greeting
           Row(
             children: [
               InkWell(
@@ -41,7 +44,7 @@ class HeaderApp extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12), // Space between image and text
+              const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -52,7 +55,7 @@ class HeaderApp extends StatelessWidget {
                     style: TextStyle(color: context.appBarText.withAlpha(150)),
                   ),
                   UiText(
-                    text: "Abdo", // Replace with your dynamic name variable
+                    text: "Abdo",
                     type: UiTextType.titleMedium,
                     style: TextStyle(
                       color: context.appBarText,
@@ -63,9 +66,11 @@ class HeaderApp extends StatelessWidget {
               ),
             ],
           ),
-
-          // RIGHT SIDE: Notifications (or other actions)
-          // NotificationDropdown(notifications: demoNotifications),
+          IconButton(
+            onPressed: () => ref.read(aiInsightProvider.notifier).toggleVisibility(),
+            icon: const Icon(Icons.auto_awesome),
+            color: context.appBarIcon,
+          ),
         ],
       ),
     );

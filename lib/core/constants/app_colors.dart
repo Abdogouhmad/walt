@@ -53,3 +53,24 @@ extension BottomSheetColor on BuildContext {
   Color get textSecondary => _colorApp.primaryFixed;
   Color get textonError => _colorApp.error;
 }
+
+// colors Reports Screen
+extension ReportColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get summaryCardBackground => _colorApp.primaryContainer.withAlpha(200);
+  Color get summaryCardTextPrimary => _colorApp.primary;
+  Color get summaryCardTextSecondary => _colorApp.onPrimaryContainer;
+  Color get summaryCardIncome => Colors.lightGreen[500] ?? Colors.green;
+  Color get summaryCardExpense => Colors.red[400] ?? Colors.red;
+  Color get filterButtonBackgroundInActive => _colorApp.onSurface;
+  Color get filterButtonBackgroundActive => _colorApp.primary;
+}
+
+// Chart bar colors
+extension BarChartColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get currentMonthColor => _colorApp.primary;
+  Color get otherMonthsColor => _colorApp.secondary;
+  Color get labelBarColor => _colorApp.onPrimaryContainer;
+  Color get emptyGapBar => _colorApp.onSecondary;
+}
