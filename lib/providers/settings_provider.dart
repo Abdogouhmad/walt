@@ -5,13 +5,17 @@ class SettingsState {
   final bool isDarkMode;
   final String currency;
   final bool isOnboardingCompleted;
-  final bool isLoaded; // Added to track initialization
+  final bool isLoaded;
+  final bool isPasswordEnabled;
+  final bool isFingerprintEnabled;
 
   SettingsState({
     this.isDarkMode = false,
     this.currency = 'MAD',
     this.isOnboardingCompleted = false,
-    this.isLoaded = false, // Defaults to false
+    this.isLoaded = false,
+    this.isPasswordEnabled = false,
+    this.isFingerprintEnabled = false,
   });
 
   SettingsState copyWith({
@@ -19,6 +23,8 @@ class SettingsState {
     String? currency,
     bool? isOnboardingCompleted,
     bool? isLoaded,
+    bool? isPasswordEnabled,
+    bool? isFingerprintEnabled,
   }) {
     return SettingsState(
       isDarkMode: isDarkMode ?? this.isDarkMode,
@@ -26,6 +32,8 @@ class SettingsState {
       isOnboardingCompleted:
           isOnboardingCompleted ?? this.isOnboardingCompleted,
       isLoaded: isLoaded ?? this.isLoaded,
+      isPasswordEnabled: isPasswordEnabled ?? this.isPasswordEnabled,
+      isFingerprintEnabled: isFingerprintEnabled ?? this.isFingerprintEnabled,
     );
   }
 }
@@ -36,7 +44,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   @override
   SettingsState build() {
     _loadSettings();
-    return SettingsState(); // Initial state is NOT loaded
+    return SettingsState();
   }
 
   Future<void> _loadSettings() async {
@@ -44,15 +52,21 @@ class SettingsNotifier extends Notifier<SettingsState> {
       final isDark = await _hive.isDarkMode();
       final currency = await _hive.getCurrency();
       final onboardingCompleted = await _hive.isOnboardingCompleted();
+      final isPasswordEnabled =
+          await _hive.getSetting('isPasswordEnabled', defaultValue: false);
+      final isFingerprintEnabled =
+          await _hive.getSetting('isFingerprintEnabled', defaultValue: false);
 
       state = SettingsState(
         isDarkMode: isDark,
         currency: currency,
         isOnboardingCompleted: onboardingCompleted,
-        isLoaded: true, // Now it is safe to check onboarding status
+        isLoaded: true,
+        isPasswordEnabled: isPasswordEnabled as bool,
+        isFingerprintEnabled: isFingerprintEnabled as bool,
       );
     } catch (e) {
-      state = state.copyWith(isLoaded: true); // Even on error, mark as loaded
+      state = state.copyWith(isLoaded: true);
     }
   }
 
@@ -65,6 +79,18 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setCurrency(String currency) async {
     await _hive.setCurrency(currency);
     state = state.copyWith(currency: currency);
+  }
+
+  Future<void> togglePassword() async {
+    final newValue = !state.isPasswordEnabled;
+    await _hive.saveSetting('isPasswordEnabled', newValue);
+    state = state.copyWith(isPasswordEnabled: newValue);
+  }
+
+  Future<void> toggleFingerprint() async {
+    final newValue = !state.isFingerprintEnabled;
+    await _hive.saveSetting('isFingerprintEnabled', newValue);
+    state = state.copyWith(isFingerprintEnabled: newValue);
   }
 
   Future<void> completeOnboarding() async {

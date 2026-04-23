@@ -50,7 +50,7 @@ extension BottomSheetColor on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
   Color get background => _colorApp.primaryContainer.withAlpha(230);
   Color get textPrimary => _colorApp.primary;
-  Color get textSecondary => _colorApp.primaryFixed;
+  Color get textSecondarySheet => _colorApp.primaryFixed;
   Color get textonError => _colorApp.error;
 }
 
@@ -74,3 +74,13 @@ extension BarChartColors on BuildContext {
   Color get labelBarColor => _colorApp.onPrimaryContainer;
   Color get emptyGapBar => _colorApp.onSecondary;
 }
+
+// General colors
+extension GeneralColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get primary => _colorApp.primary;
+  Color get surfaceContainer => _colorApp.surfaceContainerHighest;
+  Color get textPrimary => _colorApp.onSurface;
+  Color get textSecondary => _colorApp.onSurfaceVariant;
+}
+
