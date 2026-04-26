@@ -144,7 +144,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 20),
                 decoration: BoxDecoration(
-                  color: cs.onSurface.withOpacity(0.15),
+                  color: cs.onSurface.withAlpha(1),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -172,7 +172,6 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
             const SizedBox(height: 20),
 
-            // TODO: 1 Make your own usable text field
             InputUI(
               controller: _amountController,
               labelText: 'Amount',

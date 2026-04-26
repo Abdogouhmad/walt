@@ -43,7 +43,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? context.primary.withOpacity(0.1)
+                    ? context.primary.withAlpha(1)
                     : context.surfaceContainer,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
@@ -57,7 +57,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: context.primary.withOpacity(0.1),
+                      color: context.primary.withAlpha(1),
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
@@ -89,10 +89,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
                     ),
                   ),
                   if (isSelected)
-                    Icon(
-                      Icons.check_circle,
-                      color: context.primary,
-                    ),
+                    Icon(Icons.check_circle, color: context.primary),
                 ],
               ),
             ),

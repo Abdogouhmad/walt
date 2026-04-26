@@ -44,7 +44,7 @@ class AppListTile extends StatelessWidget {
         titleColor ?? (isDestructive ? cs.error : cs.onSurface);
 
     final effectiveSubtitleColor =
-        subtitleColor ?? cs.onSurfaceVariant.withOpacity(0.7);
+        subtitleColor ?? cs.onSurfaceVariant.withAlpha(1);
 
     final verticalPadding = dense ? 10.0 : 14.0;
 
@@ -96,7 +96,7 @@ class AppListTile extends StatelessWidget {
               Icon(
                 Icons.chevron_right,
                 size: 20,
-                color: cs.onSurfaceVariant.withOpacity(0.6),
+                color: cs.onSurfaceVariant.withAlpha(1),
               ),
             ],
           ],
@@ -128,7 +128,7 @@ class AppListTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor ?? Colors.transparent,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: cs.outlineVariant.withOpacity(0.5)),
+            border: Border.all(color: cs.outlineVariant.withAlpha(1)),
           ),
           child: Material(color: Colors.transparent, child: content),
         );
@@ -161,7 +161,7 @@ class AppListSection extends StatelessWidget {
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(20, 8, 16, 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -173,25 +173,27 @@ class AppListSection extends StatelessWidget {
                     letterSpacing: 1.2,
                   ),
                 ),
-                if (trailing != null) trailing!,
+                ?trailing,
               ],
             ),
           ),
         Container(
           margin: margin,
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: children.length,
-            separatorBuilder: (context, index) => showDivider
-                ? Divider(
-                    height: 1,
-                    indent: 16,
-                    endIndent: 16,
-                    color: context.listSubLabel.withOpacity(0.2),
-                  )
-                : const SizedBox.shrink(),
-            itemBuilder: (context, index) => children[index],
+          child: Column(
+            children: List.generate(children.length, (index) {
+              return Column(
+                children: [
+                  children[index],
+                  if (showDivider && index < children.length - 1)
+                    Divider(
+                      height: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: context.listSubLabel.withAlpha(1),
+                    ),
+                ],
+              );
+            }),
           ),
         ),
       ],
@@ -261,7 +263,7 @@ class AppListEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: context.listSubLabel.withOpacity(0.5)),
+            Icon(icon, size: 64, color: context.listSubLabel.withAlpha(1)),
             const SizedBox(height: 16),
             Text(
               message,
@@ -373,10 +375,10 @@ class AppListGroup extends StatelessWidget {
       return Card(
         elevation: 0,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        color: backgroundColor ?? context.listContainer.withOpacity(0.5),
+        color: backgroundColor ?? context.listContainer.withAlpha(1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: cs.outlineVariant.withOpacity(0.2)),
+          side: BorderSide(color: cs.outlineVariant.withAlpha(1)),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),

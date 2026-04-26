@@ -69,9 +69,6 @@ class CategoryNotifier extends Notifier<AsyncValue<List<WaltCategory>>> {
   Future<void> _loadCategories() async {
     state = const AsyncValue.loading();
 
-    // TEMPORARY: Uncomment the line below for ONE RUN to wipe the old 1-item box
-    await _hive.clearAll();
-
     final categories = await _hive.getAllCategories();
 
     if (categories.isEmpty) {

@@ -9,7 +9,10 @@ class BottomNavBar extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
 
     int currentIndex = 0;
-    if (location.startsWith('/transactions') || location.startsWith('/activity')) currentIndex = 1;
+    if (location.startsWith('/transactions') ||
+        location.startsWith('/activity')) {
+      currentIndex = 1;
+    }
     if (location.startsWith('/reports')) currentIndex = 2;
     if (location.startsWith('/budgets')) currentIndex = 3;
 

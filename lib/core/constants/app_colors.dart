@@ -83,4 +83,3 @@ extension GeneralColors on BuildContext {
   Color get textPrimary => _colorApp.onSurface;
   Color get textSecondary => _colorApp.onSurfaceVariant;
 }
-

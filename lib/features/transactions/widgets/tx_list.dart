@@ -67,34 +67,28 @@ class TxList extends StatelessWidget {
         ],
       ),
 
-      child: Container(
-        // color: Theme.of(context).scaffoldBackgroundColor,
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: CircleAvatar(
+          backgroundColor: context.listContainer,
+          child: Icon(
+            CategoryIcons.getIcon(categoryIcon),
+            color: context.listIconBk,
           ),
-          leading: CircleAvatar(
-            backgroundColor: context.listContainer,
-            child: Icon(
-              CategoryIcons.getIcon(categoryIcon),
-              color: context.listIconBk,
-            ),
-          ),
-          title: Text(
-            transaction.merchant ?? 'Unknown Merchant',
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text(
-            '$categoryName • ${DateFormat('HH:mm').format(transaction.date)}',
-            style: TextStyle(color: context.listSubLabel, fontSize: 12),
-          ),
-          trailing: Text(
-            "${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(2)} MAD",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: isIncome ? context.listIncome : context.listExpense,
-            ),
+        ),
+        title: Text(
+          transaction.merchant ?? 'Unknown Merchant',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          '$categoryName • ${DateFormat('HH:mm').format(transaction.date)}',
+          style: TextStyle(color: context.listSubLabel, fontSize: 12),
+        ),
+        trailing: Text(
+          "${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(2)} MAD",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isIncome ? context.listIncome : context.listExpense,
           ),
         ),
       ),

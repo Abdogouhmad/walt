@@ -29,7 +29,7 @@ lint:
     flutter analyze
 # Format all files
 format:
-    dark format .
+    dart format .
 # --- Execution ---
 
 # Run the app in debug mode

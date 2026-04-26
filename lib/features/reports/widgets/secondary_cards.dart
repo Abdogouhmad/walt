@@ -14,7 +14,9 @@ class SecondaryReportCardUi extends ConsumerWidget {
 
     return Row(
       children: [
-        Expanded(child: _avargeSpendingPerDay(context, report.averageDailySpending)),
+        Expanded(
+          child: _avargeSpendingPerDay(context, report.averageDailySpending),
+        ),
         const SizedBox(width: 12), // Space between cards
         Expanded(child: _savingRate(context, report.savingRate)),
       ],
@@ -22,7 +24,10 @@ class SecondaryReportCardUi extends ConsumerWidget {
   }
 }
 
-Widget _avargeSpendingPerDay(BuildContext ctx, AsyncValue<double> averageDaily) {
+Widget _avargeSpendingPerDay(
+  BuildContext ctx,
+  AsyncValue<double> averageDaily,
+) {
   return M3Ecard(
     variant: M3ECardVariant.filled,
     padding: const EdgeInsets.all(20),
@@ -54,11 +59,13 @@ Widget _avargeSpendingPerDay(BuildContext ctx, AsyncValue<double> averageDaily) 
           averageDaily.when(
             data: (amount) => UiText(
               text: "${amount.toStringAsFixed(0)} MAD",
-              type: UiTextType.headlineSmall, // Use a larger type for the amount
+              type:
+                  UiTextType.headlineSmall, // Use a larger type for the amount
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             loading: () => const CircularProgressIndicator(),
-            error: (err, _) => const UiText(text: "Error", type: UiTextType.headlineSmall),
+            error: (err, _) =>
+                const UiText(text: "Error", type: UiTextType.headlineSmall),
           ),
           const SizedBox(height: 4),
           UiText(
@@ -101,11 +108,13 @@ Widget _savingRate(BuildContext ctx, AsyncValue<double> savingRate) {
           savingRate.when(
             data: (rate) => UiText(
               text: "${rate.toStringAsFixed(0)}%",
-              type: UiTextType.headlineSmall, // Use a larger type for the amount
+              type:
+                  UiTextType.headlineSmall, // Use a larger type for the amount
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             loading: () => const CircularProgressIndicator(),
-            error: (err, _) => const UiText(text: "Error", type: UiTextType.headlineSmall),
+            error: (err, _) =>
+                const UiText(text: "Error", type: UiTextType.headlineSmall),
           ),
           const SizedBox(height: 4),
 

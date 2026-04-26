@@ -20,7 +20,9 @@ class BarChartWidget extends ConsumerWidget {
       data: AppCardData(
         colorCard: context.colorAppScheme.surface,
         title: 'Monthly Overview',
-        subtitle: filterIndex == 0 ? "Expenses over 6 months" : "Expenses over 12 months",
+        subtitle: filterIndex == 0
+            ? "Expenses over 6 months"
+            : "Expenses over 12 months",
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
           side: BorderSide(
@@ -85,9 +87,15 @@ class _BarChartContent extends StatelessWidget {
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
           show: true,
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -105,8 +113,9 @@ class _BarChartContent extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       color: context.labelBarColor,
-                      fontWeight:
-                          index == selectedIndex ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: index == selectedIndex
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 );
@@ -124,7 +133,9 @@ class _BarChartContent extends StatelessWidget {
                 toY: data[i],
                 width: 22,
                 borderRadius: BorderRadius.circular(8),
-                color: isSelected ? context.currentMonthColor : context.otherMonthsColor,
+                color: isSelected
+                    ? context.currentMonthColor
+                    : context.otherMonthsColor,
                 backDrawRodData: BackgroundBarChartRodData(
                   show: true,
                   toY: yAxisMax,

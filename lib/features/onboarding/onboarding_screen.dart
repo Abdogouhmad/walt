@@ -66,19 +66,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ optimized Riverpod watching
     final isLoaded = ref.watch(settingsProvider.select((s) => s.isLoaded));
-    final isDone = ref.watch(
-      settingsProvider.select((s) => s.isOnboardingCompleted),
-    );
 
     if (!isLoaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (isDone) {
-      Future.microtask(() => context.go('/')); // ✅ safe redirect
-      return const Scaffold();
     }
 
     return Scaffold(

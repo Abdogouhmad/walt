@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/data/local/hive_service.dart';
+import 'package:walt/providers/auth_provider.dart';
 
 class SettingsState {
   final bool isDarkMode;
@@ -43,30 +44,31 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   @override
   SettingsState build() {
-    _loadSettings();
-    return SettingsState();
+    return _loadSettings();
   }
 
-  Future<void> _loadSettings() async {
+  SettingsState _loadSettings() {
     try {
-      final isDark = await _hive.isDarkMode();
-      final currency = await _hive.getCurrency();
-      final onboardingCompleted = await _hive.isOnboardingCompleted();
-      final isPasswordEnabled =
-          await _hive.getSetting('isPasswordEnabled', defaultValue: false);
-      final isFingerprintEnabled =
-          await _hive.getSetting('isFingerprintEnabled', defaultValue: false);
+      final isDark = _hive.isDarkMode();
+      final currency = _hive.getCurrency();
+      final onboardingCompleted = _hive.isOnboardingCompleted();
 
-      state = SettingsState(
+      final isPasswordEnabled =
+          _hive.getSetting('isPasswordEnabled', defaultValue: false) as bool;
+      final isFingerprintEnabled =
+          _hive.getSetting('isFingerprintEnabled', defaultValue: false) as bool;
+
+      return SettingsState(
         isDarkMode: isDark,
         currency: currency,
         isOnboardingCompleted: onboardingCompleted,
         isLoaded: true,
-        isPasswordEnabled: isPasswordEnabled as bool,
-        isFingerprintEnabled: isFingerprintEnabled as bool,
+        isPasswordEnabled: isPasswordEnabled,
+        isFingerprintEnabled: isFingerprintEnabled,
       );
     } catch (e) {
-      state = state.copyWith(isLoaded: true);
+      // Even if loading fails, we must mark as loaded to proceed, but using defaults
+      return SettingsState(isLoaded: true);
     }
   }
 
@@ -87,10 +89,18 @@ class SettingsNotifier extends Notifier<SettingsState> {
     state = state.copyWith(isPasswordEnabled: newValue);
   }
 
-  Future<void> toggleFingerprint() async {
+  Future<bool> toggleFingerprint(WidgetRef ref) async {
     final newValue = !state.isFingerprintEnabled;
+
+    if (newValue) {
+      // When enabling, try to authenticate first to make sure it works
+      final success = await ref.read(authProvider.notifier).authenticate(force: true);
+      if (!success) return false;
+    }
+
     await _hive.saveSetting('isFingerprintEnabled', newValue);
     state = state.copyWith(isFingerprintEnabled: newValue);
+    return true;
   }
 
   Future<void> completeOnboarding() async {

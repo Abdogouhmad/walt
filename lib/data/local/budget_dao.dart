@@ -53,7 +53,12 @@ class BudgetDao {
       'period': budget.period,
       'alert_at': budget.alertAt,
     };
-    return await db.update('budgets', map, where: 'id = ?', whereArgs: [budget.id]);
+    return await db.update(
+      'budgets',
+      map,
+      where: 'id = ?',
+      whereArgs: [budget.id],
+    );
   }
 
   // ====================== DELETE ======================
@@ -61,6 +66,7 @@ class BudgetDao {
     final db = await _dbHelper.database;
     return await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
   }
+
   // Helper method to convert a map to a Budget object
   WaltBudget _mapToBudget(Map<String, dynamic> map) {
     return WaltBudget(

@@ -47,7 +47,7 @@ class TypeToggle extends StatelessWidget {
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withAlpha(1),
                       blurRadius: 4,
                     ),
                   ]
@@ -59,7 +59,7 @@ class TypeToggle extends StatelessWidget {
               Icon(
                 icon,
                 size: 16,
-                color: isActive ? activeColor : cs.onSurface.withOpacity(0.4),
+                color: isActive ? activeColor : cs.onSurface.withAlpha(1),
               ),
               const SizedBox(width: 6),
               Text(
@@ -67,7 +67,9 @@ class TypeToggle extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  color: isActive ? activeColor : cs.onSurface.withOpacity(0.4),
+                  color: isActive
+                      ? activeColor
+                      : cs.onSurface.withAlpha(1),
                 ),
               ),
             ],

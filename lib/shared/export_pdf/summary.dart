@@ -73,4 +73,5 @@ class PdfSummary extends pw.StatelessWidget {
     );
   }
 }
+
 // double income, double expense, String currency

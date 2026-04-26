@@ -67,7 +67,8 @@ class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
             ],
           ),
           IconButton(
-            onPressed: () => ref.read(aiInsightProvider.notifier).toggleVisibility(),
+            onPressed: () =>
+                ref.read(aiInsightProvider.notifier).toggleVisibility(),
             icon: const Icon(Icons.auto_awesome),
             color: context.appBarIcon,
           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walt/features/settings/services/appinfo.dart';
+import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/features/settings/widgets/currency_selection_screen.dart';
 import 'package:walt/features/settings/widgets/theme_selection_screen.dart';
 import 'package:walt/features/settings/widgets/profile/header.dart';
@@ -17,15 +19,14 @@ class SettingsScreen extends ConsumerWidget {
     Widget divider = SizedBox(height: 2);
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+      body: SafeArea(
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              const ProfileApp(),
               const SizedBox(height: 24),
+              const ProfileApp(),
+              const SizedBox(height: 32),
 
               /// 🔹 PREFERENCES
               AppListSection(
@@ -72,8 +73,6 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
 
-              const SizedBox(height: 16),
-
               /// 🔹 SECURITY
               AppListSection(
                 title: 'Security',
@@ -83,32 +82,30 @@ class SettingsScreen extends ConsumerWidget {
                     children: [
                       AppListTile(
                         style: ListStyle.outlined,
-                        title: 'Password Lock',
-                        subtitle: 'Require password to open app',
-                        leading: const AppListAvatar(icon: Icons.lock_outline),
-                        trailing: Switch(
-                          value: settings.isPasswordEnabled,
-                          onChanged: (_) => settingsNotifier.togglePassword(),
-                        ),
-                      ),
-                      divider,
-                      AppListTile(
-                        style: ListStyle.outlined,
                         title: 'Fingerprint',
                         subtitle: 'Use biometrics to unlock',
                         leading: const AppListAvatar(icon: Icons.fingerprint),
                         trailing: Switch(
                           value: settings.isFingerprintEnabled,
-                          onChanged: (_) =>
-                              settingsNotifier.toggleFingerprint(),
+                          onChanged: (val) async {
+                            final success = await settingsNotifier
+                                .toggleFingerprint(ref);
+                            if (!success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Authentication failed or not available',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-
-              const SizedBox(height: 16),
 
               /// 🔹 Others
               AppListSection(
@@ -120,13 +117,13 @@ class SettingsScreen extends ConsumerWidget {
                       AppListTile(
                         style: ListStyle.outlined,
                         title: 'About',
-                        subtitle: 'V1.0.0',
+                        subtitle: 'about Walt v${Appinfo.version}',
                         leading: const AppListAvatar(icon: Icons.info),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ThemeSelectionScreen(),
+                              builder: (_) => const AboutScreen(),
                             ),
                           );
                         },
@@ -136,7 +133,7 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
             ],
           ),
         ),

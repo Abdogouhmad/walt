@@ -51,16 +51,11 @@ class PieChartWidget extends ConsumerWidget {
                     PieChartData(
                       sectionsSpace: 4,
                       centerSpaceRadius: double.infinity,
-                      sections:
-                          data.map((item) {
-                            final percentage = (item.amount / total) * 100;
-                            final color = CategoryIcons.getColor(item.icon);
-                            return _buildSection(
-                              item.amount,
-                              percentage,
-                              color,
-                            );
-                          }).toList(),
+                      sections: data.map((item) {
+                        final percentage = (item.amount / total) * 100;
+                        final color = CategoryIcons.getColor(item.icon);
+                        return _buildSection(item.amount, percentage, color);
+                      }).toList(),
                     ),
                   ),
                 ),
@@ -71,8 +66,8 @@ class PieChartWidget extends ConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: _LegendItem(
                       color: CategoryIcons.getColor(item.icon),
-                      text: item.name == 'Unknown' 
-                          ? CategoryIcons.getName(item.icon) 
+                      text: item.name == 'Unknown'
+                          ? CategoryIcons.getName(item.icon)
                           : item.name,
                       amount: item.amount,
                     ),

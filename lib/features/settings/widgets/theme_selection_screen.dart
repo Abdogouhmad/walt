@@ -60,7 +60,7 @@ class ThemeSelectionScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? context.primary.withOpacity(0.1)
+              ? context.primary.withAlpha(1)
               : context.surfaceContainer,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -83,11 +83,7 @@ class ThemeSelectionScreen extends ConsumerWidget {
               ),
             ),
             const Spacer(),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: context.primary,
-              ),
+            if (isSelected) Icon(Icons.check_circle, color: context.primary),
           ],
         ),
       ),
