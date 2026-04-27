@@ -145,6 +145,7 @@ class AppButton extends StatelessWidget {
       onPressed: _effectiveCallback,
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         side: BorderSide(color: color),
         padding: _padding,
         textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w500),
@@ -165,7 +166,20 @@ class AppButton extends StatelessWidget {
         textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w500),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
-      child: isLoading ? _spinner(color) : Text(label!),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // The Text comes first
+          Text(label!),
+
+          // Show icon or spinner only if needed
+          if (isLoading || icon != null) ...[
+            const SizedBox(width: 5),
+            isLoading ? _spinner(color) : Icon(icon, size: _iconSize),
+          ],
+        ],
+      ),
     );
   }
 
@@ -180,8 +194,8 @@ class AppButton extends StatelessWidget {
         textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w500),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
-      icon: isLoading ? _spinner(color) : Icon(icon, size: _iconSize),
       label: Text(label!),
+      icon: isLoading ? _spinner(color) : Icon(icon, size: _iconSize),
     );
   }
 

@@ -189,13 +189,12 @@ class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final VoidCallback? onTap;
+  // final VoidCallback? onTap;
 
   const _ActionTile({
     required this.icon,
     required this.title,
     required this.subtitle,
-    this.onTap
   });
 
   @override
@@ -214,7 +213,7 @@ class _ActionTile extends StatelessWidget {
         leading: Icon(icon, color: colors.primary),
         title: Text(title),
         subtitle: Text(subtitle),
-        onTap: onTap,
+        onTap: () => {},
       ),
     );
   }

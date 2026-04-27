@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:walt/core/utils/context.dart';
 
+extension SplashColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get splashBackground => _colorApp.primary.withAlpha(10);
+}
+
 // colors of appBar
 extension AppBarColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;

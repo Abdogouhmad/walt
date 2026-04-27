@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walt/features/onboarding/onboarding_screen.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/features/settings/widgets/currency_selection_screen.dart';
@@ -123,7 +124,7 @@ class SettingsScreen extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const AboutScreen(),
+                              builder: (_) => OnboardingScreen(),
                             ),
                           );
                         },
