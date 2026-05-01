@@ -14,7 +14,7 @@ import 'data/local/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'app_router.dart';
 // Providers
-//import 'providers/settings_provider.dart';
+import 'providers/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +60,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final settings = ref.watch(settingsProvider);
 
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
@@ -67,7 +68,7 @@ class MyApp extends ConsumerWidget {
           title: 'Walt',
           debugShowCheckedModeBanner: false,
 
-          themeMode: ThemeMode.system,
+          themeMode: settings.themeMode,
 
           theme: AppTheme.lightTheme(lightDynamic),
           darkTheme: AppTheme.darkTheme(darkDynamic),

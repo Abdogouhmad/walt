@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:walt/core/constants/app_colors.dart';
 
 class Dots extends StatelessWidget {
   final int current, total;
@@ -17,7 +18,7 @@ class Dots extends StatelessWidget {
           width: current == i ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
-            color: current == i ? Colors.purple.shade300 : Colors.grey.shade300,
+            color: current == i ? context.primary : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(4),
           ),
         ),

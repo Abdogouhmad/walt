@@ -13,6 +13,7 @@ _WaltAccount _$WaltAccountFromJson(Map<String, dynamic> json) => _WaltAccount(
   balance: (json['balance'] as num).toDouble(),
   currency: json['currency'] as String,
   color: json['color'] as String?,
+  profilePic: json['profilePic'] as String?,
   isDefault: json['isDefault'] as bool? ?? false,
 );
 
@@ -24,5 +25,6 @@ Map<String, dynamic> _$WaltAccountToJson(_WaltAccount instance) =>
       'balance': instance.balance,
       'currency': instance.currency,
       'color': instance.color,
+      'profilePic': instance.profilePic,
       'isDefault': instance.isDefault,
     };

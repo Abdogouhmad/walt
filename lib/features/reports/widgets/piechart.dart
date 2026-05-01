@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/m3e_card.dart';
 import 'package:walt/providers/report_provider.dart';
+import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/core/utils/category_icon.dart';
 
 class PieChartWidget extends ConsumerWidget {
@@ -12,6 +13,7 @@ class PieChartWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final report = ref.watch(reportProvider);
+    final currency = ref.watch(settingsProvider).currency;
 
     return M3Ecard(
       variant: M3ECardVariant.filled,
@@ -70,6 +72,7 @@ class PieChartWidget extends ConsumerWidget {
                           ? CategoryIcons.getName(item.icon)
                           : item.name,
                       amount: item.amount,
+                      currency: currency,
                     ),
                   ),
                 ),
@@ -107,11 +110,13 @@ class _LegendItem extends StatelessWidget {
   final Color color;
   final String text;
   final double amount;
+  final String currency;
 
   const _LegendItem({
     required this.color,
     required this.text,
     required this.amount,
+    required this.currency,
   });
 
   @override
@@ -136,11 +141,16 @@ class _LegendItem extends StatelessWidget {
             ),
           ],
         ),
-        Text(
-          "${amount.toStringAsFixed(2)} MAD",
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "${amount.toStringAsFixed(2)} $currency",
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
       ],
     );

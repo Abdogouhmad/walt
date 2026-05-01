@@ -71,12 +71,12 @@ class HiveService {
     return _settingsBox.get(key, defaultValue: defaultValue);
   }
 
-  Future<void> setDarkMode(bool isDark) async =>
-      saveSetting('isDarkMode', isDark);
+  Future<void> setThemeMode(String themeMode) async =>
+      saveSetting('themeMode', themeMode);
 
-  bool isDarkMode() {
-    final val = getSetting('isDarkMode', defaultValue: false);
-    return val is bool ? val : false;
+  String getThemeMode() {
+    final val = getSetting('themeMode', defaultValue: 'system');
+    return val is String ? val : 'system';
   }
 
   Future<void> setCurrency(String currency) async =>
@@ -85,6 +85,22 @@ class HiveService {
   String getCurrency() {
     final val = getSetting('currency', defaultValue: 'MAD');
     return val is String ? val : 'MAD';
+  }
+
+  Future<void> setUserName(String name) async =>
+      saveSetting('userName', name);
+
+  String getUserName() {
+    final val = getSetting('userName', defaultValue: 'User');
+    return val is String ? val : 'User';
+  }
+
+  Future<void> setProfilePicPath(String path) async =>
+      saveSetting('profilePicPath', path);
+
+  String? getProfilePicPath() {
+    final val = getSetting('profilePicPath');
+    return val is String ? val : null;
   }
 
   Future<void> setOnboardingCompleted(bool completed) async =>

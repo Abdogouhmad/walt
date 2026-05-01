@@ -67,6 +67,14 @@ class BudgetDao {
     return await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> updateAllAmounts(double rate) async {
+    final db = await _dbHelper.database;
+    await db.rawUpdate(
+      'UPDATE budgets SET amount = amount * ?',
+      [rate],
+    );
+  }
+
   // Helper method to convert a map to a Budget object
   WaltBudget _mapToBudget(Map<String, dynamic> map) {
     return WaltBudget(

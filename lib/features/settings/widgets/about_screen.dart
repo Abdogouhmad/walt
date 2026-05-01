@@ -73,11 +73,11 @@ class AboutScreen extends StatelessWidget {
                 //   icon: Icons.web_asset_rounded,
                 //   url: "https://rakizapp.vercel.app/",
                 // ),
-                const SizedBox(width: 8),
-                SocialBubble(
-                  icon: Icons.code,
-                  url: "https://github.com/Abdogouhmad/walt/",
-                ),
+                // const SizedBox(width: 8),
+                // SocialBubble(
+                //   icon: Icons.code,
+                //   url: "https://github.com/Abdogouhmad/walt",
+                // ),
               ],
             ),
           ),

@@ -35,6 +35,10 @@ class TypeToggle extends StatelessWidget {
     final isActive = value == type;
     final cs = Theme.of(context).colorScheme;
 
+    final textColor = isActive
+        ? activeColor
+        : cs.onSurfaceVariant; // ← Best choice for inactive
+
     return Expanded(
       child: GestureDetector(
         onTap: () => onChanged(type),
@@ -44,32 +48,22 @@ class TypeToggle extends StatelessWidget {
           decoration: BoxDecoration(
             color: isActive ? cs.surface : Colors.transparent,
             borderRadius: BorderRadius.circular(9),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(1),
-                      blurRadius: 4,
-                    ),
-                  ]
-                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 16,
-                color: isActive ? activeColor : cs.onSurface.withAlpha(1),
+                size: 18,
+                color: textColor,
               ),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  color: isActive
-                      ? activeColor
-                      : cs.onSurface.withAlpha(1),
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  color: textColor,
                 ),
               ),
             ],

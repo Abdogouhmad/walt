@@ -43,10 +43,7 @@ class AppListTile extends StatelessWidget {
     final effectiveTitleColor =
         titleColor ?? (isDestructive ? cs.error : cs.onSurface);
 
-    final effectiveSubtitleColor =
-        subtitleColor ?? cs.onSurfaceVariant.withAlpha(1);
-
-    final verticalPadding = dense ? 10.0 : 14.0;
+    final verticalPadding = dense ? 12.0 : 16.0;
 
     Widget content = InkWell(
       onTap: onTap,
@@ -57,11 +54,11 @@ class AppListTile extends StatelessWidget {
             padding ??
             EdgeInsets.symmetric(horizontal: 16, vertical: verticalPadding),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center, // This is key
           children: [
-            if (leading != null) ...[leading!, const SizedBox(width: 14)],
+            if (leading != null) ...[leading!, const SizedBox(width: 16)],
 
-            /// TEXT
+            // TEXT
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,35 +73,33 @@ class AppListTile extends StatelessWidget {
                     ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     UiText(
                       text: subtitle!,
                       type: UiTextType.bodyMedium,
-                      style: TextStyle(color: effectiveSubtitleColor),
+                      style: TextStyle(
+                        color: subtitleColor ?? cs.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
 
-            /// TRAILING
+            // TRAILING
             if (trailing != null) ...[
               const SizedBox(width: 12),
               trailing!,
             ] else if (onTap != null) ...[
               const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: cs.onSurfaceVariant.withAlpha(1),
-              ),
+              Icon(Icons.chevron_right, size: 20, color: cs.onSurfaceVariant),
             ],
           ],
         ),
       ),
     );
 
-    /// STYLE WRAPPER
+    // Style wrapper (unchanged)
     switch (style) {
       case ListStyle.plain:
         return Material(
@@ -128,7 +123,7 @@ class AppListTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor ?? Colors.transparent,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: cs.outlineVariant.withAlpha(1)),
+            border: Border.all(color: cs.outlineVariant, width: 0.5),
           ),
           child: Material(color: Colors.transparent, child: content),
         );

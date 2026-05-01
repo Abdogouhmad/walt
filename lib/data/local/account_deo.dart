@@ -12,6 +12,10 @@ class AccountDao {
       'name': account.name,
       'type': account.type,
       'balance': account.balance,
+      'currency': account.currency,
+      'color': account.color,
+      'profile_pic': account.profilePic,
+      'is_default': account.isDefault ? 1 : 0,
       'created_at': DateTime.now().millisecondsSinceEpoch,
     };
 
@@ -49,10 +53,19 @@ class AccountDao {
       id: map['id'],
       name: map['name'],
       type: map['type'],
-      balance: map['balance'],
+      balance: (map['balance'] as num).toDouble(),
       currency: map['currency'],
       color: map['color'],
+      profilePic: map['profile_pic'],
       isDefault: map['is_default'] == 1,
+    );
+  }
+
+  Future<void> updateAllBalances(double rate, String newCurrency) async {
+    final db = await _dbHelper.database;
+    await db.rawUpdate(
+      'UPDATE accounts SET balance = balance * ?, currency = ?',
+      [rate, newCurrency],
     );
   }
 }

@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/providers/ai_provider.dart';
+import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
 class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
@@ -15,6 +18,7 @@ class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final iconColor = context.appBarIcon;
+    final settings = ref.watch(settingsProvider);
 
     // Logic for the greeting text
     String getGreeting() {
@@ -38,9 +42,12 @@ class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
                 child: CircleAvatar(
                   radius: 22,
                   backgroundColor: iconColor,
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     radius: 20,
-                    backgroundImage: AssetImage('assets/profile/meme.jpg'),
+                    backgroundImage: settings.profilePicPath != null
+                        ? FileImage(File(settings.profilePicPath!))
+                              as ImageProvider
+                        : const AssetImage('assets/profile/meme.jpg'),
                   ),
                 ),
               ),
@@ -52,13 +59,13 @@ class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
                   UiText(
                     text: getGreeting(),
                     type: UiTextType.bodySmall,
-                    style: TextStyle(color: context.appBarText.withAlpha(150)),
+                    style: TextStyle(color: context.textSecondary),
                   ),
                   UiText(
-                    text: "Abdo",
+                    text: settings.userName,
                     type: UiTextType.titleMedium,
                     style: TextStyle(
-                      color: context.appBarText,
+                      color: context.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

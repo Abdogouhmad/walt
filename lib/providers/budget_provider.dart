@@ -31,4 +31,6 @@ class BudgetNotifier extends StateNotifier<List<WaltBudget>> {
     await BudgetDao().deleteBudget(id);
     _loadBudgets();
   }
+
+  Future<void> refresh() => _loadBudgets();
 }

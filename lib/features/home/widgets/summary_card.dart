@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
@@ -12,6 +13,7 @@ class SummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 2. Watch the summary provider
     final summary = ref.watch(summaryProvider);
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
     final bgColor = context.primaryCardBackground;
     final textColor = context.cardTextPrimary;
     final secondaryTextColor = context.cardTextSecondary;
@@ -35,7 +37,7 @@ class SummaryCard extends ConsumerWidget {
           const SizedBox(height: 8),
           UiText(
             // 3. Use summary.balance from the provider
-            text: "${summary.balance.toStringAsFixed(2)} MAD",
+            text: "${summary.balance.toStringAsFixed(2)} $currency",
             type: UiTextType.headlineLarge,
             style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
           ),
@@ -48,6 +50,7 @@ class SummaryCard extends ConsumerWidget {
                   "Income",
                   summary.income, // From provider
                   Icons.arrow_upward,
+                  currency,
                   iconColor: cardIncome,
                 ),
               ),
@@ -58,6 +61,7 @@ class SummaryCard extends ConsumerWidget {
                   "Expenses",
                   summary.expenses, // From provider
                   Icons.arrow_downward,
+                  currency,
                   iconColor: cardExpense,
                 ),
               ),
@@ -73,7 +77,8 @@ class SummaryCard extends ConsumerWidget {
     BuildContext context,
     String label,
     double value,
-    IconData icon, {
+    IconData icon,
+    String currency, {
     Color? iconColor,
   }) {
     return Container(
@@ -94,7 +99,7 @@ class SummaryCard extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           UiText(
-            text: "${value.toStringAsFixed(0)} MAD",
+            text: "${value.toStringAsFixed(0)} $currency",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: CardColors(context).cardTextSecondary,

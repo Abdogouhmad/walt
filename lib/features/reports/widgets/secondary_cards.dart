@@ -4,6 +4,7 @@ import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/m3e_card.dart';
 import 'package:walt/shared/text_ui.dart';
 import 'package:walt/providers/report_provider.dart';
+import 'package:walt/providers/settings_provider.dart';
 
 class SecondaryReportCardUi extends ConsumerWidget {
   const SecondaryReportCardUi({super.key});
@@ -11,11 +12,16 @@ class SecondaryReportCardUi extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final report = ref.watch(reportProvider);
+    final currency = ref.watch(settingsProvider).currency;
 
     return Row(
       children: [
         Expanded(
-          child: _avargeSpendingPerDay(context, report.averageDailySpending),
+          child: _avargeSpendingPerDay(
+            context,
+            report.averageDailySpending,
+            currency,
+          ),
         ),
         const SizedBox(width: 12), // Space between cards
         Expanded(child: _savingRate(context, report.savingRate)),
@@ -27,6 +33,7 @@ class SecondaryReportCardUi extends ConsumerWidget {
 Widget _avargeSpendingPerDay(
   BuildContext ctx,
   AsyncValue<double> averageDaily,
+  String currency,
 ) {
   return M3Ecard(
     variant: M3ECardVariant.filled,
@@ -58,7 +65,7 @@ Widget _avargeSpendingPerDay(
           const SizedBox(height: 4),
           averageDaily.when(
             data: (amount) => UiText(
-              text: "${amount.toStringAsFixed(0)} MAD",
+              text: "${amount.toStringAsFixed(0)} $currency",
               type:
                   UiTextType.headlineSmall, // Use a larger type for the amount
               style: const TextStyle(fontWeight: FontWeight.bold),

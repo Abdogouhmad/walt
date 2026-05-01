@@ -9,6 +9,8 @@ import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/providers/category_provider.dart'; // Import category provider
 import 'package:walt/core/utils/category_icon.dart'; // Import mapper
 
+import 'package:walt/providers/settings_provider.dart';
+
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
@@ -17,6 +19,7 @@ class RecentActivity extends ConsumerWidget {
     final transactions = ref.watch(recentTransactionsProvider);
     // Access categories to map IDs to Names/Icons
     final categoriesAsync = ref.watch(categoryProvider);
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,6 +49,7 @@ class RecentActivity extends ConsumerWidget {
                         tx,
                         category.name,
                         category.icon,
+                        currency,
                       );
                     },
                   ),
@@ -79,9 +83,10 @@ class RecentActivity extends ConsumerWidget {
     WaltTransaction tx,
     String catName,
     String catIcon,
+    String currency,
   ) {
     final isIncome = tx.type.toLowerCase() == 'income';
-    final amount = '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} MAD';
+    final amount = '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} $currency';
     final formattedDate = DateFormat('MMM dd, yyyy').format(tx.date);
 
     return ListTile(

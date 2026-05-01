@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/features/onboarding/onboarding_screen.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/features/settings/widgets/currency_selection_screen.dart';
@@ -17,9 +16,10 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    Widget divider = SizedBox(height: 2);
+    const Widget divider = SizedBox(height: 2);
 
     return Scaffold(
+      appBar: AppBar(title: const Text('Settings'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -56,7 +56,7 @@ class SettingsScreen extends ConsumerWidget {
                       AppListTile(
                         style: ListStyle.outlined,
                         title: 'Currency',
-                        subtitle: 'MAD',
+                        subtitle: settings.currency,
                         leading: const AppListAvatar(
                           icon: Icons.currency_exchange,
                         ),
@@ -119,12 +119,13 @@ class SettingsScreen extends ConsumerWidget {
                         style: ListStyle.outlined,
                         title: 'About',
                         subtitle: 'about Walt v${Appinfo.version}',
+                        
                         leading: const AppListAvatar(icon: Icons.info),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => OnboardingScreen(),
+                              builder: (_) => const AboutScreen(),
                             ),
                           );
                         },
