@@ -21,8 +21,16 @@ extension BuildContextExtension on BuildContext {
 
   /// Get the current screen height.
   double get screenHeight => MediaQuery.of(this).size.height;
-  // You can add more theme-related extensions here, e0.g., media query sizes:
-  // Size get mediaQuerySize => MediaQuery.of(this).size;
-  // double get screenWidth => MediaQuery.of(this).size.width;
-  // double get screenHeight => MediaQuery.of(this).size.height;
+
+  /// Scale width based on design width (375).
+  double w(double width) => (width / 375) * screenWidth;
+
+  /// Scale height based on design height (812).
+  double h(double height) => (height / 812) * screenHeight;
+
+  /// Scale font size based on screen width.
+  double sp(double fontSize) => (fontSize / 375) * screenWidth;
+
+  /// Scale radius based on screen width.
+  double r(double radius) => (radius / 375) * screenWidth;
 }

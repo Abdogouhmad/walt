@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/core/utils/context.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/shared/text_ui.dart';
@@ -21,9 +22,9 @@ class SummaryCard extends ConsumerWidget {
     final cardExpense = context.cardExpense;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(context.w(20)),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(context.r(24)),
         color: bgColor,
       ),
       child: Column(
@@ -34,14 +35,18 @@ class SummaryCard extends ConsumerWidget {
             type: UiTextType.labelMedium,
             style: TextStyle(color: secondaryTextColor),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: context.h(8)),
           UiText(
             // 3. Use summary.balance from the provider
             text: "${summary.balance.toStringAsFixed(2)} $currency",
             type: UiTextType.headlineLarge,
-            style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: textColor,
+              fontSize: context.sp(32),
+            ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: context.h(20)),
           Row(
             children: [
               Expanded(
@@ -54,7 +59,7 @@ class SummaryCard extends ConsumerWidget {
                   iconColor: cardIncome,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: context.w(12)),
               Expanded(
                 child: _miniCard(
                   context,
@@ -82,9 +87,9 @@ class SummaryCard extends ConsumerWidget {
     Color? iconColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(context.w(14)),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(context.r(16)),
         color: Colors.blueGrey.withAlpha(30),
       ),
       child: Column(
@@ -92,17 +97,21 @@ class SummaryCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: iconColor),
-              const SizedBox(width: 4),
-              Text(label),
+              Icon(icon, size: context.w(16), color: iconColor),
+              SizedBox(width: context.w(4)),
+              Text(
+                label,
+                style: TextStyle(fontSize: context.sp(12)),
+              ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: context.h(6)),
           UiText(
             text: "${value.toStringAsFixed(0)} $currency",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: CardColors(context).cardTextSecondary,
+              fontSize: context.sp(14),
             ),
           ),
         ],
