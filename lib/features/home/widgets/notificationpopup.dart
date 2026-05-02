@@ -11,15 +11,18 @@ class NotificationDropdown extends StatelessWidget {
     final colorScheme = context.colorAppScheme;
 
     return MenuAnchor(
-      alignmentOffset: const Offset(0, 8),
+      alignmentOffset: Offset(0, context.h(8)),
       style: MenuStyle(
-        minimumSize: const WidgetStatePropertyAll(Size(300, 0)),
-        maximumSize: const WidgetStatePropertyAll(Size(300, 380)),
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(vertical: 8),
+        minimumSize: WidgetStatePropertyAll(Size(context.w(300), 0)),
+        maximumSize:
+            WidgetStatePropertyAll(Size(context.w(300), context.h(380))),
+        padding: WidgetStatePropertyAll(
+          EdgeInsets.symmetric(vertical: context.h(8)),
         ),
         shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(context.r(16)),
+          ),
         ),
         elevation: const WidgetStatePropertyAll(3),
         surfaceTintColor: WidgetStatePropertyAll(colorScheme.surfaceTint),
@@ -57,34 +60,39 @@ class NotificationDropdown extends StatelessWidget {
     final colorScheme = context.colorAppScheme;
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        minWidth: 300,
-        maxWidth: 300,
-        maxHeight: 380,
+      constraints: BoxConstraints(
+        minWidth: context.w(300),
+        maxWidth: context.w(300),
+        maxHeight: context.h(380),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+        padding: EdgeInsets.symmetric(
+          horizontal: context.w(24),
+          vertical: context.h(48),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.notifications_off_outlined,
-              size: 64,
+              size: context.w(64),
               color: colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: context.h(16)),
             Text(
               'No notifications yet',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
+                fontSize: context.sp(16),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: context.h(8)),
             Text(
               'You\'re all caught up!',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
+                fontSize: context.sp(14),
               ),
               textAlign: TextAlign.center,
             ),
@@ -108,13 +116,16 @@ class _NotifTile extends StatelessWidget {
 
     return ListTile(
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: context.w(20),
+        vertical: context.h(6),
+      ),
       leading: CircleAvatar(
-        radius: 20,
+        radius: context.r(20),
         backgroundColor: colorScheme.primaryContainer,
         child: Icon(
           Icons.info_outline_rounded,
-          size: 20,
+          size: context.w(20),
           color: colorScheme.onPrimaryContainer,
         ),
       ),
@@ -123,6 +134,7 @@ class _NotifTile extends StatelessWidget {
         style: textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
           color: colorScheme.onSurface,
+          fontSize: context.sp(16),
         ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
@@ -131,6 +143,7 @@ class _NotifTile extends StatelessWidget {
         time,
         style: textTheme.labelMedium?.copyWith(
           color: colorScheme.onSurfaceVariant,
+          fontSize: context.sp(12),
         ),
       ),
     );

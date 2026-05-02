@@ -67,8 +67,8 @@ class _MainShellState extends State<MainShell> {
             label: 'Activity',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.analytics_outlined),
-            activeIcon: Icon(Icons.analytics_rounded),
+            icon: Icon(Icons.auto_graph),
+            activeIcon: Icon(Icons.auto_graph_outlined),
             label: 'Reports',
           ),
           BottomNavigationBarItem(
