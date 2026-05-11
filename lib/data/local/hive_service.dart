@@ -31,13 +31,31 @@ class HiveService {
   // ====================== CATEGORIES ======================
 
   /// Helper to open the categories box
-  Future<Box<WaltCategory>> _getCategoriesBox() async {
-    return await Hive.openBox<WaltCategory>(_categoriesBoxName);
+  Future<Box> _getCategoriesBox() async {
+    return await Hive.openBox(_categoriesBoxName);
   }
 
   Future<List<WaltCategory>> getAllCategories() async {
     final box = await _getCategoriesBox();
-    return box.values.toList();
+    final List<WaltCategory> categories = [];
+
+    for (var value in box.values) {
+      if (value is WaltCategory) {
+        categories.add(value);
+      } else if (value is Map) {
+        try {
+          // If it was stored as a Map (JSON), convert it
+          final category =
+              WaltCategory.fromJson(Map<String, dynamic>.from(value));
+          categories.add(category);
+        } catch (e) {
+          debugPrint('❌ Error parsing category from Map: $e');
+        }
+      } else {
+        debugPrint('⚠️ Unknown category type in Hive: ${value.runtimeType}');
+      }
+    }
+    return categories;
   }
 
   Future<void> saveCategories(List<WaltCategory> categories) async {
