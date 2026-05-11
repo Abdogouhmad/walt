@@ -39,7 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _next() {
-    print("NEXT CALLED -> page: $_page");
+    // print("NEXT CALLED -> page: $_page");
 
     if (_page < _pages.length - 1) {
       _controller.nextPage(
@@ -76,7 +76,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 controller: _controller,
                 itemCount: _pages.length,
                 onPageChanged: (i) {
-                  print("PAGE CHANGED -> $i");
+                  // print("PAGE CHANGED -> $i");
                   setState(() => _page = i);
                 },
                 itemBuilder: (_, i) => _pages[i],
