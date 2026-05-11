@@ -131,8 +131,8 @@ class _BarChartContent extends StatelessWidget {
             barRods: [
               BarChartRodData(
                 toY: data[i],
-                width: 22,
-                borderRadius: BorderRadius.circular(8),
+                width: 35,
+                borderRadius: BorderRadius.circular(100),
                 color: isSelected
                     ? context.currentMonthColor
                     : context.otherMonthsColor,

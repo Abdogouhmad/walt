@@ -77,7 +77,7 @@ extension BarChartColors on BuildContext {
   Color get currentMonthColor => _colorApp.primary;
   Color get otherMonthsColor => _colorApp.secondary;
   Color get labelBarColor => _colorApp.onPrimaryContainer;
-  Color get emptyGapBar => _colorApp.onSecondary;
+  Color get emptyGapBar => _colorApp.secondaryContainer;
 }
 
 // General colors

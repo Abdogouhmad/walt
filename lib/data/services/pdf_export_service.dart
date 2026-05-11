@@ -85,10 +85,17 @@ class PdfExportService {
     final file = File("${output.path}/$fileName");
     await file.writeAsBytes(await pdf.save());
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'Walt Monthly Report - $monthName',
-      subject: 'Monthly Expense Report: $monthName',
+    // await Share.shareXFiles(
+    //   [XFile(file.path)],
+    //   text: 'Walt Monthly Report - $monthName',
+    //   subject: 'Monthly Expense Report: $monthName',
+    // );
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Walt Monthly Report - $monthName',
+        subject: 'Monthly Expense Report: $monthName',
+      ),
     );
   }
 }

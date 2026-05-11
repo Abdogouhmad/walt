@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:walt/core/utils/context.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/socialmedia.dart';
 import 'package:walt/shared/text_ui.dart';
@@ -68,15 +69,6 @@ class AboutScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-                // SocialBubble(
-                //   icon: Icons.web_asset_rounded,
-                //   url: "https://rakizapp.vercel.app/",
-                // ),
-                const SizedBox(width: 8),
-                SocialBubble(
-                  icon: Icons.code,
-                  url: "https://github.com/Abdogouhmad/walt/",
                 ),
               ],
             ),
@@ -179,42 +171,43 @@ class _Card extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.colorAppScheme.outlineVariant, width: 0.5),
       ),
       child: child,
     );
   }
 }
 
-class _ActionTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  // final VoidCallback? onTap;
+// class _ActionTile extends StatelessWidget {
+//   final IconData icon;
+//   final String title;
+//   final String subtitle;
+//   // final VoidCallback? onTap;
 
-  const _ActionTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+//   const _ActionTile({
+//     required this.icon,
+//     required this.title,
+//     required this.subtitle,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+//   @override
+//   Widget build(BuildContext context) {
+//     final theme = Theme.of(context);
+//     final colors = theme.colorScheme;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsetsGeometry.symmetric(vertical: 5),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: colors.primary),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        onTap: () => {},
-      ),
-    );
-  }
-}
+//     return Container(
+//       margin: const EdgeInsets.only(bottom: 15),
+//       padding: const EdgeInsetsGeometry.symmetric(vertical: 5),
+//       decoration: BoxDecoration(
+//         color: colors.surface,
+//         borderRadius: BorderRadius.circular(10),
+//       ),
+//       child: ListTile(
+//         leading: Icon(icon, color: colors.primary),
+//         title: Text(title),
+//         subtitle: Text(subtitle),
+//         onTap: () => {},
+//       ),
+//     );
+//   }
+// }

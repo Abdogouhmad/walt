@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/features/onboarding/widgets/pages.dart';
-import 'package:walt/features/onboarding/widgets/dots.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,42 +14,33 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   late final PageController _controller;
-  int _page = 0;
+  late final List<Widget> _pages;
 
-  final _pages = const [
-    PageData(
-      "Welcome to Walt",
-      "Your simple, private, and beautiful personal finance tracker",
-      Icons.account_balance_wallet_rounded,
-      Colors.blue,
-    ),
-    PageData(
-      "Track Every Penny",
-      "Easily record income and expenses with categories and accounts",
-      Icons.receipt_long_rounded,
-      Colors.green,
-    ),
-    PageData(
-      "Take Control",
-      "Get clear insights with charts, budgets, and monthly reports",
-      Icons.analytics_rounded,
-      Colors.purple,
-    ),
-  ];
+  int _page = 0;
 
   @override
   void initState() {
     super.initState();
+
     _controller = PageController();
+
+    /// ✅ IMPORTANT: NO const here
+    _pages = [
+      WelcomeStep(onNext: _next),
+      const SecurityStep(),
+      const SignupStep(),
+    ];
   }
 
   @override
   void dispose() {
-    _controller.dispose(); // ✅ important
+    _controller.dispose();
     super.dispose();
   }
 
   void _next() {
+    // print("NEXT CALLED -> page: $_page");
+
     if (_page < _pages.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -78,41 +68,58 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Pages
+            /// --------------------
+            /// PAGES
+            /// --------------------
             Expanded(
               child: PageView.builder(
                 controller: _controller,
                 itemCount: _pages.length,
-                physics: const BouncingScrollPhysics(),
-                onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (_, i) => PageViewItem(data: _pages[i]),
+                onPageChanged: (i) {
+                  // print("PAGE CHANGED -> $i");
+                  setState(() => _page = i);
+                },
+                itemBuilder: (_, i) => _pages[i],
               ),
             ),
 
-            // Bottom UI
+            /// --------------------
+            /// BOTTOM BUTTONS
+            /// --------------------
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: Column(
                 children: [
-                  Dots(current: _page, total: _pages.length),
-                  const SizedBox(height: 40),
-                  AppButton(
-                    label: _page == _pages.length - 1 ? "Get Started" : "Next",
-                    onPressed: _next,
-                    type: ButtonType.primary,
-                    isFullWidth: true,
-                    size: ButtonSize.large,
-                  ),
-                  const SizedBox(height: 10),
-                  AppButton(
-                    onPressed: _finish,
-                    type: ButtonType.secondary,
-                    label: "Skip",
-                    icon: Icons
-                        .arrow_forward_rounded, // Now this will show up after "skip"
-                    isFullWidth: true,
-                    size: ButtonSize.large,
-                  ),
+                  /// ❌ FIRST PAGE → NO BUTTONS HERE
+                  if (_page != 0) ...[
+                    AppButton(
+                      label: _page == _pages.length - 1
+                          ? "Get Started"
+                          : "Next",
+                      onPressed: _next,
+                      type: ButtonType.primary,
+                      isFullWidth: true,
+                      size: ButtonSize.large,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    if (_page < _pages.length - 1)
+                      AppButton(
+                        onPressed: () {
+                          _controller.animateToPage(
+                            _pages.length - 1,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        type: ButtonType.secondary,
+                        label: "Skip",
+                        icon: Icons.arrow_forward_rounded,
+                        isFullWidth: true,
+                        size: ButtonSize.large,
+                      ),
+                  ],
                 ],
               ),
             ),

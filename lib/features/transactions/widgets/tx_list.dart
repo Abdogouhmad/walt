@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/utils/category_icon.dart';
+import 'package:walt/providers/settings_provider.dart';
 
-class TxList extends StatelessWidget {
+class TxList extends ConsumerWidget {
   final WaltTransaction transaction;
   final String categoryName;
   final String categoryIcon;
@@ -18,8 +20,9 @@ class TxList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isIncome = transaction.type.toLowerCase() == 'income';
+    final currency = ref.watch(settingsProvider).currency;
 
     return Slidable(
       key: Key(transaction.id.toString()),
@@ -85,7 +88,7 @@ class TxList extends StatelessWidget {
           style: TextStyle(color: context.listSubLabel, fontSize: 12),
         ),
         trailing: Text(
-          "${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(2)} MAD",
+          "${isIncome ? '+' : '-'}${transaction.amount.toStringAsFixed(2)} $currency",
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isIncome ? context.listIncome : context.listExpense,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
@@ -14,10 +15,16 @@ import 'data/local/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'app_router.dart';
 // Providers
-//import 'providers/settings_provider.dart';
+import 'providers/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Force Portrait Mode
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   await _initializeApp();
 
@@ -60,6 +67,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final settings = ref.watch(settingsProvider);
 
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
@@ -67,7 +75,7 @@ class MyApp extends ConsumerWidget {
           title: 'Walt',
           debugShowCheckedModeBanner: false,
 
-          themeMode: ThemeMode.system,
+          themeMode: settings.themeMode,
 
           theme: AppTheme.lightTheme(lightDynamic),
           darkTheme: AppTheme.darkTheme(darkDynamic),

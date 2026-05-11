@@ -26,16 +26,24 @@ class ThemeSelectionScreen extends ConsumerWidget {
               context,
               ref,
               'Light Mode',
-              false,
-              settings.isDarkMode == false,
+              ThemeMode.light,
+              settings.themeMode == ThemeMode.light,
             ),
             const SizedBox(height: 12),
             _buildThemeOption(
               context,
               ref,
               'Dark Mode',
-              true,
-              settings.isDarkMode == true,
+              ThemeMode.dark,
+              settings.themeMode == ThemeMode.dark,
+            ),
+            const SizedBox(height: 12),
+            _buildThemeOption(
+              context,
+              ref,
+              'System Default',
+              ThemeMode.system,
+              settings.themeMode == ThemeMode.system,
             ),
           ],
         ),
@@ -47,13 +55,26 @@ class ThemeSelectionScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String title,
-    bool isDark,
+    ThemeMode mode,
     bool isSelected,
   ) {
+    IconData icon;
+    switch (mode) {
+      case ThemeMode.light:
+        icon = Icons.light_mode;
+        break;
+      case ThemeMode.dark:
+        icon = Icons.dark_mode;
+        break;
+      case ThemeMode.system:
+        icon = Icons.brightness_auto;
+        break;
+    }
+
     return InkWell(
       onTap: () {
         if (!isSelected) {
-          ref.read(settingsProvider.notifier).toggleDarkMode();
+          ref.read(settingsProvider.notifier).setThemeMode(mode);
         }
       },
       child: Container(
@@ -71,7 +92,7 @@ class ThemeSelectionScreen extends ConsumerWidget {
         child: Row(
           children: [
             Icon(
-              isDark ? Icons.dark_mode : Icons.light_mode,
+              icon,
               color: isSelected ? context.primary : context.textSecondary,
             ),
             const SizedBox(width: 16),

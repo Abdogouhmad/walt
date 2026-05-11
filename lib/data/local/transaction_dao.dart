@@ -108,6 +108,14 @@ class TransactionDao {
     return await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> updateAllAmounts(double rate) async {
+    final db = await _dbHelper.database;
+    await db.rawUpdate(
+      'UPDATE transactions SET amount = amount * ?',
+      [rate],
+    );
+  }
+
   // ====================== HELPER METHOD ======================
   // Convert Map from database → Transaction model
   WaltTransaction _mapToTransaction(Map<String, dynamic> map) {
