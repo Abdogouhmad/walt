@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:walt/core/utils/context.dart';
 
 class TypeToggle extends StatelessWidget {
   final String value;
@@ -13,9 +14,9 @@ class TypeToggle extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(context.r(12)),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: EdgeInsets.all(context.w(4)),
       child: Row(
         children: [
           _tab(context, 'expense', 'Expense', Icons.arrow_upward, cs.error),
@@ -35,39 +36,35 @@ class TypeToggle extends StatelessWidget {
     final isActive = value == type;
     final cs = Theme.of(context).colorScheme;
 
+    final textColor = isActive
+        ? activeColor
+        : cs.onSurfaceVariant; // ← Best choice for inactive
+
     return Expanded(
       child: GestureDetector(
         onTap: () => onChanged(type),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: EdgeInsets.symmetric(vertical: context.h(10)),
           decoration: BoxDecoration(
-            color: isActive ? cs.surface : Colors.transparent,
-            borderRadius: BorderRadius.circular(9),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 4,
-                    ),
-                  ]
-                : null,
+            color: isActive ? activeColor.withAlpha(40) : Colors.transparent,
+            borderRadius: BorderRadius.circular(context.r(9)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 16,
-                color: isActive ? activeColor : cs.onSurface.withOpacity(0.4),
+                size: context.w(18),
+                color: textColor,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: context.w(6)),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  color: isActive ? activeColor : cs.onSurface.withOpacity(0.4),
+                  fontSize: context.sp(14),
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  color: textColor,
                 ),
               ),
             ],

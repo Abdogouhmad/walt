@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:walt/core/utils/context.dart';
 
 enum ButtonType { primary, secondary, text, textIcon, iconOnly, fab }
 
@@ -50,50 +51,53 @@ class AppButton extends StatelessWidget {
 
   // ── sizing ────────────────────────────────────────────────────────────────
 
-  double get _fontSize => switch (size) {
-    ButtonSize.small => 13,
-    ButtonSize.medium => 15,
-    ButtonSize.large => 17,
-    ButtonSize.extended => 15,
+  double _fontSize(BuildContext context) => switch (size) {
+    ButtonSize.small => context.sp(13),
+    ButtonSize.medium => context.sp(15),
+    ButtonSize.large => context.sp(17),
+    ButtonSize.extended => context.sp(15),
   };
 
-  EdgeInsets get _padding => switch (size) {
-    ButtonSize.small => const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    ButtonSize.medium => const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 12,
+  EdgeInsets _padding(BuildContext context) => switch (size) {
+    ButtonSize.small => EdgeInsets.symmetric(
+      horizontal: context.w(12),
+      vertical: context.h(8),
     ),
-    ButtonSize.large => const EdgeInsets.symmetric(
-      horizontal: 28,
-      vertical: 16,
+    ButtonSize.medium => EdgeInsets.symmetric(
+      horizontal: context.w(20),
+      vertical: context.h(12),
     ),
-    ButtonSize.extended => const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 12,
+    ButtonSize.large => EdgeInsets.symmetric(
+      horizontal: context.w(28),
+      vertical: context.h(16),
+    ),
+    ButtonSize.extended => EdgeInsets.symmetric(
+      horizontal: context.w(20),
+      vertical: context.h(12),
     ),
   };
 
-  double get _iconSize => switch (size) {
-    ButtonSize.small => 16,
-    ButtonSize.medium => 20,
-    ButtonSize.large => 24,
-    ButtonSize.extended => 24,
+  double _iconSize(BuildContext context) => switch (size) {
+    ButtonSize.small => context.w(16),
+    ButtonSize.medium => context.w(20),
+    ButtonSize.large => context.w(24),
+    ButtonSize.extended => context.w(24),
   };
 
-  double get _spinnerSize => switch (size) {
-    ButtonSize.small => 14,
-    ButtonSize.medium => 18,
-    ButtonSize.large => 22,
-    ButtonSize.extended => 18,
+  double _spinnerSize(BuildContext context) => switch (size) {
+    ButtonSize.small => context.w(14),
+    ButtonSize.medium => context.w(18),
+    ButtonSize.large => context.w(22),
+    ButtonSize.extended => context.w(18),
   };
 
   // ── helpers ───────────────────────────────────────────────────────────────
 
   VoidCallback? get _effectiveCallback => isLoading ? null : onPressed;
 
-  Widget _spinner(Color color) => SizedBox(
-    width: _spinnerSize,
-    height: _spinnerSize,
+  Widget _spinner(BuildContext context, Color color) => SizedBox(
+    width: _spinnerSize(context),
+    height: _spinnerSize(context),
     child: CircularProgressIndicator(
       strokeWidth: 2,
       valueColor: AlwaysStoppedAnimation(color),
@@ -110,16 +114,16 @@ class AppButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return _wrap(switch (type) {
-      ButtonType.primary => _buildPrimary(cs),
-      ButtonType.secondary => _buildSecondary(cs),
-      ButtonType.text => _buildText(cs),
-      ButtonType.textIcon => _buildTextIcon(cs),
-      ButtonType.iconOnly => _buildIconOnly(cs),
-      ButtonType.fab => _buildFab(cs),
+      ButtonType.primary => _buildPrimary(context, cs),
+      ButtonType.secondary => _buildSecondary(context, cs),
+      ButtonType.text => _buildText(context, cs),
+      ButtonType.textIcon => _buildTextIcon(context, cs),
+      ButtonType.iconOnly => _buildIconOnly(context, cs),
+      ButtonType.fab => _buildFab(context, cs),
     });
   }
 
-  Widget _buildPrimary(ColorScheme cs) {
+  Widget _buildPrimary(BuildContext context, ColorScheme cs) {
     final bg = backgroundColor ?? (isDestructive ? cs.error : cs.primary);
     final fg = foregroundColor ?? (isDestructive ? cs.onError : cs.onPrimary);
 
@@ -129,63 +133,98 @@ class AppButton extends StatelessWidget {
         backgroundColor: bg,
         foregroundColor: fg,
         elevation: 0,
-        padding: _padding,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w600),
+        padding: _padding(context),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(context.r(14)),
+        ),
+        textStyle: TextStyle(
+          fontSize: _fontSize(context),
+          fontWeight: FontWeight.w600,
+        ),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
-      child: isLoading ? _spinner(fg) : Text(label!),
+      child: isLoading ? _spinner(context, fg) : Text(label!),
     );
   }
 
-  Widget _buildSecondary(ColorScheme cs) {
+  Widget _buildSecondary(BuildContext context, ColorScheme cs) {
     final color = foregroundColor ?? (isDestructive ? cs.error : cs.primary);
 
     return OutlinedButton(
       onPressed: _effectiveCallback,
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(context.r(14)),
+        ),
         side: BorderSide(color: color),
-        padding: _padding,
-        textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w500),
+        padding: _padding(context),
+        textStyle: TextStyle(
+          fontSize: _fontSize(context),
+          fontWeight: FontWeight.w500,
+        ),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
-      child: isLoading ? _spinner(color) : Text(label!),
+      child: isLoading ? _spinner(context, color) : Text(label!),
     );
   }
 
-  Widget _buildText(ColorScheme cs) {
+  Widget _buildText(BuildContext context, ColorScheme cs) {
     final color = foregroundColor ?? (isDestructive ? cs.error : cs.primary);
 
     return TextButton(
       onPressed: _effectiveCallback,
       style: TextButton.styleFrom(
         foregroundColor: color,
-        padding: _padding,
-        textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w500),
+        padding: _padding(context),
+        textStyle: TextStyle(
+          fontSize: _fontSize(context),
+          fontWeight: FontWeight.w500,
+        ),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
-      child: isLoading ? _spinner(color) : Text(label!),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // The Text comes first
+          Text(label!),
+
+          // Show icon or spinner only if needed
+          if (isLoading || icon != null) ...[
+            SizedBox(width: context.w(5)),
+            isLoading
+                ? _spinner(context, color)
+                : Icon(icon, size: _iconSize(context)),
+          ],
+        ],
+      ),
     );
   }
 
-  Widget _buildTextIcon(ColorScheme cs) {
+  Widget _buildTextIcon(BuildContext context, ColorScheme cs) {
     final color = foregroundColor ?? (isDestructive ? cs.error : cs.primary);
 
     return TextButton.icon(
       onPressed: _effectiveCallback,
       style: TextButton.styleFrom(
         foregroundColor: color,
-        padding: _padding,
-        textStyle: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w500),
+        padding: _padding(context),
+        textStyle: TextStyle(
+          fontSize: _fontSize(context),
+          fontWeight: FontWeight.w500,
+        ),
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
-      icon: isLoading ? _spinner(color) : Icon(icon, size: _iconSize),
       label: Text(label!),
+      icon:
+          isLoading
+              ? _spinner(context, color)
+              : Icon(icon, size: _iconSize(context)),
     );
   }
 
-  Widget _buildIconOnly(ColorScheme cs) {
+  Widget _buildIconOnly(BuildContext context, ColorScheme cs) {
     final color =
         iconColor ??
         foregroundColor ??
@@ -193,18 +232,22 @@ class AppButton extends StatelessWidget {
 
     return IconButton(
       onPressed: _effectiveCallback,
-      icon: isLoading ? _spinner(color) : Icon(icon, size: _iconSize),
+      icon:
+          isLoading
+              ? _spinner(context, color)
+              : Icon(icon, size: _iconSize(context)),
       color: color,
-      padding: _padding,
+      padding: _padding(context),
       tooltip: tooltip,
       style: IconButton.styleFrom(foregroundColor: color),
     );
   }
 
-  Widget _buildFab(ColorScheme cs) {
+  Widget _buildFab(BuildContext context, ColorScheme cs) {
     final bg = backgroundColor ?? cs.primaryContainer;
     final fg = foregroundColor ?? cs.onPrimaryContainer;
-    final child = isLoading ? _spinner(fg) : Icon(icon, size: _iconSize);
+    final child =
+        isLoading ? _spinner(context, fg) : Icon(icon, size: _iconSize(context));
 
     return switch (size) {
       ButtonSize.small => FloatingActionButton.small(
@@ -226,10 +269,16 @@ class AppButton extends StatelessWidget {
         backgroundColor: bg,
         foregroundColor: fg,
         tooltip: tooltip,
-        icon: isLoading ? _spinner(fg) : Icon(icon, size: _iconSize),
+        icon:
+            isLoading
+                ? _spinner(context, fg)
+                : Icon(icon, size: _iconSize(context)),
         label: Text(
           label!,
-          style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: _fontSize(context),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       _ => FloatingActionButton(

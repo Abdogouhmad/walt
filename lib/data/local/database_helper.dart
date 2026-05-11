@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -48,6 +48,7 @@ class DatabaseHelper {
         balance REAL NOT NULL DEFAULT 0.0,
         currency TEXT NOT NULL,
         color TEXT,
+        profile_pic TEXT,
         is_default INTEGER NOT NULL DEFAULT 0
       )
     ''');
@@ -89,7 +90,9 @@ class DatabaseHelper {
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     debugPrint('🔄 Upgrading database from v$oldVersion to v$newVersion');
-    // Add migration logic here in future versions
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE accounts ADD COLUMN profile_pic TEXT');
+    }
   }
 
   Future<void> close() async {

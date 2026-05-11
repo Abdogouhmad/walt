@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/text_ui.dart';
 import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/data/models/walt_transaction.dart';
@@ -9,6 +10,8 @@ import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/providers/category_provider.dart'; // Import category provider
 import 'package:walt/core/utils/category_icon.dart'; // Import mapper
 
+import 'package:walt/providers/settings_provider.dart';
+
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
@@ -17,6 +20,7 @@ class RecentActivity extends ConsumerWidget {
     final transactions = ref.watch(recentTransactionsProvider);
     // Access categories to map IDs to Names/Icons
     final categoriesAsync = ref.watch(categoryProvider);
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,6 +50,7 @@ class RecentActivity extends ConsumerWidget {
                         tx,
                         category.name,
                         category.icon,
+                        currency,
                       );
                     },
                   ),
@@ -63,11 +68,18 @@ class RecentActivity extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history_rounded, size: 48, color: context.listSubLabel),
-          const SizedBox(height: 12),
+          Icon(
+            Icons.history_rounded,
+            size: context.w(48),
+            color: context.listSubLabel,
+          ),
+          SizedBox(height: context.h(12)),
           Text(
             "No activity in the last 2 days",
-            style: TextStyle(color: context.listSubLabel),
+            style: TextStyle(
+              color: context.listSubLabel,
+              fontSize: context.sp(14),
+            ),
           ),
         ],
       ),
@@ -79,24 +91,36 @@ class RecentActivity extends ConsumerWidget {
     WaltTransaction tx,
     String catName,
     String catIcon,
+    String currency,
   ) {
     final isIncome = tx.type.toLowerCase() == 'income';
-    final amount = '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} MAD';
+    final amount =
+        '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} $currency';
     final formattedDate = DateFormat('MMM dd, yyyy').format(tx.date);
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: context.w(16),
+        vertical: context.h(6),
+      ),
       leading: CircleAvatar(
         backgroundColor: context.listContainer,
-        child: Icon(CategoryIcons.getIcon(catIcon), color: context.listIconBk),
+        child: Icon(
+          CategoryIcons.getIcon(catIcon),
+          color: context.listIconBk,
+          size: context.w(24),
+        ),
       ),
       title: Text(
         tx.merchant ?? 'Unknown',
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: context.sp(16),
+        ),
       ),
       subtitle: Text(
         '$formattedDate • $catName',
-        style: TextStyle(color: context.listSubLabel, fontSize: 12),
+        style: TextStyle(color: context.listSubLabel, fontSize: context.sp(12)),
       ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -107,12 +131,16 @@ class RecentActivity extends ConsumerWidget {
             style: TextStyle(
               color: isIncome ? context.listIncome : context.listExpense,
               fontWeight: FontWeight.bold,
+              fontSize: context.sp(14),
             ),
           ),
           Text(
             tx.type
                 .toUpperCase(), // Showing type instead of hardcoded payment label
-            style: TextStyle(fontSize: 10, color: context.listSubLabel),
+            style: TextStyle(
+              fontSize: context.sp(10),
+              color: context.listSubLabel,
+            ),
           ),
         ],
       ),
@@ -127,7 +155,10 @@ Widget _titleUi(
   required VoidCallback onTap,
 }) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    padding: EdgeInsets.symmetric(
+      horizontal: context.w(16),
+      vertical: context.h(8),
+    ),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -137,6 +168,7 @@ Widget _titleUi(
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: context.listTitle,
+            fontSize: context.sp(22),
           ),
         ),
         TextButton(
@@ -147,6 +179,7 @@ Widget _titleUi(
             style: TextStyle(
               color: context.listColorLinks,
               fontWeight: FontWeight.bold,
+              fontSize: context.sp(14),
             ),
           ),
         ),

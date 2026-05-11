@@ -9,6 +9,7 @@ class InputUI extends StatelessWidget {
   final String? hintText;
   final String? regexPattern;
   final IconData? icon;
+  final Function(String)? onchange;
 
   const InputUI({
     super.key,
@@ -19,6 +20,7 @@ class InputUI extends StatelessWidget {
     this.hintText,
     this.regexPattern,
     this.icon,
+    this.onchange,
   });
 
   @override
@@ -40,6 +42,7 @@ class InputUI extends StatelessWidget {
         labelText: labelText,
         prefixIcon: icon != null ? Icon(icon) : const Icon(Icons.attach_money),
       ),
+      onChanged: onchange,
       validator: (value) {
         // 1. Basic empty check
         if (value == null || value.trim().isEmpty) {

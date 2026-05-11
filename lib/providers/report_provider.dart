@@ -113,7 +113,10 @@ class ReportNotifier extends Notifier<ReportState> {
       final startDate = DateTime(now.year, now.month - monthsToLoad + 1, 1);
       final endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
-      final transactions = await _dao.getTransactionsBetween(startDate, endDate);
+      final transactions = await _dao.getTransactionsBetween(
+        startDate,
+        endDate,
+      );
       final categories = await _hive.getAllCategories();
       final categoryMap = {for (var c in categories) c.id: c};
 
@@ -121,11 +124,12 @@ class ReportNotifier extends Notifier<ReportState> {
       double totalIncome = 0;
 
       final monthlyMap = <String, MonthlyData>{};
-      
+
       // Pre-populate with all months in range
       for (int i = 0; i < monthsToLoad; i++) {
         final date = DateTime(now.year, now.month - i, 1);
-        final monthKey = '${date.year}-${date.month.toString().padLeft(2, "0")}';
+        final monthKey =
+            '${date.year}-${date.month.toString().padLeft(2, "0")}';
         monthlyMap[monthKey] = MonthlyData(
           month: _getShortMonthName(date),
           expense: 0.0,
@@ -169,34 +173,35 @@ class ReportNotifier extends Notifier<ReportState> {
           .where((t) => t.type == 'expense')
           .fold(0.0, (sum, t) => sum + t.amount);
       final daysInCurrentMonth = now.day;
-      final avgDaily =
-          daysInCurrentMonth > 0 ? currentMonthExpense / daysInCurrentMonth : 0.0;
+      final avgDaily = daysInCurrentMonth > 0
+          ? currentMonthExpense / daysInCurrentMonth
+          : 0.0;
 
       // Saving rate
-      final savingRate =
-          totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0.0;
+      final savingRate = totalIncome > 0
+          ? ((totalIncome - totalExpense) / totalIncome) * 100
+          : 0.0;
 
       // Category data
-      final categoryDataList =
-          categorySpendingMap.entries.map((e) {
-            final cat = categoryMap[e.key];
-            if (cat != null) {
-              return CategoryData(
-                name: CategoryIcons.getName(cat.icon),
-                amount: e.value,
-                color: cat.color, // keep original hex just in case
-                icon: cat.icon,
-              );
-            } else {
-              // Fallback to unknown
-              return CategoryData(
-                name: 'Unknown',
-                amount: e.value,
-                color: '#CCCCCC',
-                icon: 'category',
-              );
-            }
-          }).toList();
+      final categoryDataList = categorySpendingMap.entries.map((e) {
+        final cat = categoryMap[e.key];
+        if (cat != null) {
+          return CategoryData(
+            name: CategoryIcons.getName(cat.icon),
+            amount: e.value,
+            color: cat.color, // keep original hex just in case
+            icon: cat.icon,
+          );
+        } else {
+          // Fallback to unknown
+          return CategoryData(
+            name: 'Unknown',
+            amount: e.value,
+            color: '#CCCCCC',
+            icon: 'category',
+          );
+        }
+      }).toList();
 
       state = state.copyWith(
         totalSpending: AsyncValue.data(totalExpense),

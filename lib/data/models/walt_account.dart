@@ -12,6 +12,7 @@ sealed class WaltAccount with _$WaltAccount {
     required double balance,
     required String currency,
     String? color,
+    String? profilePic,
     @Default(false) bool isDefault,
   }) = _WaltAccount;
 

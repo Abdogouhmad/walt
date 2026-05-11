@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:walt/core/utils/context.dart';
 
+extension SplashColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get splashBackground => _colorApp.primary.withAlpha(10);
+}
+
 // colors of appBar
 extension AppBarColors on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
@@ -50,7 +55,7 @@ extension BottomSheetColor on BuildContext {
   ColorScheme get _colorApp => colorAppScheme;
   Color get background => _colorApp.primaryContainer.withAlpha(230);
   Color get textPrimary => _colorApp.primary;
-  Color get textSecondary => _colorApp.primaryFixed;
+  Color get textSecondarySheet => _colorApp.primaryFixed;
   Color get textonError => _colorApp.error;
 }
 
@@ -72,5 +77,14 @@ extension BarChartColors on BuildContext {
   Color get currentMonthColor => _colorApp.primary;
   Color get otherMonthsColor => _colorApp.secondary;
   Color get labelBarColor => _colorApp.onPrimaryContainer;
-  Color get emptyGapBar => _colorApp.onSecondary;
+  Color get emptyGapBar => _colorApp.secondaryContainer;
+}
+
+// General colors
+extension GeneralColors on BuildContext {
+  ColorScheme get _colorApp => colorAppScheme;
+  Color get primary => _colorApp.primary;
+  Color get surfaceContainer => _colorApp.surfaceContainerHighest;
+  Color get textPrimary => _colorApp.onSurface;
+  Color get textSecondary => _colorApp.onSurfaceVariant;
 }

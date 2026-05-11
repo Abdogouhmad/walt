@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/providers/report_provider.dart';
+import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/text_ui.dart';
 import 'package:walt/core/constants/app_colors.dart';
@@ -13,6 +14,7 @@ class SummaryReportUi extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final report = ref.watch(reportProvider);
     final selectedIndex = ref.watch(reportFilterProvider);
+    final currency = ref.watch(settingsProvider).currency;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -21,7 +23,7 @@ class SummaryReportUi extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            summaryAmountByMonth(context, report.totalSpending),
+            summaryAmountByMonth(context, report.totalSpending, currency),
             const ExportPdfButton(),
           ],
         ),
@@ -36,6 +38,7 @@ class SummaryReportUi extends ConsumerWidget {
 Widget summaryAmountByMonth(
   BuildContext ctx,
   AsyncValue<double> totalSpending,
+  String currency,
 ) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start, // Fixed alignment
@@ -50,7 +53,7 @@ Widget summaryAmountByMonth(
       ),
       totalSpending.when(
         data: (amount) => UiText(
-          text: "${amount.toStringAsFixed(2)} MAD",
+          text: "${amount.toStringAsFixed(2)} $currency",
           type: UiTextType.headlineSmall,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),

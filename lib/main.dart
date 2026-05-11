@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
@@ -6,6 +7,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 
 // sqflite FFI support for Desktop
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:walt/features/settings/services/appinfo.dart';
 
 // Your local files
 import 'data/local/database_helper.dart';
@@ -13,10 +15,16 @@ import 'data/local/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'app_router.dart';
 // Providers
-//import 'providers/settings_provider.dart';
+import 'providers/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Force Portrait Mode
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   await _initializeApp();
 
@@ -27,6 +35,7 @@ Future<void> _initializeApp() async {
   try {
     // Initialize dotenv
     await dotenv.load(fileName: ".env");
+    await Appinfo.init();
 
     // SQLite Initialization for Desktop
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -57,8 +66,8 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Watch the settings provider
-    //final settings = ref.watch(settingsProvider);
+    final router = ref.watch(routerProvider);
+    final settings = ref.watch(settingsProvider);
 
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
@@ -66,15 +75,12 @@ class MyApp extends ConsumerWidget {
           title: 'Walt',
           debugShowCheckedModeBanner: false,
 
-          // 2. Use the values from your Hive/Riverpod state
-        themeMode: ThemeMode.system,
+          themeMode: settings.themeMode,
 
           theme: AppTheme.lightTheme(lightDynamic),
           darkTheme: AppTheme.darkTheme(darkDynamic),
 
-          // 3. The Router will now automatically re-evaluate
-          // when settings.isOnboardingCompleted changes
-          routerConfig: appRouter,
+          routerConfig: router,
         );
       },
     );

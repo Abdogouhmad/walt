@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WaltAccount {
 
- int get id; String get name; String get type; double get balance; String get currency; String? get color; bool get isDefault;
+ int get id; String get name; String get type; double get balance; String get currency; String? get color; String? get profilePic; bool get isDefault;
 /// Create a copy of WaltAccount
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $WaltAccountCopyWith<WaltAccount> get copyWith => _$WaltAccountCopyWithImpl<Walt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WaltAccount&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.color, color) || other.color == color)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WaltAccount&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.color, color) || other.color == color)&&(identical(other.profilePic, profilePic) || other.profilePic == profilePic)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,type,balance,currency,color,isDefault);
+int get hashCode => Object.hash(runtimeType,id,name,type,balance,currency,color,profilePic,isDefault);
 
 @override
 String toString() {
-  return 'WaltAccount(id: $id, name: $name, type: $type, balance: $balance, currency: $currency, color: $color, isDefault: $isDefault)';
+  return 'WaltAccount(id: $id, name: $name, type: $type, balance: $balance, currency: $currency, color: $color, profilePic: $profilePic, isDefault: $isDefault)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $WaltAccountCopyWith<$Res>  {
   factory $WaltAccountCopyWith(WaltAccount value, $Res Function(WaltAccount) _then) = _$WaltAccountCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String type, double balance, String currency, String? color, bool isDefault
+ int id, String name, String type, double balance, String currency, String? color, String? profilePic, bool isDefault
 });
 
 
@@ -65,7 +65,7 @@ class _$WaltAccountCopyWithImpl<$Res>
 
 /// Create a copy of WaltAccount
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? type = null,Object? balance = null,Object? currency = null,Object? color = freezed,Object? isDefault = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? type = null,Object? balance = null,Object? currency = null,Object? color = freezed,Object? profilePic = freezed,Object? isDefault = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -73,6 +73,7 @@ as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non
 as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
 as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
 as String,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
+as String?,profilePic: freezed == profilePic ? _self.profilePic : profilePic // ignore: cast_nullable_to_non_nullable
 as String?,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double balance,  String currency,  String? color,  bool isDefault)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double balance,  String currency,  String? color,  String? profilePic,  bool isDefault)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WaltAccount() when $default != null:
-return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_that.color,_that.isDefault);case _:
+return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_that.color,_that.profilePic,_that.isDefault);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double balance,  String currency,  String? color,  bool isDefault)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String type,  double balance,  String currency,  String? color,  String? profilePic,  bool isDefault)  $default,) {final _that = this;
 switch (_that) {
 case _WaltAccount():
-return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_that.color,_that.isDefault);}
+return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_that.color,_that.profilePic,_that.isDefault);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -194,10 +195,10 @@ return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String type,  double balance,  String currency,  String? color,  bool isDefault)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String type,  double balance,  String currency,  String? color,  String? profilePic,  bool isDefault)?  $default,) {final _that = this;
 switch (_that) {
 case _WaltAccount() when $default != null:
-return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_that.color,_that.isDefault);case _:
+return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_that.color,_that.profilePic,_that.isDefault);case _:
   return null;
 
 }
@@ -209,7 +210,7 @@ return $default(_that.id,_that.name,_that.type,_that.balance,_that.currency,_tha
 @JsonSerializable()
 
 class _WaltAccount implements WaltAccount {
-  const _WaltAccount({required this.id, required this.name, required this.type, required this.balance, required this.currency, this.color, this.isDefault = false});
+  const _WaltAccount({required this.id, required this.name, required this.type, required this.balance, required this.currency, this.color, this.profilePic, this.isDefault = false});
   factory _WaltAccount.fromJson(Map<String, dynamic> json) => _$WaltAccountFromJson(json);
 
 @override final  int id;
@@ -218,6 +219,7 @@ class _WaltAccount implements WaltAccount {
 @override final  double balance;
 @override final  String currency;
 @override final  String? color;
+@override final  String? profilePic;
 @override@JsonKey() final  bool isDefault;
 
 /// Create a copy of WaltAccount
@@ -233,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WaltAccount&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.color, color) || other.color == color)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WaltAccount&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.type, type) || other.type == type)&&(identical(other.balance, balance) || other.balance == balance)&&(identical(other.currency, currency) || other.currency == currency)&&(identical(other.color, color) || other.color == color)&&(identical(other.profilePic, profilePic) || other.profilePic == profilePic)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,type,balance,currency,color,isDefault);
+int get hashCode => Object.hash(runtimeType,id,name,type,balance,currency,color,profilePic,isDefault);
 
 @override
 String toString() {
-  return 'WaltAccount(id: $id, name: $name, type: $type, balance: $balance, currency: $currency, color: $color, isDefault: $isDefault)';
+  return 'WaltAccount(id: $id, name: $name, type: $type, balance: $balance, currency: $currency, color: $color, profilePic: $profilePic, isDefault: $isDefault)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$WaltAccountCopyWith<$Res> implements $WaltAccountCopyWith
   factory _$WaltAccountCopyWith(_WaltAccount value, $Res Function(_WaltAccount) _then) = __$WaltAccountCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String type, double balance, String currency, String? color, bool isDefault
+ int id, String name, String type, double balance, String currency, String? color, String? profilePic, bool isDefault
 });
 
 
@@ -270,7 +272,7 @@ class __$WaltAccountCopyWithImpl<$Res>
 
 /// Create a copy of WaltAccount
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? type = null,Object? balance = null,Object? currency = null,Object? color = freezed,Object? isDefault = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? type = null,Object? balance = null,Object? currency = null,Object? color = freezed,Object? profilePic = freezed,Object? isDefault = null,}) {
   return _then(_WaltAccount(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -278,6 +280,7 @@ as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non
 as String,balance: null == balance ? _self.balance : balance // ignore: cast_nullable_to_non_nullable
 as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
 as String,color: freezed == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
+as String?,profilePic: freezed == profilePic ? _self.profilePic : profilePic // ignore: cast_nullable_to_non_nullable
 as String?,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
 as bool,
   ));

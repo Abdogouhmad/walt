@@ -14,11 +14,7 @@ class AiInsightState {
     this.insight,
   });
 
-  AiInsightState copyWith({
-    bool? isVisible,
-    bool? isLoading,
-    String? insight,
-  }) {
+  AiInsightState copyWith({bool? isVisible, bool? isLoading, String? insight}) {
     return AiInsightState(
       isVisible: isVisible ?? this.isVisible,
       isLoading: isLoading ?? this.isLoading,
@@ -48,14 +44,21 @@ class AiInsightNotifier extends Notifier<AiInsightState> {
         data: (txs) => txs,
         orElse: () => <WaltTransaction>[],
       );
-      final insight = await AiService.instance.getSpendingInsights(transactions);
+      final insight = await AiService.instance.getSpendingInsights(
+        transactions,
+      );
       state = state.copyWith(insight: insight, isLoading: false);
     } catch (e) {
-      state = state.copyWith(insight: "Error fetching insight: $e", isLoading: false);
+      state = state.copyWith(
+        insight: "Error fetching insight: $e",
+        isLoading: false,
+      );
     }
   }
 }
 
-final aiInsightProvider = NotifierProvider<AiInsightNotifier, AiInsightState>(() {
-  return AiInsightNotifier();
-});
+final aiInsightProvider = NotifierProvider<AiInsightNotifier, AiInsightState>(
+  () {
+    return AiInsightNotifier();
+  },
+);

@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:walt/data/local/transaction_dao.dart';
 import 'package:walt/data/local/hive_service.dart';
+import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/shared/export_pdf/export_ui.dart';
 
 class PdfExportService {
@@ -18,9 +19,11 @@ class PdfExportService {
       year,
       month,
     );
-    final categories = await _hiveService.getAllCategories();
-    final categoryMap = {for (var c in categories) c.id: c};
-    final currency = await _hiveService.getCurrency();
+    final List<WaltCategory> categories = await _hiveService.getAllCategories();
+    final Map<int, WaltCategory> categoryMap = {
+      for (var c in categories) c.id: c,
+    };
+    final String currency = _hiveService.getCurrency();
 
     // Sort transactions by date (descending)
     transactions.sort((a, b) => b.date.compareTo(a.date));
@@ -64,7 +67,11 @@ class PdfExportService {
             ),
           ),
           pw.SizedBox(height: 10),
-          PdfTable(transactions: transactions, categoryMap: categoryMap, currency: currency),
+          PdfTable(
+            transactions: transactions,
+            categoryMap: categoryMap,
+            currency: currency,
+          ),
           pw.SizedBox(height: 20),
           PdfFooter(),
         ],
@@ -78,10 +85,17 @@ class PdfExportService {
     final file = File("${output.path}/$fileName");
     await file.writeAsBytes(await pdf.save());
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: 'Walt Monthly Report - $monthName',
-      subject: 'Monthly Expense Report: $monthName',
+    // await Share.shareXFiles(
+    //   [XFile(file.path)],
+    //   text: 'Walt Monthly Report - $monthName',
+    //   subject: 'Monthly Expense Report: $monthName',
+    // );
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Walt Monthly Report - $monthName',
+        subject: 'Monthly Expense Report: $monthName',
+      ),
     );
   }
 }

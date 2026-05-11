@@ -52,7 +52,7 @@ class M3Ecard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final content = Padding(
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? EdgeInsets.all(context.w(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -62,7 +62,7 @@ class M3Ecard extends StatelessWidget {
             children: [
               if (data.leading != null) ...[
                 data.leading!,
-                const SizedBox(width: 24),
+                SizedBox(width: context.w(24)),
               ],
               Expanded(
                 child: Column(
@@ -84,7 +84,7 @@ class M3Ecard extends StatelessWidget {
 
           // Body
           if (data.body != null) ...[
-            const SizedBox(height: 24),
+            SizedBox(height: context.h(24)),
             Text(
               data.body!,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -94,12 +94,12 @@ class M3Ecard extends StatelessWidget {
           ],
 
           if (data.child != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: context.h(16)),
             data.child!, // ← add this block
           ],
           // Actions
           if (data.actions != null) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: context.h(8)),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: data.actions!,
@@ -115,16 +115,16 @@ class M3Ecard extends StatelessWidget {
         shape:
             data.shape ??
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(context.r(24)),
               side: BorderSide(
                 color: context.colorAppScheme.secondary,
-                width: 1,
+                width: context.w(1),
               ),
             ),
         elevation: 1,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(context.r(24)),
           child: content,
         ),
       ),
@@ -133,15 +133,15 @@ class M3Ecard extends StatelessWidget {
         shape:
             data.shape ??
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(context.r(24)),
               side: BorderSide(
                 color: context.colorAppScheme.secondary,
-                width: 1,
+                width: context.w(1),
               ),
             ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(context.r(24)),
           child: content,
         ),
       ),
@@ -151,16 +151,16 @@ class M3Ecard extends StatelessWidget {
         shape:
             data.shape ??
             RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(context.r(24)),
               side: BorderSide(
                 color: context.colorAppScheme.secondary,
-                width: 1,
+                width: context.w(1),
               ),
             ),
         elevation: 0,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(context.r(24)),
           child: content,
         ),
       ),

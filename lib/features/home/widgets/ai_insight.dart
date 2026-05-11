@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:walt/core/utils/context.dart';
 import 'package:walt/providers/ai_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
@@ -13,13 +14,16 @@ class AiInsight extends ConsumerWidget {
     if (!aiState.isVisible) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: context.w(16),
+        vertical: context.h(8),
+      ),
+      padding: EdgeInsets.all(context.w(16)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.purple.withAlpha(50), Colors.blue.withAlpha(50)],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(context.r(24)),
         border: Border.all(color: Colors.purple.withAlpha(100)),
       ),
       child: Column(
@@ -27,8 +31,12 @@ class AiInsight extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: Colors.purple),
-              const SizedBox(width: 8),
+              Icon(
+                Icons.auto_awesome,
+                color: Colors.purple,
+                size: context.w(24),
+              ),
+              SizedBox(width: context.w(8)),
               UiText(
                 text: "AI Insight",
                 type: UiTextType.titleMedium,
@@ -36,20 +44,20 @@ class AiInsight extends ConsumerWidget {
               ),
               const Spacer(),
               if (aiState.isLoading)
-                const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                SizedBox(
+                  width: context.w(16),
+                  height: context.w(16),
+                  child: const CircularProgressIndicator(strokeWidth: 2),
                 )
               else
                 IconButton(
-                  icon: const Icon(Icons.refresh, size: 20),
+                  icon: Icon(Icons.refresh, size: context.w(20)),
                   onPressed: () =>
                       ref.read(aiInsightProvider.notifier).fetchInsight(),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: context.h(8)),
           if (aiState.isLoading && aiState.insight == null)
             const UiText(text: "Thinking...", type: UiTextType.bodyMedium)
           else
