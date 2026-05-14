@@ -75,9 +75,13 @@ class CategoryNotifier extends Notifier<AsyncValue<List<WaltCategory>>> {
       debugPrint('⚠️ No categories found — seeding defaults.');
       await _seedDefaults();
       final seeded = await _hive.getAllCategories();
-      state = AsyncValue.data(seeded);
+      if (ref.mounted) {
+        state = AsyncValue.data(seeded);
+      }
     } else {
-      state = AsyncValue.data(categories);
+      if (ref.mounted) {
+        state = AsyncValue.data(categories);
+      }
     }
   }
 

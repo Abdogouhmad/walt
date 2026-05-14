@@ -49,6 +49,7 @@ class BarChartWidget extends ConsumerWidget {
                     labels: data.map((e) => e.month).toList(),
                     maxExpense: maxExpense,
                     selectedIndex: data.length - 1,
+                    isYear: filterIndex == 1,
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -67,12 +68,14 @@ class _BarChartContent extends StatelessWidget {
   final List<String> labels;
   final double maxExpense;
   final int selectedIndex;
+  final bool isYear;
 
   const _BarChartContent({
     required this.data,
     required this.labels,
     required this.maxExpense,
     required this.selectedIndex,
+    required this.isYear
   });
 
   @override
@@ -131,7 +134,7 @@ class _BarChartContent extends StatelessWidget {
             barRods: [
               BarChartRodData(
                 toY: data[i],
-                width: 35,
+                width: isYear ? 25 : 35,
                 borderRadius: BorderRadius.circular(100),
                 color: isSelected
                     ? context.currentMonthColor

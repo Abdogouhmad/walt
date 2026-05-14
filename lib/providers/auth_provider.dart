@@ -78,23 +78,29 @@ class AuthNotifier extends Notifier<AuthState> {
         persistAcrossBackgrounding: true, // Replaces stickyAuth in this version
       );
 
-      state = state.copyWith(
-        isAuthenticating: false,
-        isAuthenticated: didAuthenticate,
-        error: didAuthenticate ? null : 'Authentication failed',
-      );
+      if (ref.mounted) {
+        state = state.copyWith(
+          isAuthenticating: false,
+          isAuthenticated: didAuthenticate,
+          error: didAuthenticate ? null : 'Authentication failed',
+        );
+      }
 
       return didAuthenticate;
     } on PlatformException catch (e) {
       debugPrint('Biometric PlatformException: ${e.code} - ${e.message}');
-      state = state.copyWith(
-        isAuthenticating: false,
-        error: 'Security error: ${e.message ?? e.code}',
-      );
+      if (ref.mounted) {
+        state = state.copyWith(
+          isAuthenticating: false,
+          error: 'Security error: ${e.message ?? e.code}',
+        );
+      }
       return false;
     } catch (e) {
       debugPrint('Biometric Error: $e');
-      state = state.copyWith(isAuthenticating: false, error: e.toString());
+      if (ref.mounted) {
+        state = state.copyWith(isAuthenticating: false, error: e.toString());
+      }
       return false;
     }
   }

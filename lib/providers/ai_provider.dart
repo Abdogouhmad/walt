@@ -47,12 +47,16 @@ class AiInsightNotifier extends Notifier<AiInsightState> {
       final insight = await AiService.instance.getSpendingInsights(
         transactions,
       );
-      state = state.copyWith(insight: insight, isLoading: false);
+      if (ref.mounted) {
+        state = state.copyWith(insight: insight, isLoading: false);
+      }
     } catch (e) {
-      state = state.copyWith(
-        insight: "Error fetching insight: $e",
-        isLoading: false,
-      );
+      if (ref.mounted) {
+        state = state.copyWith(
+          insight: "Error fetching insight: $e",
+          isLoading: false,
+        );
+      }
     }
   }
 }

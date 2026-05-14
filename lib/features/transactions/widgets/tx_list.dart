@@ -6,6 +6,7 @@ import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/utils/category_icon.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt/providers/transaction_provider.dart';
 
 class TxList extends ConsumerWidget {
   final WaltTransaction transaction;
@@ -51,17 +52,11 @@ class TxList extends ConsumerWidget {
         motion: const BehindMotion(),
         extentRatio: 0.2,
         dismissible: DismissiblePane(
-          onDismissed: () {
-            // TODO: Implement Delete
-            debugPrint("Swiped to delete ${transaction.merchant}");
-          },
+          onDismissed: () => _handleDelete(context, ref),
         ),
         children: [
           SlidableAction(
-            onPressed: (context) {
-              // TODO: Implement Delete
-              debugPrint("Delete pressed for ${transaction.merchant}");
-            },
+            onPressed: (context) => _handleDelete(context, ref),
             backgroundColor: context.swipeLeftBackground,
             foregroundColor: Colors.white,
             icon: Icons.delete,
@@ -94,6 +89,27 @@ class TxList extends ConsumerWidget {
             color: isIncome ? context.listIncome : context.listExpense,
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleDelete(BuildContext context, WidgetRef ref) {
+    final messenger = ScaffoldMessenger.of(context);
+    final txToDelete = transaction;
+
+    ref.read(transactionProvider.notifier).deleteTransaction(txToDelete.id);
+
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('Deleted ${txToDelete.merchant}'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            ref.read(transactionProvider.notifier).addTransaction(txToDelete);
+          },
+        ),
+        duration: const Duration(seconds: 4),
       ),
     );
   }

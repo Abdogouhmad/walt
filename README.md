@@ -3,7 +3,7 @@
 A clean, offline-first personal finance tracker built with **Flutter** for Android.  
 Track expenses & income, manage budgets, view beautiful charts, export reports, and automatically capture Google Pay transactions.
 
-**Current Version:** v0.1 (Foundation)
+**Current Version:** v0.3 (Categories & Filters)
 
 ---
 

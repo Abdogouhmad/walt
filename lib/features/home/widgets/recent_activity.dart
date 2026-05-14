@@ -113,10 +113,7 @@ class RecentActivity extends ConsumerWidget {
       ),
       title: Text(
         tx.merchant ?? 'Unknown',
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: context.sp(16),
-        ),
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: context.sp(16)),
       ),
       subtitle: Text(
         '$formattedDate • $catName',

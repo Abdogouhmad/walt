@@ -203,6 +203,8 @@ class ReportNotifier extends Notifier<ReportState> {
         }
       }).toList();
 
+      if (!ref.mounted) return;
+
       state = state.copyWith(
         totalSpending: AsyncValue.data(totalExpense),
         monthlyData: AsyncValue.data(monthlyList),
@@ -211,13 +213,15 @@ class ReportNotifier extends Notifier<ReportState> {
         categoryData: AsyncValue.data(categoryDataList),
       );
     } catch (e, st) {
-      state = state.copyWith(
-        totalSpending: AsyncValue.error(e, st),
-        monthlyData: AsyncValue.error(e, st),
-        averageDailySpending: AsyncValue.error(e, st),
-        savingRate: AsyncValue.error(e, st),
-        categoryData: AsyncValue.error(e, st),
-      );
+      if (ref.mounted) {
+        state = state.copyWith(
+          totalSpending: AsyncValue.error(e, st),
+          monthlyData: AsyncValue.error(e, st),
+          averageDailySpending: AsyncValue.error(e, st),
+          savingRate: AsyncValue.error(e, st),
+          categoryData: AsyncValue.error(e, st),
+        );
+      }
     }
   }
 

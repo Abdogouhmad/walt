@@ -2,7 +2,7 @@
 
 A step-by-step checklist to build the app version by version.
 
-**Current Version:** v0.1 - Foundation
+**Current Version:** v0.3 - Categories & Filters
 
 ---
 
@@ -65,7 +65,7 @@ A step-by-step checklist to build the app version by version.
 **Estimated time:** ~1.5 weeks  
 **Goal:** Build main navigation and basic transaction flow.
 
-- [ ] onboarding for account manual input no sing up for google or something (privacy matter)
+- [x] onboarding for account manual input no sing up for google or something (privacy matter)
 - [x] Main scaffold + BottomNavigationBar (4 tabs: Home, Transactions, Reports, Budgets)
 - [x] Home screen:
   - Balance card
@@ -75,8 +75,8 @@ A step-by-step checklist to build the app version by version.
 - [x] Transaction list screen (grouped by date)
 - [x] Add transaction screen (expense/income toggle, amount, category, account, date, note)
 - [x] Form validation + error snackbars
-- [ ] Swipe to delete transaction with undo snackbar
-- [ ] Empty states for transaction list and first-launch home
+- [x] Swipe to delete transaction with undo snackbar
+- [x] Empty states for transaction list and first-launch home
 - [x] Seed default categories on first launch
 
 ---

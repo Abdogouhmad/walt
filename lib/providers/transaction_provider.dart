@@ -21,10 +21,24 @@ class TransactionNotifier extends Notifier<AsyncValue<List<WaltTransaction>>> {
     try {
       state = const AsyncValue.loading();
       final transactions = await _dao.getAllTransactions();
-      state = AsyncValue.data(transactions);
+      if (ref.mounted) {
+        state = AsyncValue.data(transactions);
+      }
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) {
+        state = AsyncValue.error(e, st);
+      }
     }
+  }
+
+  Future<void> addTransaction(WaltTransaction transaction) async {
+    await _dao.insertTransaction(transaction);
+    await loadTransactions();
+  }
+
+  Future<void> deleteTransaction(int id) async {
+    await _dao.deleteTransaction(id);
+    await loadTransactions();
   }
 
   Future<void> refresh() => loadTransactions();

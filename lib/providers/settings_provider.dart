@@ -125,7 +125,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     await _hive.setCurrency(newCurrency);
-    state = state.copyWith(currency: newCurrency);
+    if (ref.mounted) {
+      state = state.copyWith(currency: newCurrency);
+    }
 
     final accountDao = AccountDao();
     await accountDao.updateAllBalances(rate, newCurrency);
@@ -143,12 +145,16 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (profilePic != null) {
       await _hive.setProfilePicPath(profilePic);
     }
-    state = state.copyWith(userName: name, profilePicPath: profilePic);
+    if (ref.mounted) {
+      state = state.copyWith(userName: name, profilePicPath: profilePic);
+    }
   }
 
   Future<void> updateProfilePic(String path) async {
     await _hive.setProfilePicPath(path);
-    state = state.copyWith(profilePicPath: path);
+    if (ref.mounted) {
+      state = state.copyWith(profilePicPath: path);
+    }
   }
 
   // Future<void> togglePassword() async {
@@ -166,13 +172,17 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
 
     await _hive.saveSetting('isFingerprintEnabled', newValue);
-    state = state.copyWith(isFingerprintEnabled: newValue);
+    if (this.ref.mounted) {
+      state = state.copyWith(isFingerprintEnabled: newValue);
+    }
     return true;
   }
 
   Future<void> completeOnboarding() async {
     await _hive.setOnboardingCompleted(true);
-    state = state.copyWith(isOnboardingCompleted: true);
+    if (ref.mounted) {
+      state = state.copyWith(isOnboardingCompleted: true);
+    }
   }
 
   Currency? _getCurrencyEnum(String code) {
