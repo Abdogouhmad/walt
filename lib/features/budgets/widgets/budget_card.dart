@@ -32,122 +32,59 @@ class BudgetCard extends StatelessWidget {
       int.parse(progress.category.color.replaceAll('#', '0xFF')),
     );
     final progressColor = _getProgressColor(context);
-    final percentage = (progress.progress * 100).toInt();
 
     return Container(
-      margin: EdgeInsets.symmetric(vertical: context.h(8)),
-      padding: EdgeInsets.all(context.w(18)),
+      margin: EdgeInsets.symmetric(vertical: context.h(6)),
+      padding: EdgeInsets.all(context.w(16)),
       decoration: BoxDecoration(
         color: context.colorAppScheme.surface,
-        borderRadius: BorderRadius.circular(context.r(28)),
+        borderRadius: BorderRadius.circular(context.r(24)),
         border: Border.all(
-          color: progress.isOverBudget 
-              ? context.colorAppScheme.error.withAlpha(50)
-              : context.colorAppScheme.outline.withAlpha(25),
-          width: 1.5,
+          color: context.colorAppScheme.outline.withAlpha(20),
+          width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// Header Row: Icon, Title, and Percentage
+          /// Header Row: Icon, Title, and Remaining Balance
           Row(
             children: [
               Container(
-                padding: EdgeInsets.all(context.w(12)),
+                padding: EdgeInsets.all(context.w(10)),
                 decoration: BoxDecoration(
                   color: categoryColor.withAlpha(25),
-                  borderRadius: BorderRadius.circular(context.r(16)),
+                  shape: BoxShape.circle,
                 ),
                 child: Icon(
                   iconData,
                   color: categoryColor,
-                  size: context.w(22),
+                  size: context.w(20),
                 ),
               ),
-              SizedBox(width: context.w(14)),
+              SizedBox(width: context.w(12)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     UiText(
                       text: progress.category.name,
-                      type: UiTextType.bodyLarge,
+                      type: UiTextType.bodyMedium,
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.3,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                       ),
                     ),
                     SizedBox(height: context.h(2)),
                     UiText(
-                      text: progress.isOverBudget 
-                          ? 'Exceeded by $currency ${(progress.spentAmount - progress.budget.amount).toStringAsFixed(0)}'
-                          : '$currency ${progress.remaining.toStringAsFixed(0)} left',
+                      text: '$currency ${progress.remaining.toStringAsFixed(0)} remaining',
                       type: UiTextType.bodySmall,
                       style: TextStyle(
                         color: progress.isOverBudget
                             ? context.colorAppScheme.error
                             : context.textSecondary,
-                        fontWeight: progress.isOverBudget ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: progress.isOverBudget ? FontWeight.w500 : FontWeight.w400,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  UiText(
-                    text: '$percentage%',
-                    type: UiTextType.bodyMedium,
-                    style: TextStyle(
-                      color: progressColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (progress.isOverBudget)
-                    Icon(
-                      Icons.warning_amber_rounded,
-                      color: context.colorAppScheme.error,
-                      size: context.w(16),
-                    ),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: context.h(20)),
-
-          /// Progress Bar
-          Stack(
-            children: [
-              Container(
-                height: context.h(10),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: context.colorAppScheme.outline.withAlpha(30),
-                  borderRadius: BorderRadius.circular(context.r(10)),
-                ),
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                height: context.h(10),
-                width: (MediaQuery.of(context).size.width - context.w(68)) * 
-                       progress.progress.clamp(0.0, 1.0),
-                decoration: BoxDecoration(
-                  color: progressColor,
-                  borderRadius: BorderRadius.circular(context.r(10)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: progressColor.withAlpha(60),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -156,19 +93,31 @@ class BudgetCard extends StatelessWidget {
           ),
           SizedBox(height: context.h(16)),
 
-          /// Footer Metrics: Spent vs Total
+          /// Sleek Modern Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(context.r(10)),
+            child: LinearProgressIndicator(
+              value: progress.progress.clamp(0.0, 1.0),
+              backgroundColor: context.colorAppScheme.outline.withAlpha(30),
+              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              minHeight: context.h(7),
+            ),
+          ),
+          SizedBox(height: context.h(12)),
+
+          /// Footer Metrics: Spent vs Total Budget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
+                textBaseline: TextBaseline.alphabetic, // <-- Added this line to fix the assertion crash
                 children: [
                   UiText(
                     text: '$currency ${progress.spentAmount.toStringAsFixed(0)}',
                     type: UiTextType.bodyMedium,
                     style: const TextStyle(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(width: context.w(4)),
@@ -176,27 +125,17 @@ class BudgetCard extends StatelessWidget {
                     text: 'spent',
                     type: UiTextType.labelSmall,
                     style: TextStyle(
-                      color: context.textSecondary.withAlpha(160),
+                      color: context.textSecondary.withAlpha(140),
                     ),
                   ),
                 ],
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: context.w(8),
-                  vertical: context.h(4),
-                ),
-                decoration: BoxDecoration(
-                  color: context.colorAppScheme.outline.withAlpha(20),
-                  borderRadius: BorderRadius.circular(context.r(8)),
-                ),
-                child: UiText(
-                  text: 'Limit $currency ${progress.budget.amount.toStringAsFixed(0)}',
-                  type: UiTextType.labelSmall,
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
+              UiText(
+                text: 'of $currency ${progress.budget.amount.toStringAsFixed(0)}',
+                type: UiTextType.bodySmall,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
