@@ -67,22 +67,15 @@ class CategoryNotifier extends Notifier<AsyncValue<List<WaltCategory>>> {
   }
 
   Future<void> _loadCategories() async {
-    state = const AsyncValue.loading();
-
-    final categories = await _hive.getAllCategories();
-
-    if (categories.isEmpty) {
-      debugPrint('⚠️ No categories found — seeding defaults.');
-      await _seedDefaults();
-      final seeded = await _hive.getAllCategories();
-      if (ref.mounted) {
-        state = AsyncValue.data(seeded);
+    state = await AsyncValue.guard(() async {
+      final categories = await _hive.getAllCategories();
+      if (categories.isEmpty) {
+        debugPrint('⚠️ No categories found — seeding defaults.');
+        await _seedDefaults();
+        return await _hive.getAllCategories();
       }
-    } else {
-      if (ref.mounted) {
-        state = AsyncValue.data(categories);
-      }
-    }
+      return categories;
+    });
   }
 
   Future<void> _seedDefaults() async {

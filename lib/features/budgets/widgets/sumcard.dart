@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:walt/core/constants/app_colors.dart';
-import 'package:walt/shared/m3e_card.dart';
+import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/text_ui.dart';
-// import 'package:walt/shared/text_ui.dart';
-// import 'package:walt/shared/text_ui.dart';
+
 
 class BudgetSumCard extends StatelessWidget {
-  final Map<String, double> summary;
+  final Map<String, dynamic> summary;
   final String currency;
   final String month;
 
@@ -19,82 +18,233 @@ class BudgetSumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalBudget = summary['totalBudget'] ?? 0.0;
-    final totalSpent = summary['totalSpent'] ?? 0.0;
-    final percentage = summary['percentage'] ?? 0.0;
+    final totalBudget =
+        (summary['totalBudget'] ?? 0.0).toDouble();
 
-    final usedPercent = (percentage * 100).toStringAsFixed(0);
-    final remainingDays = summary['remainingDays'] ?? 0.0;
+    final totalSpent =
+        (summary['totalSpent'] ?? 0.0).toDouble();
 
-    return M3Ecard(
-      padding: const EdgeInsets.all(16),
-      variant: M3ECardVariant.outlined,
-      data: AppCardData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: context.cardTextPrimary.withAlpha(200), width: 0.8)),
-        title: "Total Budget Spent",
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    final percentage =
+        (summary['percentage'] ?? 0.0).toDouble();
 
-            // ── MAIN AMOUNT
-            RichText(
-              text: TextSpan(
+    final remainingDays =
+        (summary['remainingDays'] ?? 0.0).toInt();
+
+    final usedPercent =
+        (percentage * 100).toStringAsFixed(0);
+
+    final isOverBudget =
+        totalSpent > totalBudget;
+
+    return Container(
+      padding: EdgeInsets.all(context.w(24)),
+      decoration: BoxDecoration(
+        color: context.colorAppScheme.surface,
+        borderRadius: BorderRadius.circular(
+          context.r(32),
+        ),
+        border: Border.all(
+          color: context.primary.withAlpha(100),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          /// ─── HEADER
+          Row(
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
                 children: [
-                  TextSpan(
-                    text: "$currency ${totalSpent.toStringAsFixed(0)}",
+                  UiText(
+                    text: "Monthly Budget",
+                    type: UiTextType.labelLarge,
                     style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.bold,
-                      color: context.cardTextPrimary,
+                      color:
+                          context.textSecondary,
+                      fontWeight:
+                          FontWeight.w500,
                     ),
                   ),
-                  TextSpan(
-                    text: " / ${totalBudget.toStringAsFixed(0)}",
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
+
+                  SizedBox(
+                    height: context.h(4),
+                  ),
+
+                  UiText(
+                    text: month,
+                    type:
+                        UiTextType.titleLarge,
+                    style: const TextStyle(
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
                 ],
               ),
-            ),
 
-            const SizedBox(height: 12),
-
-            // ── CHIP (% USED)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: context.secondaryButton,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: UiText(
-               text: "$usedPercent% USED",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: context.primary,
+              /// percent chip
+              Container(
+                padding:
+                    EdgeInsets.symmetric(
+                  horizontal:
+                      context.w(12),
+                  vertical:
+                      context.h(6),
                 ),
-                type: UiTextType.labelMedium,
+                decoration: BoxDecoration(
+                  color: context.primary
+                      .withAlpha(100),
+                  borderRadius:
+                      BorderRadius.circular(
+                    context.r(14),
+                  ),
+                ),
+                child: UiText(
+                  text:
+                      "$usedPercent% used",
+                  type:
+                      UiTextType.labelSmall,
+                  style: TextStyle(
+                    color:
+                        context.primary,
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: context.h(28)),
+
+          /// ─── MAIN AMOUNT
+          Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: UiText(
+                  text:
+                      "$currency ${totalSpent.toStringAsFixed(0)}",
+                  type:
+                      UiTextType.headlineMedium,
+                  style: const TextStyle(
+                    fontWeight:
+                        FontWeight.w800,
+                    fontSize: 34,
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: context.h(4),
+                  left: context.w(6),
+                ),
+                child: UiText(
+                  text:
+                      "/ $currency ${totalBudget.toStringAsFixed(0)}",
+                  type:
+                      UiTextType.bodyMedium,
+                  style: TextStyle(
+                    color:
+                        context.textSecondary,
+                    fontWeight:
+                        FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: context.h(20)),
+
+          /// ─── PROGRESS BAR
+          ClipRRect(
+            borderRadius:
+                BorderRadius.circular(
+              context.r(20),
+            ),
+            child: LinearProgressIndicator(
+              value: percentage.clamp(
+                0.0,
+                1.0,
+              ),
+              minHeight: context.h(8),
+              backgroundColor:
+                  context.primary
+                      .withAlpha(100),
+              valueColor:
+                  AlwaysStoppedAnimation(
+                isOverBudget
+                    ? Colors.red
+                    : context.primary,
               ),
             ),
+          ),
 
-            const SizedBox(height: 12),
+          SizedBox(height: context.h(16)),
 
-            // ── FOOTER
-            UiText(
-              text: "${remainingDays.toInt()} days remaining in $month",
-              style: TextStyle(
-                color: Colors.grey.shade600,
+          /// ─── FOOTER
+          Row(
+            mainAxisAlignment:
+                MainAxisAlignment
+                    .spaceBetween,
+            children: [
+              UiText(
+                text:
+                    "$remainingDays days remaining",
+                type:
+                    UiTextType.labelSmall,
+                style: TextStyle(
+                  color:
+                      context.textSecondary,
+                ),
               ),
-              type: UiTextType.labelMedium,
-            ),
-          ],
-        ),
+
+              Container(
+                padding:
+                    EdgeInsets.symmetric(
+                  horizontal:
+                      context.w(10),
+                  vertical:
+                      context.h(4),
+                ),
+                decoration: BoxDecoration(
+                  color: isOverBudget
+                      ? Colors.red
+                      .withAlpha(100)
+                      : context.primary
+                            .withAlpha(100),
+                  borderRadius:
+                      BorderRadius.circular(
+                    context.r(20),
+                  ),
+                ),
+                child: UiText(
+                  text: isOverBudget
+                      ? "Over budget"
+                      : "On track",
+                  type:
+                      UiTextType.labelSmall,
+                  style: TextStyle(
+                    color: isOverBudget
+                        ? Colors.red
+                        : context.primary,
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
