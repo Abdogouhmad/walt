@@ -9,6 +9,8 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 
+import 'package:walt/data/services/notification_service.dart';
+
 // Your local files
 import 'data/local/database_helper.dart';
 import 'data/local/hive_service.dart';
@@ -51,6 +53,12 @@ Future<void> _initializeApp() async {
     // Initialize Hive
     await HiveService.init();
     debugPrint('✅ Hive initialized');
+
+    // Initialize Notifications
+    final notificationService = NotificationService();
+    await notificationService.init();
+    await notificationService.requestPermissions();
+    debugPrint('✅ Notifications initialized');
 
     debugPrint('🎉 Walt Finance Tracker initialized successfully!');
   } catch (e, stack) {

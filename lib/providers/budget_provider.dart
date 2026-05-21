@@ -1,35 +1,41 @@
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/data/local/budget_dao.dart';
 import 'package:walt/data/models/walt_budget.dart';
 
 final budgetProvider =
-    StateNotifierProvider.autoDispose<BudgetNotifier, List<WaltBudget>>((ref) {
-      return BudgetNotifier();
-    });
+    NotifierProvider<BudgetNotifier, AsyncValue<List<WaltBudget>>>(
+      () => BudgetNotifier(),
+    );
 
-class BudgetNotifier extends StateNotifier<List<WaltBudget>> {
-  BudgetNotifier() : super([]) {
+class BudgetNotifier extends Notifier<AsyncValue<List<WaltBudget>>> {
+  final _dao = BudgetDao();
+
+  @override
+  AsyncValue<List<WaltBudget>> build() {
     _loadBudgets();
+    return const AsyncValue.loading();
   }
 
   Future<void> _loadBudgets() async {
-    final budgets = await BudgetDao().getAllBudgets();
-    state = budgets;
+    state = await AsyncValue.guard(() => _dao.getAllBudgets());
   }
 
   Future<void> addBudget(WaltBudget budget) async {
-    await BudgetDao().insertBudget(budget);
-    _loadBudgets();
+    state = const AsyncValue.loading();
+    await _dao.insertBudget(budget);
+    await _loadBudgets();
   }
 
   Future<void> updateBudget(WaltBudget budget) async {
-    await BudgetDao().updateBudget(budget);
-    _loadBudgets();
+    state = const AsyncValue.loading();
+    await _dao.updateBudget(budget);
+    await _loadBudgets();
   }
 
   Future<void> deleteBudget(int id) async {
-    await BudgetDao().deleteBudget(id);
-    _loadBudgets();
+    state = const AsyncValue.loading();
+    await _dao.deleteBudget(id);
+    await _loadBudgets();
   }
 
   Future<void> refresh() => _loadBudgets();

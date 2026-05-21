@@ -20,10 +20,19 @@ class AccountNotifier extends Notifier<AsyncValue<List<WaltAccount>>> {
     try {
       state = const AsyncValue.loading();
       final accounts = await _dao.getAllAccounts();
-      state = AsyncValue.data(accounts);
+      if (ref.mounted) {
+        state = AsyncValue.data(accounts);
+      }
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) {
+        state = AsyncValue.error(e, st);
+      }
     }
+  }
+
+  Future<void> addAccount(WaltAccount account) async {
+    await _dao.insertAccount(account);
+    await loadAccounts();
   }
 
   Future<void> refresh() => loadAccounts();

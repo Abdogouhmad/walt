@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/utils/context.dart';
-// import 'package:walt/core/constants/app_colors.dart';
-// import 'package:walt/core/utils/context.dart';
+import 'package:walt/shared/text_ui.dart';
+
 
 // ─── Model ───────────────────────────────────────────────────────────────────
 
@@ -48,8 +49,8 @@ class M3Ecard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    // final theme = Theme.of(context);
+    // final colorScheme = theme.colorScheme;
 
     final content = Padding(
       padding: padding ?? EdgeInsets.all(context.w(16)),
@@ -68,14 +69,12 @@ class M3Ecard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(data.title ?? "", style: theme.textTheme.titleMedium),
+                    UiText(text: data.title ?? "", type: UiTextType.titleMedium, style: TextStyle(
+                      color: context.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),),
                     if (data.subtitle != null)
-                      Text(
-                        data.subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
+                      UiText(text: data.subtitle!, type: UiTextType.bodySmall),
                   ],
                 ),
               ),
@@ -85,12 +84,7 @@ class M3Ecard extends StatelessWidget {
           // Body
           if (data.body != null) ...[
             SizedBox(height: context.h(24)),
-            Text(
-              data.body!,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
+            UiText(text: data.body!, type: UiTextType.bodyMedium),
           ],
 
           if (data.child != null) ...[

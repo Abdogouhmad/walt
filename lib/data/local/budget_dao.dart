@@ -78,12 +78,14 @@ class BudgetDao {
   // Helper method to convert a map to a Budget object
   WaltBudget _mapToBudget(Map<String, dynamic> map) {
     return WaltBudget(
-      id: map['id'],
-      amount: map['amount'],
-      categoryId: map['category_id'],
-      period: map['period'],
-      alertAt: map['alert_at'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
+      id: map['id'] as int,
+      amount: (map['amount'] as num).toDouble(),
+      categoryId: map['category_id'] as int,
+      period: map['period'] as String? ?? 'Monthly',
+      alertAt: (map['alert_at'] as num? ?? 0.8).toDouble(),
+      createdAt: map['created_at'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int)
+          : DateTime.now(),
     );
   }
 }

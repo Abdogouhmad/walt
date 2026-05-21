@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/core/utils/context.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
@@ -10,6 +11,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+
     final currencies = [
       {'code': 'USD', 'name': 'US Dollar', 'symbol': '\$'},
       {'code': 'EUR', 'name': 'Euro', 'symbol': '€'},
@@ -19,82 +21,158 @@ class CurrencySelectionScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const UiText(
-          text: 'Currency Selection',
-          type: UiTextType.titleMedium,
-        ),
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: currencies.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final currency = currencies[index];
-          final isSelected = settings.currency == currency['code'];
+      backgroundColor: context.colorAppScheme.surfaceContainerLowest,
 
-          return InkWell(
-            onTap: () {
-              ref
-                  .read(settingsProvider.notifier)
-                  .setCurrency(currency['code'] as String);
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? context.primary.withAlpha(1)
-                    : context.surfaceContainer,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? context.primary : Colors.transparent,
-                  width: 2,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const BackButton(),
+      ),
+
+      body: ListView(
+        padding: const EdgeInsets.all(15),
+        children: [
+          // Header like AboutScreen
+          UiText(
+            text: 'Currency',
+            type: UiTextType.headlineLarge,
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+
+          const SizedBox(height: 4),
+
+          UiText(
+            text: "Select your preferred currency",
+            type: UiTextType.bodyMedium,
+            style: TextStyle(color: context.colorAppScheme.onSurfaceVariant),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Currency cards
+          ...List.generate(currencies.length, (index) {
+            final currency = currencies[index];
+
+            final isSelected = settings.currency == currency['code'];
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setCurrency(currency['code'] as String);
+                },
+
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+
+                  padding: const EdgeInsets.all(16),
+
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? context.primary.withAlpha(20)
+                        : context.surfaceContainer,
+
+                    borderRadius: BorderRadius.circular(12),
+
+                    border: Border.all(
+                      color: isSelected
+                          ? context.primary
+                          : context.colorAppScheme.outline.withAlpha(40),
+
+                      width: 1.5,
+                    ),
+                  ),
+
+                  child: Row(
+                    children: [
+                      // Currency symbol container
+                      Container(
+                        width: 48,
+                        height: 48,
+
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? context.primary.withAlpha(30)
+                              : context.colorAppScheme.surface,
+
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+
+                        alignment: Alignment.center,
+
+                        child: UiText(
+                          text: currency['symbol'] as String,
+
+                          type: UiTextType.bodyMedium,
+
+                          style: TextStyle(
+                            color: isSelected
+                                ? context.primary
+                                : context.textSecondary,
+
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      // Currency info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+
+                          children: [
+                            UiText(
+                              text: currency['name'] as String,
+
+                              type: UiTextType.bodyMedium,
+
+                              style: TextStyle(
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                              ),
+                            ),
+
+                            const SizedBox(height: 2),
+
+                            UiText(
+                              text: currency['code'] as String,
+
+                              type: UiTextType.bodySmall,
+
+                              style: TextStyle(color: context.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Selected icon
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+
+                        child: isSelected
+                            ? Icon(
+                                Icons.check_circle,
+                                key: const ValueKey("selected"),
+                                color: context.primary,
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: context.primary.withAlpha(1),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: UiText(
-                      text: currency['symbol'] as String,
-                      type: UiTextType.bodyMedium,
-                      style: TextStyle(
-                        color: context.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        UiText(
-                          text: currency['name'] as String,
-                          type: UiTextType.bodyMedium,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        UiText(
-                          text: currency['code'] as String,
-                          type: UiTextType.bodySmall,
-                          style: TextStyle(color: context.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (isSelected)
-                    Icon(Icons.check_circle, color: context.primary),
-                ],
-              ),
-            ),
-          );
-        },
+            );
+          }),
+        ],
       ),
     );
   }
