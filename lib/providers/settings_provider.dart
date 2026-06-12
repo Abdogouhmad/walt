@@ -109,7 +109,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     try {
       final from = _getCurrencyEnum(oldCurrency);
       final to = _getCurrencyEnum(newCurrency);
-      
+
       if (from != null && to != null) {
         final convertedRate = await CurrencyConverter.convert(
           from: from,
@@ -121,7 +121,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
         }
       }
     } catch (e) {
-      print('Error converting currency: $e');
+      debugPrint('Error converting currency: $e');
     }
 
     await _hive.setCurrency(newCurrency);
@@ -131,7 +131,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
     final accountDao = AccountDao();
     await accountDao.updateAllBalances(rate, newCurrency);
-    
+
     await TransactionDao().updateAllAmounts(rate);
     await BudgetDao().updateAllAmounts(rate);
 

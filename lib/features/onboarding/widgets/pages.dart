@@ -180,7 +180,7 @@ class _SignupStepState extends ConsumerState<SignupStep> {
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
-              value: _currency,
+              initialValue: _currency,
               decoration: const InputDecoration(
                 labelText: "Default Currency",
                 border: OutlineInputBorder(),
@@ -294,7 +294,7 @@ class _AccountStepState extends ConsumerState<AccountStep> {
             ),
             const SizedBox(height: 20),
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(
                 labelText: "Account Type",
                 border: OutlineInputBorder(),

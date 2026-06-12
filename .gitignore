@@ -121,3 +121,4 @@ app.*.symbols
 !/dev/ci/**/Gemfile.lock.env
 
 .env
+todo.md

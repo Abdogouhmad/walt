@@ -208,6 +208,13 @@ class AppButton extends StatelessWidget {
     return TextButton.icon(
       onPressed: _effectiveCallback,
       style: TextButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: context.colorAppScheme.outline,
+            width: 1,
+          ),
+        ),
         foregroundColor: color,
         padding: _padding(context),
         textStyle: TextStyle(

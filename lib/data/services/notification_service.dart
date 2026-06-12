@@ -73,4 +73,37 @@ class NotificationService {
       notificationDetails: platformDetails,
     );
   }
+
+  Future<void> showUpdateNotification({
+    required String latestVersion,
+    required String changelogSummary,
+  }) async {
+    // final String cleanChangelog = changelogSummary.length > 100
+    //     ? '${changelogSummary.substring(0, 97)}...'
+    //     : changelogSummary;
+
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'app_updates',
+          'App Updates',
+          channelDescription: 'Notifications for new app updates and releases',
+          importance: Importance.high,
+          priority: Priority.high,
+        );
+
+    const LinuxNotificationDetails linuxDetails = LinuxNotificationDetails();
+
+    const NotificationDetails platformDetails = NotificationDetails(
+      android: androidDetails,
+      linux: linuxDetails,
+    );
+
+    await _notificationsPlugin.show(
+      id: 1,
+      body: 'New Update Available! 🚀',
+      title: 'Version v$latestVersion is available. Tap to view changes.',
+      notificationDetails: platformDetails,
+      payload: 'ota_update',
+    );
+  }
 }
