@@ -2,7 +2,8 @@
 set shell := ["bash", "-c"]
 
 # --- Project Initialization ---
-
+default:
+    just -l
 # Install dependencies
 install:
     flutter pub get
