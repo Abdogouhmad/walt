@@ -28,25 +28,6 @@ class TxList extends ConsumerWidget {
     return Slidable(
       key: Key(transaction.id.toString()),
 
-      // Swipe Right -> Edit
-      startActionPane: ActionPane(
-        motion: const BehindMotion(),
-        extentRatio: 0.2,
-        children: [
-          SlidableAction(
-            onPressed: (context) {
-              // TODO: Implement Edit
-              debugPrint("Edit ${transaction.merchant}");
-            },
-            backgroundColor: context.swipeRightBackground,
-            foregroundColor: Colors.white,
-            icon: Icons.edit,
-
-            borderRadius: const BorderRadius.all(Radius.circular(100)),
-          ),
-        ],
-      ),
-
       // Swipe Left -> Delete
       endActionPane: ActionPane(
         motion: const BehindMotion(),

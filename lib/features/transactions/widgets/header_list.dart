@@ -19,14 +19,6 @@ class HeaderList extends StatelessWidget {
             color: context.listTitle,
           ),
         ),
-        // UiText(
-        //   text: "Total +1000 MAD",
-        //   type: UiTextType.labelSmall,
-        //   style: TextStyle(
-        //     color: context.listSubLabel,
-        //     fontWeight: FontWeight.w500,
-        //   ),
-        // ),
       ],
     );
   }

@@ -75,7 +75,7 @@ class _BarChartContent extends StatelessWidget {
     required this.labels,
     required this.maxExpense,
     required this.selectedIndex,
-    required this.isYear
+    required this.isYear,
   });
 
   @override

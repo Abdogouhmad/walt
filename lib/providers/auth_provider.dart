@@ -59,9 +59,12 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final bool canAuthenticateWithBiometrics = await _auth.canCheckBiometrics;
       final bool isDeviceSupported = await _auth.isDeviceSupported();
-      final bool canAuthenticate = canAuthenticateWithBiometrics || isDeviceSupported;
+      final bool canAuthenticate =
+          canAuthenticateWithBiometrics || isDeviceSupported;
 
-      debugPrint('Biometric status: canCheck=$canAuthenticateWithBiometrics, supported=$isDeviceSupported');
+      debugPrint(
+        'Biometric status: canCheck=$canAuthenticateWithBiometrics, supported=$isDeviceSupported',
+      );
 
       if (!canAuthenticate) {
         state = state.copyWith(

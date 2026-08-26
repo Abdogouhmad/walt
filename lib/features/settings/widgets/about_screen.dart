@@ -130,27 +130,6 @@ class AboutScreen extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
-
-          /// Action tiles
-          // _ActionTile(
-          //   icon: Icons.translate,
-          //   title: 'Help translate ${Appinfo.appname}',
-          //   subtitle: 'Translate the app into your language',
-          // ),
-          // _ActionTile(
-          //   icon: Icons.gavel_rounded,
-          //   title: 'License',
-          //   subtitle: 'GNU General Public License v3',
-          //   onTap: () {
-          //     showModalBottomSheet(
-          //       context: context,
-          //       isScrollControlled: true,
-          //       useRootNavigator: true,
-          //       backgroundColor: colors.primaryContainer,
-          //       builder: (context) => const License(),
-          //     );
-          //   },
-          // ),
         ],
       ),
     );
@@ -171,43 +150,12 @@ class _Card extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.colorAppScheme.outlineVariant, width: 0.5),
+        border: Border.all(
+          color: context.colorAppScheme.outlineVariant,
+          width: 0.5,
+        ),
       ),
       child: child,
     );
   }
 }
-
-// class _ActionTile extends StatelessWidget {
-//   final IconData icon;
-//   final String title;
-//   final String subtitle;
-//   // final VoidCallback? onTap;
-
-//   const _ActionTile({
-//     required this.icon,
-//     required this.title,
-//     required this.subtitle,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = Theme.of(context);
-//     final colors = theme.colorScheme;
-
-//     return Container(
-//       margin: const EdgeInsets.only(bottom: 15),
-//       padding: const EdgeInsetsGeometry.symmetric(vertical: 5),
-//       decoration: BoxDecoration(
-//         color: colors.surface,
-//         borderRadius: BorderRadius.circular(10),
-//       ),
-//       child: ListTile(
-//         leading: Icon(icon, color: colors.primary),
-//         title: Text(title),
-//         subtitle: Text(subtitle),
-//         onTap: () => {},
-//       ),
-//     );
-//   }
-// }

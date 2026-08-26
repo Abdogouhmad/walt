@@ -19,19 +19,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(updateProvider.notifier).checkForUpdates(showNotificationIfAvailable: true);
+      ref
+          .read(updateProvider.notifier)
+          .checkForUpdates(showNotificationIfAvailable: true);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Column(
-        children: [
-          AiInsight(),
-          Padding(padding: EdgeInsets.all(16), child: SummaryCard()),
-          Expanded(child: RecentActivity()),
-        ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: const [
+              AiInsight(),
+              Padding(padding: EdgeInsets.all(16), child: SummaryCard()),
+              RecentActivity(),
+            ],
+          ),
+        ),
       ),
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButton: AppButton(

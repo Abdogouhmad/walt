@@ -210,10 +210,7 @@ class AppButton extends StatelessWidget {
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: context.colorAppScheme.outline,
-            width: 1,
-          ),
+          side: BorderSide(color: context.colorAppScheme.outline, width: 1),
         ),
         foregroundColor: color,
         padding: _padding(context),
@@ -224,10 +221,9 @@ class AppButton extends StatelessWidget {
         minimumSize: isFullWidth ? const Size(double.infinity, 0) : null,
       ),
       label: Text(label!),
-      icon:
-          isLoading
-              ? _spinner(context, color)
-              : Icon(icon, size: _iconSize(context)),
+      icon: isLoading
+          ? _spinner(context, color)
+          : Icon(icon, size: _iconSize(context)),
     );
   }
 
@@ -239,10 +235,9 @@ class AppButton extends StatelessWidget {
 
     return IconButton(
       onPressed: _effectiveCallback,
-      icon:
-          isLoading
-              ? _spinner(context, color)
-              : Icon(icon, size: _iconSize(context)),
+      icon: isLoading
+          ? _spinner(context, color)
+          : Icon(icon, size: _iconSize(context)),
       color: color,
       padding: _padding(context),
       tooltip: tooltip,
@@ -253,8 +248,9 @@ class AppButton extends StatelessWidget {
   Widget _buildFab(BuildContext context, ColorScheme cs) {
     final bg = backgroundColor ?? cs.primaryContainer;
     final fg = foregroundColor ?? cs.onPrimaryContainer;
-    final child =
-        isLoading ? _spinner(context, fg) : Icon(icon, size: _iconSize(context));
+    final child = isLoading
+        ? _spinner(context, fg)
+        : Icon(icon, size: _iconSize(context));
 
     return switch (size) {
       ButtonSize.small => FloatingActionButton.small(
@@ -276,10 +272,9 @@ class AppButton extends StatelessWidget {
         backgroundColor: bg,
         foregroundColor: fg,
         tooltip: tooltip,
-        icon:
-            isLoading
-                ? _spinner(context, fg)
-                : Icon(icon, size: _iconSize(context)),
+        icon: isLoading
+            ? _spinner(context, fg)
+            : Icon(icon, size: _iconSize(context)),
         label: Text(
           label!,
           style: TextStyle(

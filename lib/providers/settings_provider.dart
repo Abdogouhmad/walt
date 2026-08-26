@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:currency_converter/currency_converter.dart';
 import 'package:currency_converter/currency.dart';
-import 'package:walt/data/local/account_deo.dart';
+import 'package:walt/data/local/account_dao.dart';
 import 'package:walt/data/local/budget_dao.dart';
 import 'package:walt/data/local/hive_service.dart';
 import 'package:walt/data/local/transaction_dao.dart';
@@ -140,7 +140,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     ref.read(budgetProvider.notifier).refresh();
   }
 
-  Future<void> setUserProfile({required String name, String? profilePic}) async {
+  Future<void> setUserProfile({
+    required String name,
+    String? profilePic,
+  }) async {
     await _hive.setUserName(name);
     if (profilePic != null) {
       await _hive.setProfilePicPath(profilePic);
@@ -157,22 +160,18 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  // Future<void> togglePassword() async {
-  //   final newValue = !state.isPasswordEnabled;
-  //   await _hive.saveSetting('isPasswordEnabled', newValue);
-  //   state = state.copyWith(isPasswordEnabled: newValue);
-  // }
-
-  Future<bool> toggleFingerprint(WidgetRef ref) async {
+  Future<bool> toggleFingerprint() async {
     final newValue = !state.isFingerprintEnabled;
 
     if (newValue) {
-      final success = await ref.read(authProvider.notifier).authenticate(force: true);
+      final success = await ref
+          .read(authProvider.notifier)
+          .authenticate(force: true);
       if (!success) return false;
     }
 
     await _hive.saveSetting('isFingerprintEnabled', newValue);
-    if (this.ref.mounted) {
+    if (ref.mounted) {
       state = state.copyWith(isFingerprintEnabled: newValue);
     }
     return true;
@@ -186,18 +185,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Currency? _getCurrencyEnum(String code) {
-    try {
-      return Currency.values.firstWhere(
-        (c) => c.name.toUpperCase() == code.toUpperCase(),
-      );
-    } catch (_) {
-      // Manual fallback for common ones if enum names don't match exactly
-      if (code.toUpperCase() == 'MAD') return Currency.mad;
-      if (code.toUpperCase() == 'USD') return Currency.usd;
-      if (code.toUpperCase() == 'EUR') return Currency.eur;
-      if (code.toUpperCase() == 'GBP') return Currency.gbp;
-      return null;
+    final upper = code.toUpperCase();
+    for (final c in Currency.values) {
+      if (c.name.toUpperCase() == upper) return c;
     }
+    return null;
   }
 }
 

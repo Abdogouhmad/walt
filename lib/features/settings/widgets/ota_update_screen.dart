@@ -39,10 +39,7 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
         : 'Unknown size';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("App Update"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("App Update"), centerTitle: true),
       body: SafeArea(
         child: state.isChecking
             ? _buildCheckingState(context)
@@ -213,10 +210,7 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
         // reduce card radius
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: context.colorAppScheme.outline,
-            width: 1,
-          ),
+          side: BorderSide(color: context.colorAppScheme.outline, width: 1),
         ),
         colorCard: context.colorAppScheme.errorContainer.withAlpha(40),
         leading: Icon(
@@ -235,10 +229,7 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
       data: AppCardData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: context.colorAppScheme.outline,
-            width: 1,
-          ),
+          side: BorderSide(color: context.colorAppScheme.outline, width: 1),
         ),
         title: "Version Details",
         child: Column(
@@ -253,7 +244,9 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
             _buildInfoRow(
               context,
               "Latest Version",
-              state.latestVersion != null ? "v${state.latestVersion}" : "Unknown",
+              state.latestVersion != null
+                  ? "v${state.latestVersion}"
+                  : "Unknown",
               icon: Icons.new_releases_outlined,
               valueColor: state.isUpdateAvailable
                   ? context.colorAppScheme.primary
@@ -280,16 +273,14 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
       data: AppCardData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: context.colorAppScheme.outline,
-            width: 1,
-          ),
+          side: BorderSide(color: context.colorAppScheme.outline, width: 1),
         ),
         title: "What's New",
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (state.changelog != null && state.changelog!.trim().isNotEmpty) ...[
+            if (state.changelog != null &&
+                state.changelog!.trim().isNotEmpty) ...[
               Container(
                 constraints: BoxConstraints(maxHeight: context.h(180)),
                 child: SingleChildScrollView(
@@ -358,7 +349,8 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
             ),
             const SizedBox(height: 12),
             UiText(
-              text: "Please do not close the app. The installer will launch automatically once completed.",
+              text:
+                  "Please do not close the app. The installer will launch automatically once completed.",
               type: UiTextType.bodySmall,
               style: TextStyle(
                 color: context.colorAppScheme.onSurfaceVariant.withAlpha(150),

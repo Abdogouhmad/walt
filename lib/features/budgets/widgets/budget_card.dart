@@ -9,11 +9,7 @@ class BudgetCard extends StatelessWidget {
   final BudgetProgress progress;
   final String currency;
 
-  const BudgetCard({
-    super.key,
-    required this.progress,
-    required this.currency,
-  });
+  const BudgetCard({super.key, required this.progress, required this.currency});
 
   Color _getProgressColor(BuildContext context) {
     if (progress.isOverBudget) {
@@ -77,13 +73,16 @@ class BudgetCard extends StatelessWidget {
                     ),
                     SizedBox(height: context.h(2)),
                     UiText(
-                      text: '$currency ${progress.remaining.toStringAsFixed(0)} remaining',
+                      text:
+                          '$currency ${progress.remaining.toStringAsFixed(0)} remaining',
                       type: UiTextType.bodySmall,
                       style: TextStyle(
                         color: progress.isOverBudget
                             ? context.colorAppScheme.error
                             : context.textSecondary,
-                        fontWeight: progress.isOverBudget ? FontWeight.w500 : FontWeight.w400,
+                        fontWeight: progress.isOverBudget
+                            ? FontWeight.w500
+                            : FontWeight.w400,
                       ),
                     ),
                   ],
@@ -111,14 +110,14 @@ class BudgetCard extends StatelessWidget {
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic, // <-- Added this line to fix the assertion crash
+                textBaseline: TextBaseline
+                    .alphabetic, // <-- Added this line to fix the assertion crash
                 children: [
                   UiText(
-                    text: '$currency ${progress.spentAmount.toStringAsFixed(0)}',
+                    text:
+                        '$currency ${progress.spentAmount.toStringAsFixed(0)}',
                     type: UiTextType.bodyMedium,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   SizedBox(width: context.w(4)),
                   UiText(
@@ -131,7 +130,8 @@ class BudgetCard extends StatelessWidget {
                 ],
               ),
               UiText(
-                text: 'of $currency ${progress.budget.amount.toStringAsFixed(0)}',
+                text:
+                    'of $currency ${progress.budget.amount.toStringAsFixed(0)}',
                 type: UiTextType.bodySmall,
                 style: TextStyle(
                   color: context.textSecondary,

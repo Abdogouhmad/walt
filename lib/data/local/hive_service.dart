@@ -45,8 +45,9 @@ class HiveService {
       } else if (value is Map) {
         try {
           // If it was stored as a Map (JSON), convert it
-          final category =
-              WaltCategory.fromJson(Map<String, dynamic>.from(value));
+          final category = WaltCategory.fromJson(
+            Map<String, dynamic>.from(value),
+          );
           categories.add(category);
         } catch (e) {
           debugPrint('❌ Error parsing category from Map: $e');
@@ -105,8 +106,7 @@ class HiveService {
     return val is String ? val : 'MAD';
   }
 
-  Future<void> setUserName(String name) async =>
-      saveSetting('userName', name);
+  Future<void> setUserName(String name) async => saveSetting('userName', name);
 
   String getUserName() {
     final val = getSetting('userName', defaultValue: 'User');

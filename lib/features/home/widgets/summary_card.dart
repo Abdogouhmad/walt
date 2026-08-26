@@ -99,10 +99,7 @@ class SummaryCard extends ConsumerWidget {
             children: [
               Icon(icon, size: context.w(16), color: iconColor),
               SizedBox(width: context.w(4)),
-              Text(
-                label,
-                style: TextStyle(fontSize: context.sp(12)),
-              ),
+              Text(label, style: TextStyle(fontSize: context.sp(12))),
             ],
           ),
           SizedBox(height: context.h(6)),

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/providers/settings_provider.dart';
@@ -58,7 +58,9 @@ class ProfileApp extends ConsumerWidget {
 
   // 3. Implemented the helper methods
   Widget _pfp(BuildContext context, WidgetRef ref) {
-    final profilePic = ref.watch(settingsProvider.select((s) => s.profilePicPath));
+    final profilePic = ref.watch(
+      settingsProvider.select((s) => s.profilePicPath),
+    );
 
     return CircleAvatar(
       radius: 42,

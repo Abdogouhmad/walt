@@ -17,9 +17,9 @@ class NotificationService {
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: initializationSettingsAndroid,
-      linux: initializationSettingsLinux,
-    );
+          android: initializationSettingsAndroid,
+          linux: initializationSettingsLinux,
+        );
 
     await _notificationsPlugin.initialize(
       settings: initializationSettings,
@@ -43,12 +43,14 @@ class NotificationService {
     required String categoryName,
     required double limit,
     required double spent,
+    String currency = '',
     bool isOver = true,
   }) async {
+    final String cur = currency.isEmpty ? '' : ' $currency';
     final String title = isOver ? 'Budget Exceeded!' : 'Budget Warning';
     final String body = isOver
-        ? 'You have spent \$${spent.toStringAsFixed(2)} on $categoryName, which is over your \$${limit.toStringAsFixed(2)} limit.'
-        : 'You have spent \$${spent.toStringAsFixed(2)} on $categoryName, reaching ${((spent / limit) * 100).toInt()}% of your \$${limit.toStringAsFixed(2)} limit.';
+        ? 'You have spent ${spent.toStringAsFixed(2)}$cur on $categoryName, which is over your ${limit.toStringAsFixed(2)}$cur limit.'
+        : 'You have spent ${spent.toStringAsFixed(2)}$cur on $categoryName, reaching ${limit > 0 ? ((spent / limit) * 100).toInt() : 100}% of your ${limit.toStringAsFixed(2)}$cur limit.';
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
@@ -78,10 +80,6 @@ class NotificationService {
     required String latestVersion,
     required String changelogSummary,
   }) async {
-    // final String cleanChangelog = changelogSummary.length > 100
-    //     ? '${changelogSummary.substring(0, 97)}...'
-    //     : changelogSummary;
-
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           'app_updates',

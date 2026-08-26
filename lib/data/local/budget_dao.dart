@@ -27,21 +27,7 @@ class BudgetDao {
 
     final List<Map<String, dynamic>> maps = await db.query('budgets');
 
-    return maps.map((map) => _mapToBudget(map)).toList();
-  }
-
-  // Get budget by ID
-  Future<WaltBudget?> getBudgetById(int id) async {
-    final db = await _dbHelper.database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      'budgets',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isEmpty) return null;
-    return _mapToBudget(maps.first);
+    return maps.map(_mapToBudget).toList();
   }
 
   // ====================== UPDATE ======================
@@ -69,10 +55,7 @@ class BudgetDao {
 
   Future<void> updateAllAmounts(double rate) async {
     final db = await _dbHelper.database;
-    await db.rawUpdate(
-      'UPDATE budgets SET amount = amount * ?',
-      [rate],
-    );
+    await db.rawUpdate('UPDATE budgets SET amount = amount * ?', [rate]);
   }
 
   // Helper method to convert a map to a Budget object
