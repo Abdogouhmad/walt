@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:dynamic_color/dynamic_color.dart';
 
 class AppTheme {
   // Your brand primary color
@@ -7,51 +6,32 @@ class AppTheme {
 
   // Light Theme
   static ThemeData lightTheme(ColorScheme? dynamicLight) {
-    final colorScheme =
-        dynamicLight ??
-        ColorScheme.fromSeed(
-          seedColor: brandColor,
-          brightness: Brightness.light,
-        );
-
-    return ThemeData(
-      colorScheme: colorScheme,
-      useMaterial3: true,
-      appBarTheme: AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-      ),
-      cardTheme: CardThemeData(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurfaceVariant,
-        elevation: 8,
-      ),
+    return _buildTheme(
+      dynamicLight ??
+          ColorScheme.fromSeed(
+            seedColor: brandColor,
+            brightness: Brightness.light,
+          ),
     );
   }
 
   // Dark Theme
   static ThemeData darkTheme(ColorScheme? dynamicDark) {
-    final colorScheme =
-        dynamicDark ??
-        ColorScheme.fromSeed(
-          seedColor: brandColor,
-          brightness: Brightness.dark,
-        );
+    return _buildTheme(
+      dynamicDark ??
+          ColorScheme.fromSeed(
+            seedColor: brandColor,
+            brightness: Brightness.dark,
+          ),
+      dark: true,
+    );
+  }
 
+  static ThemeData _buildTheme(ColorScheme colorScheme, {bool dark = false}) {
     return ThemeData(
       colorScheme: colorScheme,
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: dark ? Brightness.dark : Brightness.light,
       appBarTheme: AppBarTheme(
         centerTitle: true,
         elevation: 0,
@@ -66,24 +46,11 @@ class AppTheme {
         backgroundColor: colorScheme.primary,
         foregroundColor: colorScheme.onPrimary,
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurfaceVariant,
-        elevation: 8,
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: colorScheme.surfaceContainer,
+        indicatorColor: colorScheme.primaryContainer,
+        elevation: 0,
       ),
     );
-  }
-
-  // Helper to get theme based on system + dynamic color
-  static ThemeData getTheme(
-    Brightness brightness,
-    ColorScheme? lightDynamic,
-    ColorScheme? darkDynamic,
-  ) {
-    if (brightness == Brightness.light) {
-      return lightTheme(lightDynamic);
-    } else {
-      return darkTheme(darkDynamic);
-    }
   }
 }

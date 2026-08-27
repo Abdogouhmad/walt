@@ -11,7 +11,6 @@ import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/input_ui.dart';
-import 'package:walt/data/local/transaction_dao.dart';
 
 void showAddTransactionSheet(BuildContext context) {
   showModalBottomSheet(
@@ -83,15 +82,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     );
 
     try {
-      // 2. Save to SQLite via your DAO
-      // Note: You might need to import your TransactionDao or
-      // access it via a provider depending on your setup.
-      final dao = TransactionDao();
-      await dao.insertTransaction(transaction);
+      // Save via the provider so every dependent screen refreshes
+      await ref.read(transactionProvider.notifier).addTransaction(transaction);
       ref.invalidate(reportProvider);
-      // 3. REFRESH THE PROVIDER
-      // This is the "magic" step that updates the SummaryCard automatically
-      ref.read(transactionProvider.notifier).refresh();
 
       if (mounted) {
         Navigator.pop(context);
@@ -155,7 +148,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   height: context.h(4),
                   margin: EdgeInsets.only(bottom: context.h(20)),
                   decoration: BoxDecoration(
-                    color: cs.onSurface.withAlpha(1),
+                    color: cs.onSurface.withAlpha(60),
                     borderRadius: BorderRadius.circular(context.r(2)),
                   ),
                 ),

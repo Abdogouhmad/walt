@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:walt/core/constants/app_colors.dart';
-import 'package:walt/data/models/walt_account.dart';
-import 'package:walt/providers/account_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/input_ui.dart';
@@ -99,7 +97,7 @@ class SecurityStep extends ConsumerWidget {
           SwitchListTile(
             title: const Text("Enable Biometrics"),
             value: settings.isFingerprintEnabled,
-            onChanged: (v) => notifier.toggleFingerprint(ref),
+            onChanged: (v) => notifier.toggleFingerprint(),
           ),
         ],
       ),
@@ -196,120 +194,6 @@ class _SignupStepState extends ConsumerState<SignupStep> {
                 if (v != null) {
                   setState(() => _currency = v);
                   ref.read(settingsProvider.notifier).setCurrency(v);
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AccountStep extends ConsumerStatefulWidget {
-  const AccountStep({super.key});
-
-  @override
-  ConsumerState<AccountStep> createState() => _AccountStepState();
-}
-
-class _AccountStepState extends ConsumerState<AccountStep> {
-  final _nameController = TextEditingController(text: 'Cash');
-  final _balanceController = TextEditingController(text: '0');
-  String _type = 'Cash';
-
-  @override
-  void initState() {
-    super.initState();
-    // Save a default account immediately so they have at least one
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _saveAccount();
-    });
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _balanceController.dispose();
-    super.dispose();
-  }
-
-  void _saveAccount() {
-    final name = _nameController.text;
-    final balance = double.tryParse(_balanceController.text) ?? 0.0;
-    final currency = ref.read(settingsProvider).currency;
-
-    final account = WaltAccount(
-      id: 0,
-      name: name,
-      type: _type,
-      balance: balance,
-      currency: currency,
-      isDefault: true,
-    );
-
-    ref.read(accountProvider.notifier).addAccount(account);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 60),
-            const Icon(Icons.account_balance_wallet_rounded,
-                size: 100, color: Colors.green),
-            const SizedBox(height: 40),
-            const Text(
-              "Create Your First Account",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Enter your current balance to start tracking accurately.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 30),
-            InputUI(
-              controller: _nameController,
-              labelText: "Account Name",
-              hintText: "Cash, Bank, etc.",
-              icon: Icons.label_outline_rounded,
-              onchange: (_) => _saveAccount(),
-            ),
-            const SizedBox(height: 20),
-            InputUI(
-              controller: _balanceController,
-              labelText: "Initial Balance",
-              hintText: "0.00",
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              icon: Icons.account_balance_wallet_outlined,
-              onchange: (_) => _saveAccount(),
-            ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              initialValue: _type,
-              decoration: const InputDecoration(
-                labelText: "Account Type",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.category_outlined),
-              ),
-              items: [
-                'Cash',
-                'Bank',
-                'Savings',
-                'Credit Card',
-              ].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-              onChanged: (v) {
-                if (v != null) {
-                  setState(() => _type = v);
-                  _saveAccount();
                 }
               },
             ),

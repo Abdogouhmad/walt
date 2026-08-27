@@ -62,7 +62,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
     return UpdateState();
   }
 
-  Future<void> checkForUpdates({bool showNotificationIfAvailable = false}) async {
+  Future<void> checkForUpdates({
+    bool showNotificationIfAvailable = false,
+  }) async {
     state = state.copyWith(isChecking: true, errorMessage: null);
 
     const String githubApiUrl =
@@ -107,13 +109,18 @@ class UpdateNotifier extends Notifier<UpdateState> {
           );
 
           if (isUpdateAvailable && showNotificationIfAvailable) {
-            final String lastNotifiedVersion = _hive.getSetting('lastNotifiedVersion', defaultValue: '') as String;
+            final String lastNotifiedVersion =
+                _hive.getSetting('lastNotifiedVersion', defaultValue: '')
+                    as String;
             if (lastNotifiedVersion != cleanLatestVersion) {
               await NotificationService().showUpdateNotification(
                 latestVersion: cleanLatestVersion,
                 changelogSummary: changelog,
               );
-              await _hive.saveSetting('lastNotifiedVersion', cleanLatestVersion);
+              await _hive.saveSetting(
+                'lastNotifiedVersion',
+                cleanLatestVersion,
+              );
             }
           }
         } else {
@@ -125,7 +132,8 @@ class UpdateNotifier extends Notifier<UpdateState> {
       } else {
         state = state.copyWith(
           isChecking: false,
-          errorMessage: "Failed to check for updates: HTTP ${response.statusCode}",
+          errorMessage:
+              "Failed to check for updates: HTTP ${response.statusCode}",
         );
       }
     } catch (e) {
@@ -143,65 +151,67 @@ class UpdateNotifier extends Notifier<UpdateState> {
       return;
     }
 
-    state = state.copyWith(isUpdating: true, downloadProgress: 0.0, errorMessage: null);
+    state = state.copyWith(
+      isUpdating: true,
+      downloadProgress: 0.0,
+      errorMessage: null,
+    );
 
     try {
       OtaUpdate()
           .execute(downloadUrl, destinationFilename: 'walt-update.apk')
           .listen(
-        (OtaEvent event) {
-          switch (event.status) {
-            case OtaStatus.DOWNLOADING:
-              final progress = double.tryParse(event.value ?? "0") ?? 0.0;
-              state = state.copyWith(
-                downloadProgress: progress,
-              );
-              break;
-            case OtaStatus.INSTALLING:
+            (OtaEvent event) {
+              switch (event.status) {
+                case OtaStatus.DOWNLOADING:
+                  final progress = double.tryParse(event.value ?? "0") ?? 0.0;
+                  state = state.copyWith(downloadProgress: progress);
+                  break;
+                case OtaStatus.INSTALLING:
+                  state = state.copyWith(
+                    isUpdating: false,
+                    downloadProgress: 100.0,
+                  );
+                  break;
+                case OtaStatus.ALREADY_RUNNING_ERROR:
+                  state = state.copyWith(
+                    isUpdating: false,
+                    errorMessage: "An update is already running.",
+                  );
+                  break;
+                case OtaStatus.PERMISSION_NOT_GRANTED_ERROR:
+                  state = state.copyWith(
+                    isUpdating: false,
+                    errorMessage: "Permission denied to install the update.",
+                  );
+                  break;
+                case OtaStatus.DOWNLOAD_ERROR:
+                case OtaStatus.INTERNAL_ERROR:
+                  state = state.copyWith(
+                    isUpdating: false,
+                    errorMessage: "Download failed: ${event.value}",
+                  );
+                  break;
+                case OtaStatus.CHECKSUM_ERROR:
+                  state = state.copyWith(
+                    isUpdating: false,
+                    errorMessage: "Checksum validation failed.",
+                  );
+                  break;
+                default:
+                  state = state.copyWith(
+                    isUpdating: false,
+                    errorMessage: "Something went wrong.",
+                  );
+              }
+            },
+            onError: (error) {
               state = state.copyWith(
                 isUpdating: false,
-                downloadProgress: 100.0,
+                errorMessage: "Error: $error",
               );
-              break;
-            case OtaStatus.ALREADY_RUNNING_ERROR:
-              state = state.copyWith(
-                isUpdating: false,
-                errorMessage: "An update is already running.",
-              );
-              break;
-            case OtaStatus.PERMISSION_NOT_GRANTED_ERROR:
-              state = state.copyWith(
-                isUpdating: false,
-                errorMessage: "Permission denied to install the update.",
-              );
-              break;
-            case OtaStatus.DOWNLOAD_ERROR:
-            case OtaStatus.INTERNAL_ERROR:
-              state = state.copyWith(
-                isUpdating: false,
-                errorMessage: "Download failed: ${event.value}",
-              );
-              break;
-            case OtaStatus.CHECKSUM_ERROR:
-              state = state.copyWith(
-                isUpdating: false,
-                errorMessage: "Checksum validation failed.",
-              );
-              break;
-            default:
-              state = state.copyWith(
-                isUpdating: false,
-                errorMessage: "Something went wrong.",
-              );
-          }
-        },
-        onError: (error) {
-          state = state.copyWith(
-            isUpdating: false,
-            errorMessage: "Error: $error",
+            },
           );
-        },
-      );
     } catch (e) {
       state = state.copyWith(
         isUpdating: false,

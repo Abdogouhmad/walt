@@ -22,28 +22,31 @@ class RecentActivity extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoryProvider);
     final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _titleUi(
-          context,
-          'Recent Transactions',
-          onTap: () => context.go('/transactions'),
-        ),
-        Expanded(
-          child: transactions.isEmpty
-              ? _buildEmptyState(context)
-              : categoriesAsync.when(
-                  data: (categories) => ListView.separated(
+    return transactions.isEmpty
+        ? _buildEmptyState(context)
+        : categoriesAsync.maybeWhen(
+            data: (categories) {
+              if (categories.isEmpty) return _buildEmptyState(context);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _titleUi(
+                    context,
+                    'Recent Transactions',
+                    onTap: () => context.go('/transactions'),
+                  ),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: transactions.length,
                     separatorBuilder: (_, _) =>
                         const Divider(height: 1, indent: 72),
                     itemBuilder: (context, index) {
                       final tx = transactions[index];
-                      // Find category details from the provider
                       final category = categories.firstWhere(
                         (c) => c.id == tx.categoryId,
-                        orElse: () => categories.last, // Fallback to 'Other'
+                        orElse: () => categories.first,
                       );
                       return _transactionTile(
                         context,
@@ -54,13 +57,11 @@ class RecentActivity extends ConsumerWidget {
                       );
                     },
                   ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (_, _) => _buildEmptyState(context),
-                ),
-        ),
-      ],
-    );
+                ],
+              );
+            },
+            orElse: () => _buildEmptyState(context),
+          );
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -119,27 +120,34 @@ class RecentActivity extends ConsumerWidget {
         '$formattedDate • $catName',
         style: TextStyle(color: context.listSubLabel, fontSize: context.sp(12)),
       ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            amount,
-            style: TextStyle(
-              color: isIncome ? context.listIncome : context.listExpense,
-              fontWeight: FontWeight.bold,
-              fontSize: context.sp(14),
+      trailing: SizedBox(
+        width: 120,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              amount,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isIncome ? context.listIncome : context.listExpense,
+                fontWeight: FontWeight.bold,
+                fontSize: context.sp(14),
+              ),
             ),
-          ),
-          Text(
-            tx.type
-                .toUpperCase(), // Showing type instead of hardcoded payment label
-            style: TextStyle(
-              fontSize: context.sp(10),
-              color: context.listSubLabel,
+            Text(
+              tx.type.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: context.sp(10),
+                color: context.listSubLabel,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       onTap: () => context.go('/transactions'),
     );

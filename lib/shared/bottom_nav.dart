@@ -1,18 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:walt/shared/header_app.dart'; // Ensure this import points to your HeaderApp file
+import 'package:walt/data/services/notification_service.dart';
+import 'package:walt/providers/budget_progress_provider.dart';
+import 'package:walt/shared/header_app.dart';
 
-class MainShell extends StatefulWidget {
+// Session-level dedup so each budget fires at most one warning and one
+// "exceeded" notification per app run.
+final _notifiedBudgetAlerts = <String>{};
+
+void _checkBudgetAlerts(List<BudgetProgress> progress) {
+  for (final p in progress) {
+    if (!p.isNearLimit) continue;
+
+    final key = '${p.budget.id}_${p.isOverBudget ? 'over' : 'near'}';
+    if (_notifiedBudgetAlerts.contains(key)) continue;
+    _notifiedBudgetAlerts.add(key);
+
+    NotificationService().showBudgetAlert(
+      id: p.budget.id,
+      categoryName: p.category.name,
+      limit: p.budget.amount,
+      spent: p.spentAmount,
+      isOver: p.isOverBudget,
+    );
+  }
+}
+
+class MainShell extends ConsumerWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
 
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  // Mapping paths to indices to keep the bottom nav synced if the user navigates via code
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/transactions')) return 1;
@@ -21,59 +40,47 @@ class _MainShellState extends State<MainShell> {
     return 0;
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(BuildContext context, int index) {
     const routes = ['/', '/transactions', '/reports', '/budgets'];
     context.go(routes[index]);
   }
 
   @override
-  Widget build(BuildContext context) {
-    // 1. Get the current route location
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Show the header on Home, Transactions, Reports and Budgets,
+    // but not on Settings.
     final String location = GoRouterState.of(context).matchedLocation;
-
-    // 2. Determine if the HeaderApp should be shown
-    // It shows on Home, Transactions, Reports, and Budgets, but NOT on Settings
     final bool showHeader = location != '/settings';
 
+    ref.listen(budgetProgressProvider, (_, next) {
+      _checkBudgetAlerts(next);
+    });
+
     return Scaffold(
-      // 3. Conditionally apply the AppBar
-      appBar: showHeader
-          ? PreferredSize(
-              preferredSize: const Size.fromHeight(
-                70,
-              ), // Adjust height as needed
-              child: const HeaderApp(title: 'Walt'),
-            )
-          : null,
-      body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        showSelectedLabels: true,
-        showUnselectedLabels: false,
-        currentIndex: _calculateSelectedIndex(context),
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        elevation: 8,
-        items: const [
-          BottomNavigationBarItem(
+      appBar: showHeader ? const HeaderApp(title: 'Walt') : null,
+      body: child,
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _calculateSelectedIndex(context),
+        onDestinationSelected: (index) => _onItemTapped(context, index),
+        destinations: const [
+          NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home_rounded),
+            selectedIcon: Icon(Icons.home_rounded),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.list_alt_outlined),
-            activeIcon: Icon(Icons.list_alt_rounded),
+            selectedIcon: Icon(Icons.list_alt_rounded),
             label: 'Activity',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.auto_graph),
-            activeIcon: Icon(Icons.auto_graph_outlined),
+          NavigationDestination(
+            icon: Icon(Icons.auto_graph_outlined),
+            selectedIcon: Icon(Icons.auto_graph),
             label: 'Reports',
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
-            activeIcon: Icon(Icons.account_balance_wallet_rounded),
+            selectedIcon: Icon(Icons.account_balance_wallet_rounded),
             label: 'Budget',
           ),
         ],

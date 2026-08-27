@@ -4,11 +4,10 @@ import 'database_helper.dart';
 class AccountDao {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-  // ====================== CREATE ======================
   Future<int> insertAccount(WaltAccount account) async {
     final db = await _dbHelper.database;
 
-    final Map<String, dynamic> map = {
+    return await db.insert('accounts', {
       'name': account.name,
       'type': account.type,
       'balance': account.balance,
@@ -16,38 +15,17 @@ class AccountDao {
       'color': account.color,
       'profile_pic': account.profilePic,
       'is_default': account.isDefault ? 1 : 0,
-      'created_at': DateTime.now().millisecondsSinceEpoch,
-    };
-
-    return await db.insert('accounts', map);
+    });
   }
 
-  // ====================== READ ======================
-
-  // Get all accounts
   Future<List<WaltAccount>> getAllAccounts() async {
     final db = await _dbHelper.database;
 
     final List<Map<String, dynamic>> maps = await db.query('accounts');
 
-    return maps.map((map) => _mapToAccount(map)).toList();
+    return maps.map(_mapToAccount).toList();
   }
 
-  // Get account by ID
-  Future<WaltAccount?> getAccountById(int id) async {
-    final db = await _dbHelper.database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      'accounts',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isEmpty) return null;
-    return _mapToAccount(maps.first);
-  }
-
-  // Helper method to convert a map to an Account object
   WaltAccount _mapToAccount(Map<String, dynamic> map) {
     return WaltAccount(
       id: map['id'],

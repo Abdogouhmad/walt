@@ -14,11 +14,11 @@ class TransactionListScreen extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoryProvider);
 
     return Scaffold(
-      body: categoriesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => _buildEmptyState(context),
+      body: categoriesAsync.maybeWhen(
         data: (categories) {
-          if (txMap.isEmpty) return _buildEmptyState(context);
+          if (txMap.isEmpty || categories.isEmpty) {
+            return _buildEmptyState(context);
+          }
 
           return ListView.builder(
             itemCount: txMap.keys.length,
@@ -34,10 +34,9 @@ class TransactionListScreen extends ConsumerWidget {
                     child: HeaderList(date: dateKey),
                   ),
                   ...transactions.map((tx) {
-                    // Find category details for this specific transaction
                     final category = categories.firstWhere(
                       (c) => c.id == tx.categoryId,
-                      orElse: () => categories.last, // Fallback
+                      orElse: () => categories.first,
                     );
 
                     return TxList(
@@ -51,6 +50,7 @@ class TransactionListScreen extends ConsumerWidget {
             },
           );
         },
+        orElse: () => _buildEmptyState(context),
       ),
     );
   }

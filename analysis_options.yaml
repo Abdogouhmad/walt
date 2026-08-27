@@ -21,6 +21,12 @@ analyzer:
     - "build/**"
     - "lib/**/*.g.dart"      # safety
     - "lib/**/*.freezed.dart"
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
   # Optional: Enable stricter checks (good for production apps)
   # language:

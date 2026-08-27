@@ -25,7 +25,6 @@ extension ListColors on BuildContext {
   Color get listIncome => Colors.lightGreen[300] ?? Colors.green;
   Color get listExpense => Colors.red[400] ?? Colors.red;
   Color get listColorLinks => _colorApp.primary;
-  Color get swipeRightBackground => Colors.green.shade500;
   Color get swipeLeftBackground => Colors.red.shade600;
 }
 

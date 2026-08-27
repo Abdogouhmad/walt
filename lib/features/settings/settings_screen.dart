@@ -91,7 +91,7 @@ class SettingsScreen extends ConsumerWidget {
                           value: settings.isFingerprintEnabled,
                           onChanged: (val) async {
                             final success = await settingsNotifier
-                                .toggleFingerprint(ref);
+                                .toggleFingerprint();
                             if (!success && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

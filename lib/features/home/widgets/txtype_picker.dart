@@ -53,11 +53,7 @@ class TypeToggle extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: context.w(18),
-                color: textColor,
-              ),
+              Icon(icon, size: context.w(18), color: textColor),
               SizedBox(width: context.w(6)),
               Text(
                 label,

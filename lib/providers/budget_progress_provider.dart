@@ -62,15 +62,9 @@ final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {
 final budgetSummaryProvider = Provider((ref) {
   final progress = ref.watch(budgetProgressProvider);
 
-  final totalBudget = progress.fold(
-    0.0,
-    (sum, p) => sum + p.budget.amount,
-  );
+  final totalBudget = progress.fold(0.0, (sum, p) => sum + p.budget.amount);
 
-  final totalSpent = progress.fold(
-    0.0,
-    (sum, p) => sum + p.spentAmount,
-  );
+  final totalSpent = progress.fold(0.0, (sum, p) => sum + p.spentAmount);
 
   final now = DateTime.now();
 
@@ -80,16 +74,13 @@ final budgetSummaryProvider = Provider((ref) {
   // Last day of current month
   final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
 
-  final remainingDays =
-      lastDayOfMonth.difference(today).inDays;
+  final remainingDays = lastDayOfMonth.difference(today).inDays;
 
   return {
     'totalBudget': totalBudget,
     'totalSpent': totalSpent,
     'remaining': totalBudget - totalSpent,
-    'percentage': totalBudget > 0
-        ? (totalSpent / totalBudget)
-        : 0.0,
+    'percentage': totalBudget > 0 ? (totalSpent / totalBudget) : 0.0,
     'remainingDays': remainingDays.toDouble(),
   };
 });

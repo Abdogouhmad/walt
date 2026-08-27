@@ -20,7 +20,7 @@ class DateWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          border: Border.all(color: cs.outline.withAlpha(1)),
+          border: Border.all(color: cs.outlineVariant),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -32,11 +32,7 @@ class DateWidget extends StatelessWidget {
               style: TextStyle(fontSize: 15, color: cs.onSurface),
             ),
             const Spacer(),
-            Icon(
-              Icons.chevron_right,
-              size: 18,
-              color: cs.onSurface.withAlpha(1),
-            ),
+            Icon(Icons.chevron_right, size: 18, color: cs.onSurfaceVariant),
           ],
         ),
       ),

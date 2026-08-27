@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/data/local/transaction_dao.dart';
 import 'package:walt/data/local/hive_service.dart';
 import 'package:walt/core/utils/category_icon.dart';
-import 'package:hooks_riverpod/legacy.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 // Use a single provider for the filter index (0 = 6 Months, 1 = 1 Year)
 final reportFilterProvider = StateProvider<int>((ref) => 0);

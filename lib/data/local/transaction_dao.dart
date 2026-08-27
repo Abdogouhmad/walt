@@ -8,7 +8,7 @@ class TransactionDao {
   Future<int> insertTransaction(WaltTransaction transaction) async {
     final db = await _dbHelper.database;
 
-    final Map<String, dynamic> map = {
+    return await db.insert('transactions', {
       'amount': transaction.amount,
       'type': transaction.type,
       'category_id': transaction.categoryId,
@@ -17,9 +17,7 @@ class TransactionDao {
       'merchant': transaction.merchant,
       'date': transaction.date.millisecondsSinceEpoch,
       'created_at': DateTime.now().millisecondsSinceEpoch,
-    };
-
-    return await db.insert('transactions', map);
+    });
   }
 
   // ====================== READ ======================
@@ -33,24 +31,7 @@ class TransactionDao {
       orderBy: 'date DESC',
     );
 
-    return maps
-        .map((map) => _mapToTransaction(map))
-        .toList()
-        .cast<WaltTransaction>();
-  }
-
-  // Get transaction by ID
-  Future<WaltTransaction?> getTransactionById(int id) async {
-    final db = await _dbHelper.database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      'transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isEmpty) return null;
-    return _mapToTransaction(maps.first);
+    return maps.map(_mapToTransaction).toList();
   }
 
   // Get transactions for a specific month (useful for reports)
@@ -74,29 +55,24 @@ class TransactionDao {
       orderBy: 'date DESC',
     );
 
-    return maps
-        .map((map) => _mapToTransaction(map))
-        .toList()
-        .cast<WaltTransaction>();
+    return maps.map(_mapToTransaction).toList();
   }
 
   // ====================== UPDATE ======================
   Future<int> updateTransaction(WaltTransaction transaction) async {
     final db = await _dbHelper.database;
 
-    final Map<String, dynamic> map = {
-      'amount': transaction.amount,
-      'type': transaction.type,
-      'category_id': transaction.categoryId,
-      'account_id': transaction.accountId,
-      'note': transaction.note,
-      'merchant': transaction.merchant,
-      'date': transaction.date.millisecondsSinceEpoch,
-    };
-
     return await db.update(
       'transactions',
-      map,
+      {
+        'amount': transaction.amount,
+        'type': transaction.type,
+        'category_id': transaction.categoryId,
+        'account_id': transaction.accountId,
+        'note': transaction.note,
+        'merchant': transaction.merchant,
+        'date': transaction.date.millisecondsSinceEpoch,
+      },
       where: 'id = ?',
       whereArgs: [transaction.id],
     );
@@ -110,13 +86,29 @@ class TransactionDao {
 
   Future<void> updateAllAmounts(double rate) async {
     final db = await _dbHelper.database;
-    await db.rawUpdate(
-      'UPDATE transactions SET amount = amount * ?',
-      [rate],
-    );
+    await db.rawUpdate('UPDATE transactions SET amount = amount * ?', [rate]);
   }
 
-  // ====================== HELPER METHOD ======================
+  // Get transactions within a date range (inclusive)
+  Future<List<WaltTransaction>> getTransactionsBetween(
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    final db = await _dbHelper.database;
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'transactions',
+      where: 'date >= ? AND date <= ?',
+      whereArgs: [
+        startDate.millisecondsSinceEpoch,
+        endDate.millisecondsSinceEpoch,
+      ],
+      orderBy: 'date DESC',
+    );
+
+    return maps.map(_mapToTransaction).toList();
+  }
+
   // Convert Map from database → Transaction model
   WaltTransaction _mapToTransaction(Map<String, dynamic> map) {
     return WaltTransaction(
@@ -129,25 +121,5 @@ class TransactionDao {
       merchant: map['merchant'],
       date: DateTime.fromMillisecondsSinceEpoch(map['date']),
     );
-  }
-
-  // ============== GET BY DATE ===================
-  Future<List<WaltTransaction>> getTransactionsBetween(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
-    final db = await _dbHelper.database;
-
-    final start = startDate.millisecondsSinceEpoch;
-    final end = endDate.millisecondsSinceEpoch;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      'transactions',
-      where: 'date >= ? AND date <= ?',
-      whereArgs: [start, end],
-      orderBy: 'date DESC',
-    );
-
-    return maps.map((map) => _mapToTransaction(map)).toList();
   }
 }

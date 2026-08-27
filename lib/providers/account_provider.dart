@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/data/local/account_deo.dart';
+import 'package:walt/data/local/account_dao.dart';
 import 'package:walt/data/models/walt_account.dart';
 
 final accountProvider =

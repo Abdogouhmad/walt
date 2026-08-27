@@ -98,13 +98,15 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoryProvider).value?.where(
-              (e) => e.type == 'expense',
-            ).toList() ?? [];
+    final categories =
+        ref
+            .watch(categoryProvider)
+            .value
+            ?.where((e) => e.type == 'expense')
+            .toList() ??
+        [];
 
-    final currency = ref.watch(
-      settingsProvider.select((s) => s.currency),
-    );
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
     final isEditing = widget.budgetToEdit != null;
 
@@ -184,9 +186,9 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                           if (isEditing)
                             IconButton.filledTonal(
                               onPressed: () {
-                                ref.read(budgetProvider.notifier).deleteBudget(
-                                  widget.budgetToEdit!.id,
-                                );
+                                ref
+                                    .read(budgetProvider.notifier)
+                                    .deleteBudget(widget.budgetToEdit!.id);
                                 Navigator.pop(context);
                               },
                               icon: const Icon(Icons.delete_outline),
@@ -246,7 +248,9 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                           return GestureDetector(
                             onTap: isEditing
                                 ? null // Prevent changing category when editing
-                                : () => setState(() => selectedCategoryId = category.id),
+                                : () => setState(
+                                    () => selectedCategoryId = category.id,
+                                  ),
                             child: Opacity(
                               opacity: isEditing && !selected ? 0.5 : 1.0,
                               child: AnimatedContainer(
@@ -260,11 +264,14 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                                   color: selected
                                       ? categoryColor.withAlpha(35)
                                       : context.colorAppScheme.surface,
-                                  borderRadius: BorderRadius.circular(context.r(20)),
+                                  borderRadius: BorderRadius.circular(
+                                    context.r(20),
+                                  ),
                                   border: Border.all(
                                     color: selected
                                         ? categoryColor
-                                        : context.colorAppScheme.outline.withAlpha(40),
+                                        : context.colorAppScheme.outline
+                                              .withAlpha(40),
                                     width: selected ? 1.5 : 1.0,
                                   ),
                                 ),
@@ -274,22 +281,29 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                                     Icon(
                                       CategoryIcons.getIcon(category.icon),
                                       size: context.w(16),
-                                      color: selected ? categoryColor : context.textSecondary,
+                                      color: selected
+                                          ? categoryColor
+                                          : context.textSecondary,
                                     ),
                                     SizedBox(width: context.w(8)),
                                     UiText(
                                       text: category.name,
                                       type: UiTextType.bodySmall,
                                       style: TextStyle(
-                                        color: selected ? categoryColor : context.primary,
-                                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                                        color: selected
+                                            ? categoryColor
+                                            : context.primary,
+                                        fontWeight: selected
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                          );                        }).toList(),
+                          );
+                        }).toList(),
                       ),
                       SizedBox(height: context.h(36)),
 
@@ -319,7 +333,8 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: UiText(
-                                  text: "${(alertThreshold * 100).toInt()}% spent",
+                                  text:
+                                      "${(alertThreshold * 100).toInt()}% spent",
                                   type: UiTextType.labelSmall,
                                   style: TextStyle(
                                     color: context.primary,
@@ -334,18 +349,23 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                             data: SliderTheme.of(context).copyWith(
                               trackHeight: 6,
                               activeTrackColor: context.primary,
-                              inactiveTrackColor: context.colorAppScheme.outline.withAlpha(40),
+                              inactiveTrackColor: context.colorAppScheme.outline
+                                  .withAlpha(40),
                               thumbColor: context.primary,
                               overlayColor: context.primary.withAlpha(30),
-                              valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                              valueIndicatorShape:
+                                  const PaddleSliderValueIndicatorShape(),
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 8,
+                              ),
                             ),
                             child: Slider(
                               value: alertThreshold,
                               min: .5,
                               max: 1,
                               divisions: 10,
-                              onChanged: (v) => setState(() => alertThreshold = v),
+                              onChanged: (v) =>
+                                  setState(() => alertThreshold = v),
                             ),
                           ),
                         ],

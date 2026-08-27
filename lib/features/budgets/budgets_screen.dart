@@ -25,9 +25,7 @@ class BudgetsScreen extends ConsumerWidget {
     final budgetsProgress = ref.watch(budgetProgressProvider);
     final summary = ref.watch(budgetSummaryProvider);
 
-    final currency = ref.watch(
-      settingsProvider.select((s) => s.currency),
-    );
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
     final thisMonth = DateFormat('MMMM').format(DateTime.now());
 
@@ -41,7 +39,10 @@ class BudgetsScreen extends ConsumerWidget {
               children: [
                 const Icon(Icons.error_outline, size: 48, color: Colors.red),
                 SizedBox(height: context.h(16)),
-                UiText(text: 'Error loading budgets', type: UiTextType.titleMedium),
+                UiText(
+                  text: 'Error loading budgets',
+                  type: UiTextType.titleMedium,
+                ),
                 TextButton(
                   onPressed: () => ref.read(budgetProvider.notifier).refresh(),
                   child: const Text('Retry'),
@@ -128,7 +129,8 @@ class BudgetsScreen extends ConsumerWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                    'Budget for ${progress.category.name} deleted'),
+                                  'Budget for ${progress.category.name} deleted',
+                                ),
                                 action: SnackBarAction(
                                   label: 'Undo',
                                   onPressed: () {
@@ -145,7 +147,9 @@ class BudgetsScreen extends ConsumerWidget {
                             padding: EdgeInsets.only(right: context.w(20)),
                             decoration: BoxDecoration(
                               color: context.colorAppScheme.error,
-                              borderRadius: BorderRadius.circular(context.r(24)),
+                              borderRadius: BorderRadius.circular(
+                                context.r(24),
+                              ),
                             ),
                             child: const Icon(
                               Icons.delete_outline,
@@ -182,21 +186,7 @@ class BudgetsScreen extends ConsumerWidget {
       ),
     );
   }
-  // FloatingActionButton.extended(
-  //   onPressed: () => _showAddBudgetBottomSheet(context),
-  //   backgroundColor: context.primary,
-  //   icon: const Icon(Icons.add, color: Colors.white),
-  //   label: const Text(
-  //     'Add Budget',
-  //     style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-  //   ),
-  // ),
-  // floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-  // floatingActionButton: AppButton(
-  //   type: ButtonType.fab,
-  //   icon: Icons.add,
-  //   onPressed: () => showAddTransactionSheet(context),
-  // ),
+
   void _showAddBudgetBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,

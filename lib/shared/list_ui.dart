@@ -149,6 +149,7 @@ class AppListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     return Column(
@@ -184,7 +185,7 @@ class AppListSection extends StatelessWidget {
                       height: 1,
                       indent: 16,
                       endIndent: 16,
-                      color: context.listSubLabel.withAlpha(1),
+                      color: cs.outlineVariant.withAlpha(80),
                     ),
                 ],
               );
@@ -258,7 +259,7 @@ class AppListEmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: context.listSubLabel.withAlpha(1)),
+            Icon(icon, size: 64, color: context.listSubLabel.withAlpha(120)),
             const SizedBox(height: 16),
             Text(
               message,
@@ -370,10 +371,10 @@ class AppListGroup extends StatelessWidget {
       return Card(
         elevation: 0,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        color: backgroundColor ?? context.listContainer.withAlpha(1),
+        color: backgroundColor ?? context.listContainer.withAlpha(60),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: cs.outlineVariant.withAlpha(1)),
+          side: BorderSide(color: cs.outlineVariant.withAlpha(80)),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),

@@ -3,7 +3,6 @@ import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/text_ui.dart';
 
-
 // ─── Model ───────────────────────────────────────────────────────────────────
 
 class AppCardData {
@@ -69,10 +68,14 @@ class M3Ecard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    UiText(text: data.title ?? "", type: UiTextType.titleMedium, style: TextStyle(
-                      color: context.textSecondary,
-                      fontWeight: FontWeight.w600,
-                    ),),
+                    UiText(
+                      text: data.title ?? "",
+                      type: UiTextType.titleMedium,
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     if (data.subtitle != null)
                       UiText(text: data.subtitle!, type: UiTextType.bodySmall),
                   ],

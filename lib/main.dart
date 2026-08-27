@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dynamic_color/dynamic_color.dart';
 
 // sqflite FFI support for Desktop
@@ -34,37 +35,31 @@ Future<void> main() async {
 }
 
 Future<void> _initializeApp() async {
+  // dotenv is optional (only needed for the AI insight feature)
   try {
-    // Initialize dotenv
     await dotenv.load(fileName: ".env");
-    await Appinfo.init();
+  } catch (_) {
+    debugPrint('.env not found — AI insights disabled');
+  }
 
-    // SQLite Initialization for Desktop
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-      debugPrint('✅ sqflite FFI initialized for Desktop');
-    }
+  // SQLite Initialization for Desktop
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
 
-    // Initialize SQLite
-    await DatabaseHelper.instance.database;
-    debugPrint('✅ SQLite database initialized');
+  await Appinfo.init();
+  await DatabaseHelper.instance.database;
 
-    // Initialize Hive
-    await HiveService.init();
-    debugPrint('✅ Hive initialized');
+  await HiveService.init();
 
-    // Initialize Notifications
+  // Notifications are non-critical: never block startup on them.
+  try {
     final notificationService = NotificationService();
     await notificationService.init();
     await notificationService.requestPermissions();
-    debugPrint('✅ Notifications initialized');
-
-    debugPrint('🎉 Walt Finance Tracker initialized successfully!');
-  } catch (e, stack) {
-    debugPrint('❌ Error during initialization: $e');
-    debugPrint(stack.toString());
-    rethrow;
+  } catch (e) {
+    debugPrint('Notifications unavailable: $e');
   }
 }
 
