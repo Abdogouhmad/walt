@@ -202,8 +202,10 @@ jobs:
           with open(built, "rb") as fh:
               manifest["sha256"] = hashlib.sha256(fh.read()).hexdigest()
 
+          import datetime
+
           manifest["releaseNotes"] = release_notes
-          manifest["publishedAt"] = f"{__import__('datetime').datetime.now(datetime.timezone.utc).isoformat()}"
+          manifest["publishedAt"] = f"{datetime.datetime.now(datetime.timezone.utc).isoformat()}"
 
           with open("update_manifest.json", "w") as fh:
               json.dump(manifest, fh, indent=2, ensure_ascii=False)
