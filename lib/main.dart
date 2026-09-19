@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:walt/features/settings/widgets/update_gate.dart';
 
 // sqflite FFI support for Desktop
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -35,13 +35,6 @@ Future<void> main() async {
 }
 
 Future<void> _initializeApp() async {
-  // dotenv is optional (only needed for the AI insight feature)
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (_) {
-    debugPrint('.env not found — AI insights disabled');
-  }
-
   // SQLite Initialization for Desktop
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     sqfliteFfiInit();
@@ -84,6 +77,8 @@ class MyApp extends ConsumerWidget {
           darkTheme: AppTheme.darkTheme(darkDynamic),
 
           routerConfig: router,
+          builder: (context, child) =>
+              UpdateGate(child: child ?? const SizedBox.shrink()),
         );
       },
     );

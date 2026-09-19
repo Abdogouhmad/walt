@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:walt/core/design/radius.dart';
+import 'package:walt/core/design/spacing.dart';
+
+/// Tappable field that opens the date picker inside the add-transaction sheet.
 class DateWidget extends StatelessWidget {
   final DateTime date;
   final VoidCallback onTap;
@@ -18,21 +22,32 @@ class DateWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
         decoration: BoxDecoration(
           border: Border.all(color: cs.outlineVariant),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.field),
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_outlined, size: 18, color: cs.primary),
-            const SizedBox(width: 12),
+            Icon(
+              Icons.calendar_today_outlined,
+              size: AppSpacing.md,
+              color: cs.primary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               _format(date),
               style: TextStyle(fontSize: 15, color: cs.onSurface),
             ),
             const Spacer(),
-            Icon(Icons.chevron_right, size: 18, color: cs.onSurfaceVariant),
+            Icon(
+              Icons.chevron_right,
+              size: AppSpacing.md,
+              color: cs.onSurfaceVariant,
+            ),
           ],
         ),
       ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:walt/core/design/radius.dart';
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/utils/category_icon.dart';
@@ -41,13 +43,16 @@ class TxList extends ConsumerWidget {
             backgroundColor: context.swipeLeftBackground,
             foregroundColor: Colors.white,
             icon: Icons.delete,
-            borderRadius: const BorderRadius.all(Radius.circular(100)),
+            borderRadius: BorderRadius.circular(AppRadius.full),
           ),
         ],
       ),
 
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
         leading: CircleAvatar(
           backgroundColor: context.listContainer,
           child: Icon(

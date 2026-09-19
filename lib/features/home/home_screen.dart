@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/features/home/widgets/ai_insight.dart';
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/features/home/widgets/recent_activity.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/features/home/widgets/summary_card.dart';
 import 'package:walt/features/home/widgets/bottom_sheet.dart';
-import 'package:walt/providers/update_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,24 +15,21 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(updateProvider.notifier)
-          .checkForUpdates(showNotificationIfAvailable: true);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: const [
-              AiInsight(),
-              Padding(padding: EdgeInsets.all(16), child: SummaryCard()),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  0,
+                ),
+                child: SummaryCard(),
+              ),
               RecentActivity(),
             ],
           ),

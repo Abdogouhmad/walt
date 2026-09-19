@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/features/transactions/widgets/header_list.dart';
 import 'package:walt/features/transactions/widgets/tx_list.dart';
 import 'package:walt/providers/transaction_provider.dart';
-import 'package:walt/providers/category_provider.dart'; // Added this
+import 'package:walt/providers/category_provider.dart';
+import 'package:walt/shared/state_views.dart';
 
 class TransactionListScreen extends ConsumerWidget {
   const TransactionListScreen({super.key});
@@ -30,7 +33,7 @@ class TransactionListScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: HeaderList(date: dateKey),
                   ),
                   ...transactions.map((tx) {
@@ -56,15 +59,10 @@ class TransactionListScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.history_rounded, size: 48, color: Colors.grey),
-          SizedBox(height: 12),
-          Text("No activity found"),
-        ],
-      ),
+    return const EmptyStateView(
+      title: "No activity found",
+      message: "Your transactions will appear here once you add them.",
+      icon: Icons.history_rounded,
     );
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/features/settings/widgets/currency_selection_screen.dart';
-import 'package:walt/features/settings/widgets/ota_update_screen.dart';
 import 'package:walt/features/settings/widgets/theme_selection_screen.dart';
+import 'package:walt/features/settings/widgets/update_section.dart';
 import 'package:walt/features/settings/widgets/profile/header.dart';
 import 'package:walt/shared/list_ui.dart';
 import 'package:walt/providers/settings_provider.dart';
@@ -26,9 +28,9 @@ class SettingsScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
               const ProfileApp(),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
 
               /// 🔹 PREFERENCES
               AppListSection(
@@ -132,26 +134,13 @@ class SettingsScreen extends ConsumerWidget {
                         },
                       ),
                       divider,
-                      AppListTile(
-                        style: ListStyle.outlined,
-                        title: 'Update',
-                        subtitle: 'Check for updates',
-                        leading: const AppListAvatar(icon: Icons.update),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const OtaUpdateScreen(),
-                            ),
-                          );
-                        },
-                      ),
+                      const UpdateSection(),
                     ],
                   ),
                 ],
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),

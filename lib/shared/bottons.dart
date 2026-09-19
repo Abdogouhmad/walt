@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/utils/context.dart';
 
+/// Visual treatment for [AppButton].
 enum ButtonType { primary, secondary, text, textIcon, iconOnly, fab }
 
+/// Sizing presets for [AppButton].
 enum ButtonSize { small, medium, large, extended }
 
+/// The app's one button component (spec §1.3) — every tap target in Walt
+/// (header actions, sheet submit buttons, the budgets FAB, filter chips)
+/// flows through this widget so press feedback, corner radius and type scale
+/// stay identical app-wide.
 class AppButton extends StatelessWidget {
   final String? label;
   final VoidCallback? onPressed;
@@ -135,7 +142,7 @@ class AppButton extends StatelessWidget {
         elevation: 0,
         padding: _padding(context),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(context.r(14)),
+          borderRadius: BorderRadius.circular(AppRadius.field),
         ),
         textStyle: TextStyle(
           fontSize: _fontSize(context),
@@ -155,7 +162,7 @@ class AppButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         foregroundColor: color,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(context.r(14)),
+          borderRadius: BorderRadius.circular(AppRadius.field),
         ),
         side: BorderSide(color: color),
         padding: _padding(context),

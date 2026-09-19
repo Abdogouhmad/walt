@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walt/core/constants/app_colors.dart';
-import 'package:walt/providers/ai_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
@@ -72,12 +71,6 @@ class HeaderApp extends ConsumerWidget implements PreferredSizeWidget {
                 ],
               ),
             ],
-          ),
-          IconButton(
-            onPressed: () =>
-                ref.read(aiInsightProvider.notifier).toggleVisibility(),
-            icon: const Icon(Icons.auto_awesome),
-            color: context.appBarIcon,
           ),
         ],
       ),

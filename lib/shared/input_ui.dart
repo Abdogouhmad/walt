@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// The app's shared text field: italic hint from an optional icon, outlined
+/// borders, numeric-only formatting for amount fields, and inline error text
+/// driven by a [regexPattern] validator. Every form in Walt (add/edit
+/// transaction, budget amounts, login) uses this widget.
 class InputUI extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;

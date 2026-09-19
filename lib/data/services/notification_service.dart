@@ -5,6 +5,12 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
+  /// Dedicated, collision-free id for the update notification. Budget alerts
+  /// use `id: budget.id` (sequential from 1), and Android notifications with a
+  /// matching id replace each other — so the update ping must live far away
+  /// from the low budget ids or a budget alert could clobber it.
+  static const int updateNotificationId = 0x7A17;
+
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -97,7 +103,7 @@ class NotificationService {
     );
 
     await _notificationsPlugin.show(
-      id: 1,
+      id: updateNotificationId,
       body: 'New Update Available! 🚀',
       title: 'Version v$latestVersion is available. Tap to view changes.',
       notificationDetails: platformDetails,
