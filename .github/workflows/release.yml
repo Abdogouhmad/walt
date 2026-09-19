@@ -1,0 +1,214 @@
+name: release
+
+# Builds and publishes the Android release on every `v*` tag push (spec §4).
+#
+#   Builds  3 APKs from a single trigger:
+#     - split-per-abi arm64-v8a + armeabi-v7a (the supported ABIs; no x86_64)
+#     - a universal APK (spec §3.2 — the in-app OTA updater ALWAYS downloads
+#       the universal APK, and its asset name/hash land in update_manifest.json)
+#   Computes SHA-256 checksums for every APK (spec §4, `checksums.txt`).
+#   Extracts the matching `## [<version>]` section from CHANGELOG.md and uses
+#   it verbatim as the GitHub release notes AND update_manifest.json's
+#   `releaseNotes` — CHANGELOG.md stays the single source of truth (§5).
+#   Rewrites AND COMMITS update_manifest.json to `main` so in-app OTA picks up
+#   the release automatically.
+#
+# Secrets to configure in the repo:
+#   WALT_KEYSTORE_BASE64        = base64 of the walt.jks keystore file
+#   WALT_KEYSTORE_PASSWORD      = keystore password
+#   WALT_KEY_ALIAS              = signing key alias
+#   WALT_KEY_PASSWORD           = signing key password
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # Provision the Android release keystore from GitHub secrets so the built
+      # APKs are signed with the SAME stable key as local release builds.
+      - name: Provision Android release keystore
+        env:
+          WALT_KEYSTORE_BASE64: ${{ secrets.WALT_KEYSTORE_BASE64 }}
+          WALT_KEYSTORE_PASSWORD: ${{ secrets.WALT_KEYSTORE_PASSWORD }}
+          WALT_KEY_ALIAS: ${{ secrets.WALT_KEY_ALIAS }}
+          WALT_KEY_PASSWORD: ${{ secrets.WALT_KEY_PASSWORD }}
+        run: |
+          if [ -z "$WALT_KEYSTORE_BASE64" ]; then
+            echo "::warning::No release keystore configured — building with debug signing."
+            exit 0
+          fi
+          mkdir -p android/app/keystores
+          printf '%s' "$WALT_KEYSTORE_BASE64" | base64 -d > android/app/keystores/walt.jks
+          cat > android/key.properties <<EOF
+          storePassword=${WALT_KEYSTORE_PASSWORD}
+          keyPassword=${WALT_KEY_PASSWORD}
+          keyAlias=${WALT_KEY_ALIAS}
+          storeFile=keystores/walt.jks
+          EOF
+          keytool -keystore android/app/keystores/walt.jks -list \
+            -storepass "${WALT_KEYSTORE_PASSWORD}" \
+            -alias "${WALT_KEY_ALIAS}" >/dev/null
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .dart_tool
+            .flutter-plugins-dependencies
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: |
+            pub-${{ runner.os }}-
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ${{ github.workspace }}/.gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/gradle/wrapper/gradle-wrapper.properties', 'android/**/*.gradle*') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Determine version
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG"
+          VERSION_CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
+          echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "versionCode=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      # The in-app updater downloads the *universal* APK (spec §3.2), but per-
+      # architecture APKs are published too for side-loading on specific ABIs.
+      - name: Build split ABI APKs
+        run: |
+          flutter build apk --release \
+            --split-per-abi \
+            --target-platform android-arm,android-arm64
+
+      - name: Build universal APK
+        run: |
+          flutter build apk --release \
+            --target-platform android-arm,android-arm64
+
+      - name: Compute checksums and stage artifacts
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cd build/app/outputs/flutter-apk
+
+          cp app-armeabi-v7a-release.apk "walt-v${VERSION}-armeabi-v7a.apk"
+          cp app-arm64-v8a-release.apk "walt-v${VERSION}-arm64-v8a.apk"
+          cp app-release.apk "walt-v${VERSION}-universal.apk"
+
+          cd "$GITHUB_WORKSPACE"
+          cp build/app/outputs/flutter-apk/walt-v${VERSION}-*.apk dist/
+
+          cd dist && sha256sum ./*.apk > checksums.txt && cd ..
+          echo "Staged files:"
+          ls -1 dist/
+
+      - name: Extract changelog section
+        id: changelog
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Strip leading indentation and keep ONLY this release's section.
+          sed -n "/^## \\[$VERSION\\]/,/^## \\[/p" CHANGELOG.md \
+            | sed '$d' \
+            | sed -E '/^[[:space:]]*\[[^]]+\]:[[:space:]]/d' \
+            | sed 's/^[[:space:]]*//' \
+            > notes.md
+          printf 'extracted=%s\n' "$(wc -l < notes.md)"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          shopt -s nullglob
+          artifacts=(dist/*.apk dist/checksums.txt)
+          if (( ${#artifacts[@]} == 0 )); then
+            echo "::error::No APK artifacts found under dist/"; exit 1
+          fi
+          gh release create "$TAG" \
+            --title "walt $VERSION" \
+            --notes-file notes.md \
+            "${artifacts[@]}"
+
+      - name: Update update_manifest.json
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          VERSION_CODE: ${{ steps.version.outputs.versionCode }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python3 - notes.md <<'PY'
+          import json, os, sys
+
+          version, version_code = os.environ["VERSION"], int(os.environ["VERSION_CODE"])
+          tag = os.environ["TAG"]
+          with open(sys.argv[1]) as fh:
+              release_notes = fh.read().strip()
+          with open("update_manifest.json") as fh:
+              manifest = json.load(fh)
+
+          # The universal APK is what the in-app updater always downloads.
+          manifest["latestVersionName"] = version
+          manifest["latestVersionCode"] = version_code
+          manifest["minSupportedVersionCode"] = int(
+              manifest.get("minSupportedVersionCode") or version_code
+          )
+          manifest["apkUrl"] = f"https://github.com/Abdogouhmad/walt/releases/download/{tag}/walt-v{version}-universal.apk"
+
+          # sha256 of the freshly built universal APK.
+          import glob
+          built = glob.glob(f"build/app/outputs/flutter-apk/app-release.apk")[0]
+          import hashlib
+          with open(built, "rb") as fh:
+              manifest["sha256"] = hashlib.sha256(fh.read()).hexdigest()
+
+          manifest["releaseNotes"] = release_notes
+          manifest["publishedAt"] = f"{__import__('datetime').datetime.now(datetime.timezone.utc).isoformat()}"
+
+          with open("update_manifest.json", "w") as fh:
+              json.dump(manifest, fh, indent=2, ensure_ascii=False)
+              fh.write("\n")
+          PY
+          cat update_manifest.json
+
+      - name: Commit manifest back to main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet update_manifest.json; then
+            echo "No manifest changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add update_manifest.json
+            git commit -m "chore(release): update OTA manifest for v${{ steps.version.outputs.version }}"
+            git push origin HEAD:main
+          fi

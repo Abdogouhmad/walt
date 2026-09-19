@@ -1,44 +1,58 @@
-# Finance Tracker
+# Walt
 
-A clean, offline-first personal finance tracker built with **Flutter** for Android.  
-Track expenses & income, manage budgets, view beautiful charts, export reports, and automatically capture Google Pay transactions.
+A modern, privacy-first expense & income tracker built with **Flutter** and
+**Material You (M3)** for Android.
 
-**Current Version:** v0.3 (Categories & Filters)
+Track expenses & income, set budgets with live progress alerts, visualise
+spending with charts, export PDF reports, auto-capture Google Pay transactions,
+and self-update straight from the app via OTA.
+
+**Current Version:** v0.5.0
 
 ---
 
-## Features (Planned)
+## Features
 
-- **Offline-first** with SQLite + Hive
-- Beautiful charts (monthly, category pie, trends) using fl_chart
-- Budget planning with progress tracking & alerts
-- CSV & PDF export with share sheet
-- Biometric app lock
-- Dark mode support
-- Fully customizable categories
+- **Offline-first** — everything stays on-device (SQLite + Hive). No account,
+  no cloud, no tracking.
+- **Material You (M3)** — dynamic color theming, expressive motion, 28dp
+  surfaces, light & dark themes.
+- **Charts** — monthly trends, category breakdowns and report views with
+  `fl_chart`.
+- **Budgets** — per-category limits with progress bars and "near-limit / over
+  budget" notifications.
+- **Reports** — monthly / 6-month / yearly metrics, exportable as styled PDFs
+  via the Android share sheet.
+- **Google Pay capture** — automatic detection of GPay transactions matched
+  against your spending.
+- **App lock** — optional biometric authentication.
+- **Custom categories** and multi-currency conversion.
+- **OTA updates** — in-app update centre: auto-checks for new versions on
+  launch, shows a "What's new" changelog pane, prompts to download & install,
+  and blocks with a non-dismissible screen when a mandatory update is required.
 
 ---
 
 ## Tech Stack & Packages
 
-### Core Packages
+### Core
 
 - **Flutter** + **Dart**
-- **sqflite** – Local SQLite database
-- **hive_flutter** – Fast caching (categories, settings, pending GPay)
-- **shared_preferences** – User preferences
-- **flutter_riverpod + hooks_riverpod** – State management
-- **go_router** – Declarative navigation
+- **flutter_riverpod** (+ `hooks_riverpod`) – State management
+- **go_router** – Declarative routing
+- **sqflite** (+ `sqflite_common_ffi`) – Local SQLite database
+- **hive_ce** – Fast key-value caching (settings, pending GPay)
+- **dynamic_color** – Material You dynamic color scheme
 
 ### UI & Charts
 
 - **fl_chart** – All charts (bar, pie, line)
+- **flutter_slidable** – Swipe actions on list items
 
 ### Export
 
 - **pdf** – Generate styled PDF reports
-- **csv** – Generate CSV files
-- **share_plus** – Share files via Android share sheet
+- **share_plus** – Share files via the Android share sheet
 - **path_provider** – Temporary file storage
 
 ### Utilities
@@ -46,53 +60,53 @@ Track expenses & income, manage budgets, view beautiful charts, export reports, 
 - **freezed + json_serializable** – Immutable models
 - **intl** – Date & currency formatting
 - **local_auth** – Biometric authentication
-- **flutter_local_notifications** – Budget alerts & reminders
-- **permission_handler** – Permissions management
+- **flutter_local_notifications** – Budget alerts & update notifications
+- **ota_update** – Downloading and installing updates in-app
+- **currency_converter** – Multi-currency support
+- **http / url_launcher / image_picker / package_info_plus** – Networking and platform helpers
 
 ---
 
 ## Project Folder Structure
 
 ```bash
-finance_tracker/
-├── android/                  # Android-specific configuration
+walt/
+├── android/                  # Android config (OTA install intent, GPay listener)
+├── .github/workflows/        # CI: release.yml (build, publish, manifest)
 ├── assets/
-│   ├── fonts/
+│   ├── profile/
 │   └── icons/
 ├── lib/
 │   ├── core/
-│   │   ├── constants/        # app_colors, app_strings, currency_symbols
-│   │   ├── theme/            # app_theme.dart
-│   │   ├── utils/            # formatters, validators, extensions
-│   │   └── extensions/
+│   │   ├── design/           # Design tokens: spacing, radius, motion
+│   │   ├── theme/            # app_theme.dart (M3, dynamic color)
+│   │   ├── constants/
+│   │   └── utils/
 │   │
 │   ├── data/
-│   │   ├── models/           # @freezed models (transaction, category, budget, account)
+│   │   ├── models/           # @freezed models (transaction, category, budget, account, update_manifest)
 │   │   ├── local/            # database_helper, DAOs, hive_service
-│   │   ├── repositories/     # transaction_repo, category_repo, etc.
-│   │   └── services/         # export_service, notification_service
+│   │   └── services/         # notification_service, pdf_export_service, update_service
 │   │
 │   ├── providers/            # Riverpod providers
-│   │   ├── transaction_provider.dart
-│   │   ├── category_provider.dart
-│   │   ├── budget_provider.dart
-│   │   └── settings_provider.dart
-│   │
-│   ├── features/
-│   │   ├── home/
-│   │   ├── transactions/
-│   │   ├── reports/
-│   │   ├── budgets/
-│   │   ├── categories/
-│   │   ├── export/
-│   │   ├── settings/
-│   │   └── onboarding/
-│   │
-│   ├── shared/               # Reusable widgets
+│   ├── features/             # auth, budgets, home, onboarding, reports, settings, transactions
+│   ├── shared/               # Reusable widgets & modals (StatusBadge, M3Ecard, showWaltModal, ...)
 │   ├── app_router.dart
 │   └── main.dart
 │
 ├── test/                     # Unit tests
+├── update_manifest.json      # OTA release feed
+├── CHANGELOG.md              # Single source of truth for release notes
 ├── pubspec.yaml
 └── analysis_options.yaml
 ```
+
+---
+
+## Release Pipeline
+
+Versions follow SemVer; the Android `versionCode` is derived deterministically
+from the pubspec version (`major*10000 + minor*100 + patch`). The
+`.github/workflows/release.yml` CI build packages the APK, drafts the GitHub
+release from `CHANGELOG.md`, and rewrites `update_manifest.json` — which the
+app fetches on launch to power the in-app update centre.

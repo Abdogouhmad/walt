@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:walt/core/utils/context.dart';
 
+import 'package:walt/core/design/motion.dart';
+import 'package:walt/core/design/radius.dart';
+import 'package:walt/core/design/spacing.dart';
+
+/// Expense/Income segmented toggle used at the top of the add-transaction form.
 class TypeToggle extends StatelessWidget {
   final String value;
   final ValueChanged<String> onChanged;
@@ -14,13 +18,19 @@ class TypeToggle extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(context.r(12)),
+        borderRadius: BorderRadius.circular(AppRadius.field),
       ),
-      padding: EdgeInsets.all(context.w(4)),
+      padding: const EdgeInsets.all(AppSpacing.xs),
       child: Row(
         children: [
           _tab(context, 'expense', 'Expense', Icons.arrow_upward, cs.error),
-          _tab(context, 'income', 'Income', Icons.arrow_downward, Colors.green),
+          _tab(
+            context,
+            'income',
+            'Income',
+            Icons.arrow_downward,
+            Colors.green,
+          ),
         ],
       ),
     );
@@ -35,30 +45,28 @@ class TypeToggle extends StatelessWidget {
   ) {
     final isActive = value == type;
     final cs = Theme.of(context).colorScheme;
-
-    final textColor = isActive
-        ? activeColor
-        : cs.onSurfaceVariant; // ← Best choice for inactive
+    final textColor = isActive ? activeColor : cs.onSurfaceVariant;
 
     return Expanded(
       child: GestureDetector(
         onTap: () => onChanged(type),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(vertical: context.h(10)),
+          duration: AppMotion.short,
+          curve: AppMotion.standard,
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: isActive ? activeColor.withAlpha(40) : Colors.transparent,
-            borderRadius: BorderRadius.circular(context.r(9)),
+            color: isActive ? activeColor.withValues(alpha: 0.28) : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.full),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: context.w(18), color: textColor),
-              SizedBox(width: context.w(6)),
+              Icon(icon, size: AppSpacing.md, color: textColor),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: context.sp(14),
+                  fontSize: 14,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                   color: textColor,
                 ),

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/core/design/spacing.dart';
+import 'package:walt/features/reports/widgets/export_button.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/text_ui.dart';
-import 'package:walt/core/constants/app_colors.dart';
-import 'package:walt/features/reports/widgets/export_button.dart';
 
+/// Header block of the Reports screen: the month's total spending, the export
+/// button and the 6M/Yearly range filter.
 class SummaryReportUi extends ConsumerWidget {
   const SummaryReportUi({super.key});
 
@@ -23,81 +27,78 @@ class SummaryReportUi extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            summaryAmountByMonth(context, report.totalSpending, currency),
+            _monthlySpending(context, report.totalSpending, currency),
             const ExportPdfButton(),
           ],
         ),
-        const SizedBox(height: 16),
-        buttonFilter(context, ref, selectedIndex),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.md),
+        _filterButtons(context, ref, selectedIndex),
+        const SizedBox(height: AppSpacing.lg),
       ],
     );
   }
-}
 
-Widget summaryAmountByMonth(
-  BuildContext ctx,
-  AsyncValue<double> totalSpending,
-  String currency,
-) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start, // Fixed alignment
-    children: [
-      UiText(
-        text: "Monthly Spending",
-        type: UiTextType.labelMedium,
-        style: TextStyle(
-          color: ctx.summaryCardTextSecondary,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      totalSpending.when(
-        data: (amount) => UiText(
-          text: "${amount.toStringAsFixed(2)} $currency",
-          type: UiTextType.headlineSmall,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        loading: () => const Padding(
-          padding: EdgeInsets.only(top: 8.0),
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+  Widget _monthlySpending(
+    BuildContext ctx,
+    AsyncValue<double> totalSpending,
+    String currency,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        UiText(
+          text: "Monthly Spending",
+          type: UiTextType.labelMedium,
+          style: TextStyle(
+            color: ctx.summaryCardTextSecondary,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        error: (err, _) =>
-            const UiText(text: "Error", type: UiTextType.headlineSmall),
-      ),
-    ],
-  );
-}
+        totalSpending.when(
+          data: (amount) => UiText(
+            text: "${amount.toStringAsFixed(2)} $currency",
+            type: UiTextType.headlineSmall,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          loading: () => const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+          error: (_, _) =>
+              const UiText(text: "Error", type: UiTextType.headlineSmall),
+        ),
+      ],
+    );
+  }
 
-Widget buttonFilter(BuildContext ctx, WidgetRef ref, int selectedIndex) {
-  return Row(
-    children: [
-      AppButton(
-        onPressed: () => ref.read(reportProvider.notifier).changeFilter(0),
-        label: "6 Months",
-        size: ButtonSize.small,
-        backgroundColor: selectedIndex == 0
-            ? ctx.primaryButton
-            : Colors.transparent,
-        foregroundColor: selectedIndex == 0
-            ? ctx.primaryTextButton
-            : ctx.summaryCardTextSecondary,
-      ),
-      const SizedBox(width: 8),
-      AppButton(
-        onPressed: () => ref.read(reportProvider.notifier).changeFilter(1),
-        label: "Yearly",
-        size: ButtonSize.small,
-        backgroundColor: selectedIndex == 1
-            ? ctx.primaryButton
-            : Colors.transparent,
-        foregroundColor: selectedIndex == 1
-            ? ctx.primaryTextButton
-            : ctx.summaryCardTextSecondary,
-      ),
-    ],
-  );
+  Widget _filterButtons(
+    BuildContext ctx,
+    WidgetRef ref,
+    int selectedIndex,
+  ) {
+    const filters = ['6 Months', 'Yearly'];
+
+    return Row(
+      children: [
+        for (var i = 0; i < filters.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.sm),
+          AppButton(
+            onPressed: () => ref.read(reportProvider.notifier).changeFilter(i),
+            label: filters[i],
+            size: ButtonSize.small,
+            backgroundColor: selectedIndex == i
+                ? ctx.primaryButton
+                : Colors.transparent,
+            foregroundColor: selectedIndex == i
+                ? ctx.primaryTextButton
+                : ctx.summaryCardTextSecondary,
+          ),
+        ],
+      ],
+    );
+  }
 }

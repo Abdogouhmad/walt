@@ -1,0 +1,10 @@
+{
+  "latestVersionName": "0.4.1",
+  "latestVersionCode": 41,
+  "minSupportedVersionCode": 41,
+  "mandatory": false,
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v0.4.1/walt-v0.4.1-universal.apk",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "releaseNotes": "## Full codebase polish pass\n\n- Dead code removal, dependency cleanup and startup resilience.\n- Cleaner update flow, unified light/dark theme construction.\n- Bottom navigation now a Riverpod `ConsumerWidget`.",
+  "publishedAt": "2026-08-26T00:00:00Z"
+}

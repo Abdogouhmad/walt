@@ -4,17 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/core/design/radius.dart';
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/core/utils/context.dart';
 import 'package:walt/data/models/walt_budget.dart';
 import 'package:walt/features/budgets/widgets/budget_card.dart';
 import 'package:walt/features/budgets/widgets/budget_sheet.dart';
-import 'package:walt/features/budgets/widgets/empty_state.dart';
 import 'package:walt/features/budgets/widgets/sumcard.dart';
 import 'package:walt/providers/budget_progress_provider.dart';
 import 'package:walt/providers/budget_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
+import 'package:walt/shared/state_views.dart';
 import 'package:walt/shared/text_ui.dart';
+import 'package:walt/shared/ui_modal.dart';
 
 class BudgetsScreen extends ConsumerWidget {
   const BudgetsScreen({super.key});
@@ -38,7 +41,7 @@ class BudgetsScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                SizedBox(height: context.h(16)),
+                const SizedBox(height: AppSpacing.md),
                 UiText(
                   text: 'Error loading budgets',
                   type: UiTextType.titleMedium,
@@ -54,7 +57,7 @@ class BudgetsScreen extends ConsumerWidget {
             if (budgetsProgress.isEmpty && !budgetsAsync.isLoading) {
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(context.w(16)),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 child: Column(
                   children: [
                     BudgetSumCard(
@@ -62,12 +65,11 @@ class BudgetsScreen extends ConsumerWidget {
                       summary: summary,
                       month: thisMonth,
                     ),
-                    EmptyState(
+                    const EmptyStateView(
                       title: 'No budgets set yet',
-                      subtitle:
+                      message:
                           'Create a budget to keep your spending in check and reach your goals faster.',
                       icon: Icons.account_balance_wallet_outlined,
-                      topPadding: context.h(60),
                     ),
                   ],
                 ),
@@ -77,7 +79,7 @@ class BudgetsScreen extends ConsumerWidget {
             return RefreshIndicator(
               onRefresh: () => ref.read(budgetProvider.notifier).refresh(),
               child: SingleChildScrollView(
-                padding: EdgeInsets.all(context.w(16)),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +90,7 @@ class BudgetsScreen extends ConsumerWidget {
                       month: thisMonth,
                     ),
 
-                    SizedBox(height: context.h(32)),
+                    const SizedBox(height: AppSpacing.xl),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,7 +112,7 @@ class BudgetsScreen extends ConsumerWidget {
                       ],
                     ),
 
-                    SizedBox(height: context.h(20)),
+                    const SizedBox(height: AppSpacing.md),
 
                     ListView.builder(
                       shrinkWrap: true,
@@ -144,11 +146,11 @@ class BudgetsScreen extends ConsumerWidget {
                           },
                           background: Container(
                             alignment: Alignment.centerRight,
-                            padding: EdgeInsets.only(right: context.w(20)),
+                            padding: const EdgeInsets.only(right: AppSpacing.lg),
                             decoration: BoxDecoration(
                               color: context.colorAppScheme.error,
                               borderRadius: BorderRadius.circular(
-                                context.r(24),
+                                AppRadius.surface,
                               ),
                             ),
                             child: const Icon(
@@ -170,7 +172,7 @@ class BudgetsScreen extends ConsumerWidget {
                       },
                     ),
 
-                    SizedBox(height: context.h(100)),
+                    const SizedBox(height: AppSpacing.xl * 2),
                   ],
                 ),
               ),
@@ -188,20 +190,18 @@ class BudgetsScreen extends ConsumerWidget {
   }
 
   void _showAddBudgetBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const BudgetSheet(),
+    showWaltModal<void>(
+      context,
+      content: const BudgetSheet(),
+      heightFactor: 0.8,
     );
   }
 
   void _showEditBudgetBottomSheet(BuildContext context, WaltBudget budget) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => BudgetSheet(budgetToEdit: budget),
+    showWaltModal<void>(
+      context,
+      content: BudgetSheet(budgetToEdit: budget),
+      heightFactor: 0.8,
     );
   }
 }

@@ -17,6 +17,19 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// ── Versioning (spec §2) ──────────────────────────────────────────────────
+// The versionCode is derived deterministically from the SemVer `versionName`
+// (e.g. "0.5.1" → 501, "1.2.43" → 10243) with the formula
+// `major*10000 + minor*100 + patch`, so `pubspec.yaml` stays the single source
+// of truth and every build of a given tag gets the identical versionCode that
+// the OTA manifest and release automation expect.
+val pubspecVersionName = flutter.versionName ?: "0.0.0"
+val versionParts = pubspecVersionName.split('.').map { it.toIntOrNull() ?: 0 }
+val derivedVersionCode =
+    versionParts.getOrElse(0) { 0 } * 10000 +
+    versionParts.getOrElse(1) { 0 } * 100 +
+    versionParts.getOrElse(2) { 0 }
+
 android {
     namespace = "com.example.walt"
     compileSdk = flutter.compileSdkVersion
@@ -42,8 +55,8 @@ android {
         applicationId = "com.example.walt"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = derivedVersionCode
+        versionName = pubspecVersionName
         multiDexEnabled = true
     }
 

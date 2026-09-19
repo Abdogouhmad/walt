@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/features/reports/widgets/barchart.dart';
 import 'package:walt/features/reports/widgets/piechart.dart';
 import 'package:walt/features/reports/widgets/secondary_cards.dart';
@@ -13,14 +15,14 @@ class ReportsScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppSpacing.md),
           children: [
             const SummaryReportUi(),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.md),
             BarChartWidget(),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             SecondaryReportCardUi(),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.lg),
             const PieChartWidget(),
           ],
         ),

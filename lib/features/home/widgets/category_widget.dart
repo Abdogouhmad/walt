@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:walt/data/models/walt_category.dart';
-import 'package:walt/core/utils/category_icon.dart'; // Import mapper
-import 'package:walt/core/utils/context.dart';
 
+import 'package:walt/core/design/motion.dart';
+import 'package:walt/core/design/radius.dart';
+import 'package:walt/core/design/spacing.dart';
+import 'package:walt/data/models/walt_category.dart';
+import 'package:walt/core/utils/category_icon.dart';
+
+/// Wrap of selectable category chips used inside the add-transaction sheet.
+///
+/// Region geometry (radius, padding, motion, gaps) comes from the design
+/// tokens in `core/design/`.
 class CategoryPicker extends StatelessWidget {
   final List<WaltCategory> categories;
   final int? selected;
@@ -19,11 +26,9 @@ class CategoryPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    // debugPrint("Categories count: ${categories.length}"); // Add this to check console
-
     if (categories.isEmpty) {
       return Padding(
-        padding: EdgeInsets.all(context.w(16)),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Text(
           'No categories found. Check database seed.',
           style: TextStyle(color: cs.error),
@@ -32,26 +37,27 @@ class CategoryPicker extends StatelessWidget {
     }
 
     return Wrap(
-      spacing: context.w(8),
-      runSpacing: context.h(5), // Increased spacing for better touch targets
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: categories.map((cat) {
         final isSelected = selected == cat.id;
         return GestureDetector(
           onTap: () => onChanged(cat.id),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(
-              horizontal: context.w(16),
-              vertical: context.h(10),
+            duration: AppMotion.short,
+            curve: AppMotion.standard,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
               color: isSelected
                   ? cs.primaryContainer
                   : cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(context.r(12)),
+              borderRadius: BorderRadius.circular(AppRadius.field),
               border: Border.all(
                 color: isSelected ? cs.primary : Colors.transparent,
-                width: context.w(2),
+                width: 2,
               ),
             ),
             child: Row(
@@ -59,16 +65,16 @@ class CategoryPicker extends StatelessWidget {
               children: [
                 Icon(
                   CategoryIcons.getIcon(cat.icon),
-                  size: context.w(18),
+                  size: AppSpacing.md,
                   color: isSelected
                       ? cs.onPrimaryContainer
                       : cs.onSurfaceVariant,
                 ),
-                SizedBox(width: context.w(8)),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   cat.name,
                   style: TextStyle(
-                    fontSize: context.sp(14),
+                    fontSize: 14,
                     fontWeight: isSelected
                         ? FontWeight.bold
                         : FontWeight.normal,
