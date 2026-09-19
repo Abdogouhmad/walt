@@ -349,8 +349,7 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
             ),
             const SizedBox(height: 12),
             UiText(
-              text:
-                  "Please do not close the app. The installer will launch automatically once completed.",
+              text: "Please do not close the app. The installer will launch automatically once completed.",
               type: UiTextType.bodySmall,
               style: TextStyle(
                 color: context.colorAppScheme.onSurfaceVariant.withAlpha(150),
