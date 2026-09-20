@@ -168,6 +168,7 @@ build_universal() {
 # ── Stage + checksum ─────────────────────────────────────────────────────────
 stage_artifacts() {
   info "Staging artifacts under dist/ ..."
+  mkdir -p dist
   local out="build/app/outputs/flutter-apk"
 
   for src_name in app-armeabi-v7a-release.apk app-arm64-v8a-release.apk app-release.apk; do
