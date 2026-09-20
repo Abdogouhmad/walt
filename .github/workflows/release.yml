@@ -1,6 +1,17 @@
 name: release
 
-# Builds and publishes the Android release on every `v*` tag push (spec §4).
+# Builds and publishes the Android release on every push/merge to `main`
+# (plus manual runs via workflow_dispatch). The git tag `v<version>` is created
+# automatically from `version:` in pubspec.yaml (spec §2) — the same scheme as
+# brewline — so there is no tag-trigger to maintain; CHANGELOG stays the single
+# source of truth for release notes (spec §5).
+#
+#   Signs-policy (fixes 0.5.0's uninstallable APKs): Android refuses to install
+#   an UNSIGNED release APK (`INSTALL_FAILED_INVALID_APK`). Every APK here is
+#   signed with the SAME stable keystore provisioned from the WALT_* secrets,
+#   the build FAILS when the secrets are missing (never ship unsigned/debug
+#   again), and build.sh verifies every APK's signature with apksigner before
+#   publish.
 #
 #   Builds  3 APKs from a single trigger:
 #     - split-per-abi arm64-v8a + armeabi-v7a (the supported ABIs; no x86_64)
@@ -9,12 +20,21 @@ name: release
 #   Computes SHA-256 checksums for every APK (spec §4, `checksums.txt`).
 #   Extracts the matching `## [<version>]` section from CHANGELOG.md and uses
 #   it verbatim as the GitHub release notes AND update_manifest.json's
-#   `releaseNotes` — CHANGELOG.md stays the single source of truth (§5).
+#   `releaseNotes`.
 #   Rewrites AND COMMITS update_manifest.json to `main` so in-app OTA picks up
 #   the release automatically.
 #
+# The heavy lifting — keystore provisioning, APK builds, staging, checksums,
+# signature verification, release-notes extraction — lives in ./build.sh, so
+# this file stays a thin declarative wrapper (no bash sprawl here).
+#
+# To release a new version:
+#   1. Bump `version:` in pubspec.yaml.
+#   2. Add a `## [<version>]` section to CHANGELOG.md.
+#   3. Merge onto main — the tag + GitHub release + OTA manifest follow.
+#
 # Secrets to configure in the repo:
-#   WALT_KEYSTORE_BASE64        = base64 of the walt.jks keystore file
+#   WALT_KEYSTORE_BASE64        = base64 of the walt-release.jks keystore
 #   WALT_KEYSTORE_PASSWORD      = keystore password
 #   WALT_KEY_ALIAS              = signing key alias
 #   WALT_KEY_PASSWORD           = signing key password
@@ -23,8 +43,7 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -41,31 +60,6 @@ jobs:
         with:
           channel: stable
           cache: true
-
-      # Provision the Android release keystore from GitHub secrets so the built
-      # APKs are signed with the SAME stable key as local release builds.
-      - name: Provision Android release keystore
-        env:
-          WALT_KEYSTORE_BASE64: ${{ secrets.WALT_KEYSTORE_BASE64 }}
-          WALT_KEYSTORE_PASSWORD: ${{ secrets.WALT_KEYSTORE_PASSWORD }}
-          WALT_KEY_ALIAS: ${{ secrets.WALT_KEY_ALIAS }}
-          WALT_KEY_PASSWORD: ${{ secrets.WALT_KEY_PASSWORD }}
-        run: |
-          if [ -z "$WALT_KEYSTORE_BASE64" ]; then
-            echo "::warning::No release keystore configured — building with debug signing."
-            exit 0
-          fi
-          mkdir -p android/app/keystores
-          printf '%s' "$WALT_KEYSTORE_BASE64" | base64 -d > android/app/keystores/walt.jks
-          cat > android/key.properties <<EOF
-          storePassword=${WALT_KEYSTORE_PASSWORD}
-          keyPassword=${WALT_KEY_PASSWORD}
-          keyAlias=${WALT_KEY_ALIAS}
-          storeFile=keystores/walt.jks
-          EOF
-          keytool -keystore android/app/keystores/walt.jks -list \
-            -storepass "${WALT_KEYSTORE_PASSWORD}" \
-            -alias "${WALT_KEY_ALIAS}" >/dev/null
 
       - name: Cache pub dependencies
         uses: actions/cache@v4
@@ -88,88 +82,57 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
+      # Provisions the stable keystore from secrets (fails the build if the
+      # secrets are missing), builds the split-per-abi + universal APKs, stages
+      # versioned copies under dist/, writes checksums.txt and verifies every
+      # APK's signature with apksigner.
+      - name: Build, sign and stage APKs
+        env:
+          CI: "true"
+          WALT_KEYSTORE_BASE64: ${{ secrets.WALT_KEYSTORE_BASE64 }}
+          WALT_KEYSTORE_PASSWORD: ${{ secrets.WALT_KEYSTORE_PASSWORD }}
+          WALT_KEY_ALIAS: ${{ secrets.WALT_KEY_ALIAS }}
+          WALT_KEY_PASSWORD: ${{ secrets.WALT_KEY_PASSWORD }}
+        run: |
+          chmod +x ./build.sh
+          ./build.sh
+
       - name: Determine version
         id: version
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            TAG="${GITHUB_REF#refs/tags/v}"
-            TAG_FULL="${GITHUB_REF#refs/tags/}"
-          else
-            TAG="$(sed -n 's/^version: *//p' pubspec.yaml)"
-            TAG_FULL="v${TAG}"
-          fi
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$TAG"
-          VERSION_CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
-          echo "tag=${TAG_FULL}" >> "$GITHUB_OUTPUT"
-          echo "version=$TAG" >> "$GITHUB_OUTPUT"
-          echo "versionCode=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+        run: ./build.sh --detect-version >> "$GITHUB_OUTPUT"
 
-      # The in-app updater downloads the *universal* APK (spec §3.2), but per-
-      # architecture APKs are published too for side-loading on specific ABIs.
-      - name: Build split ABI APKs
-        run: |
-          flutter build apk --release \
-            --split-per-abi \
-            --target-platform android-arm,android-arm64
+      # Extract ONLY this release's `## [<version>]` section from CHANGELOG.md
+      # (fails when it's missing so an unreleased change never ships silently).
+      - name: Extract release notes from CHANGELOG
+        run: ./build.sh --release-notes
 
-      - name: Build universal APK
-        run: |
-          flutter build apk --release \
-            --target-platform android-arm,android-arm64
-
-      - name: Compute checksums and stage artifacts
-        shell: bash
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          set -euo pipefail
-          mkdir -p dist
-          cd build/app/outputs/flutter-apk
-
-          cp app-armeabi-v7a-release.apk "walt-v${VERSION}-armeabi-v7a.apk"
-          cp app-arm64-v8a-release.apk "walt-v${VERSION}-arm64-v8a.apk"
-          cp app-release.apk "walt-v${VERSION}-universal.apk"
-
-          cd "$GITHUB_WORKSPACE"
-          cp build/app/outputs/flutter-apk/walt-v${VERSION}-*.apk dist/
-
-          cd dist && sha256sum ./*.apk > checksums.txt && cd ..
-          echo "Staged files:"
-          ls -1 dist/
-
-      - name: Extract changelog section
-        id: changelog
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          # Strip leading indentation and keep ONLY this release's section.
-          sed -n "/^## \\[$VERSION\\]/,/^## \\[/p" CHANGELOG.md \
-            | sed '$d' \
-            | sed -E '/^[[:space:]]*\[[^]]+\]:[[:space:]]/d' \
-            | sed 's/^[[:space:]]*//' \
-            > notes.md
-          printf 'extracted=%s\n' "$(wc -l < notes.md)"
-
-      - name: Create GitHub release
+      # Collision-safe: a re-merge into main of the SAME version re-releases
+      # it at the new commit (delete the old release + tag, then recreate).
+      - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
         run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release delete "$TAG" --yes --cleanup-tag
+            git tag -d "$TAG" >/dev/null 2>&1 || true
+          fi
+
           shopt -s nullglob
           artifacts=(dist/*.apk dist/checksums.txt)
           if (( ${#artifacts[@]} == 0 )); then
             echo "::error::No APK artifacts found under dist/"; exit 1
           fi
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists — skipping creation."
-            exit 0
-          fi
+
+          git tag "$TAG"
+          git push origin "$TAG"
           gh release create "$TAG" \
-            --title "walt $VERSION" \
-            --notes-file notes.md \
+            --title "walt ${{ steps.version.outputs.version }}" \
+            --notes-file dist/notes.md \
             "${artifacts[@]}"
 
+      # Rewrite the OTA manifest: version, universal-APK URL + its fresh
+      # sha256, and this release's notes (from CHANGELOG.md, not duplicated).
       - name: Update update_manifest.json
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -177,12 +140,14 @@ jobs:
           TAG: ${{ steps.version.outputs.tag }}
         run: |
           set -euo pipefail
-          python3 - notes.md <<'PY'
-          import json, os, sys
+          python3 - <<'PY'
+          import json, os, glob, hashlib, datetime
 
-          version, version_code = os.environ["VERSION"], int(os.environ["VERSION_CODE"])
+          version = os.environ["VERSION"]
+          version_code = int(os.environ["VERSION_CODE"])
           tag = os.environ["TAG"]
-          with open(sys.argv[1]) as fh:
+
+          with open("dist/notes.md") as fh:
               release_notes = fh.read().strip()
           with open("update_manifest.json") as fh:
               manifest = json.load(fh)
@@ -193,19 +158,20 @@ jobs:
           manifest["minSupportedVersionCode"] = int(
               manifest.get("minSupportedVersionCode") or version_code
           )
-          manifest["apkUrl"] = f"https://github.com/Abdogouhmad/walt/releases/download/{tag}/walt-v{version}-universal.apk"
+          manifest["apkUrl"] = (
+              f"https://github.com/Abdogouhmad/walt/releases/download/"
+              f"{tag}/walt-v{version}-universal.apk"
+          )
 
-          # sha256 of the freshly built universal APK.
-          import glob
-          built = glob.glob(f"build/app/outputs/flutter-apk/app-release.apk")[0]
-          import hashlib
+          # sha256 of the freshly built, staged universal APK.
+          built = glob.glob(f"dist/walt-v{version}-universal.apk")[0]
           with open(built, "rb") as fh:
               manifest["sha256"] = hashlib.sha256(fh.read()).hexdigest()
 
-          import datetime
-
           manifest["releaseNotes"] = release_notes
-          manifest["publishedAt"] = f"{datetime.datetime.now(datetime.timezone.utc).isoformat()}"
+          manifest["publishedAt"] = (
+              f"{datetime.datetime.now(datetime.timezone.utc).isoformat()}"
+          )
 
           with open("update_manifest.json", "w") as fh:
               json.dump(manifest, fh, indent=2, ensure_ascii=False)

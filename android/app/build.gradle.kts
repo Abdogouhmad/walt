@@ -60,20 +60,32 @@ android {
         multiDexEnabled = true
     }
 
+    // Stable release keystore. Every release APK must be signed with the SAME
+    // key forever — a changed signature forces Android to uninstall before it
+    // will "update", and an unsigned release APK fails to install outright
+    // (`INSTALL_FAILED_INVALID_APK`). Only defined when `android/key.properties`
+    // actually names a storeFile so a broken/missing config never yields a
+    // half-initialised signingConfig.
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
-            storePassword = keystoreProperties.getProperty("storePassword")
+        if (keystoreProperties.getProperty("storeFile") != null) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
         }
     }
 
     buildTypes {
         getByName("release") {
-            if (keystorePropertiesFile.exists()) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+            // Sign with the stable release keystore when provisioned (CI);
+            // otherwise fall back to the debug key so `flutter run --release`
+            // on a fresh clone still produces an installable APK. The release
+            // pipeline (build.sh) REQUIRES the real keystore, so published
+            // APKs are never debug- or unsigned.
+            val releaseSigning = signingConfigs.findByName("release")
+            signingConfig = releaseSigning ?: signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

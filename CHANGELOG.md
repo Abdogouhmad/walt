@@ -12,7 +12,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.0] - 2026-09-20
+
+### Fixed
+
+- **Installable release APK (fixes 0.5.0 not installing)** — the 0.5.0 release
+  artifacts were published **unsigned** (the release keystore hadn't been
+  provisioned on CI), so Android refused to install them at all
+  (`INSTALL_FAILED_INVALID_APK` — an unsigned release APK is not installable).
+  This release fixes that end-to-end:
+  - The release pipeline now provisions the stable keystore from the `WALT_*`
+    CI secrets and **fails the build when they are missing** — a release is
+    never shipped unsigned or debug-signed again.
+  - Every APK is signature-verified with `apksigner` before it is uploaded.
+  - `android/app/build.gradle.kts` now always signs release builds (falling
+    back to the debug key for local `flutter run --release`), so every APK
+    Gradle emits is signed.
+  - Split-per-ABI APKs now keep the **same `versionCode`** as the universal
+    APK (`force-version-code-ignoring-abi`), so installing over a universal
+    APK is an upgrade, never a signature/downgrade clash.
+- The long-unreleased `0.5.0` changelog was promoted into its own released
+  section; the release pipeline fails if `## [0.6.0]` (or whatever the current
+  version is) is missing from CHANGELOG.md, keeping release notes and the
+  in-app "What's new" pane truthful.
+
+### Changed
+
+- Release automation follows the brewline flow: a `build.sh` script carries the
+  build/signing logic and `.github/workflows/release.yml` stays a thin wrapper
+  (push to `main` → auto-tag `v<version>` → signed release + OTA manifest).
+
+## [0.5.0] - 2026-09-19
 
 ### Added
 
@@ -119,4 +149,6 @@ resilience, and UI/theme refinements (449 additions, 861 deletions).
 - Reformatted and lint-cleaned most files under `lib/`.
 - Trimmed `test/widget_test.dart` to match current app structure.
 
+[0.6.0]: https://github.com/Abdogouhmad/walt/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/Abdogouhmad/walt/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/Abdogouhmad/walt/compare/v0.4.0...v0.4.1
