@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "0.5.0",
-  "latestVersionCode": 500,
+  "latestVersionName": "0.6.0",
+  "latestVersionCode": 600,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v0.5.0/walt-v0.5.0-universal.apk",
-  "sha256": "010f2ec267865b49670c0cb1be9be9d1762a67d684c7f49ef566699fab9de84e",
-  "releaseNotes": "",
-  "publishedAt": "2026-09-19T11:58:49.351540+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v0.6.0/walt-v0.6.0-universal.apk",
+  "sha256": "2340a405499dc65a2e7e4db91a87176b9ad306e085cfa1640ba0aba358063c99",
+  "releaseNotes": "## [0.6.0] - 2026-09-20\n\n### Fixed\n\n- **Installable release APK (fixes 0.5.0 not installing)** — the 0.5.0 release\nartifacts were published **unsigned** (the release keystore hadn't been\nprovisioned on CI), so Android refused to install them at all\n(`INSTALL_FAILED_INVALID_APK` — an unsigned release APK is not installable).\nThis release fixes that end-to-end:\n- The release pipeline now provisions the stable keystore from the `WALT_*`\nCI secrets and **fails the build when they are missing** — a release is\nnever shipped unsigned or debug-signed again.\n- Every APK is signature-verified with `apksigner` before it is uploaded.\n- `android/app/build.gradle.kts` now always signs release builds (falling\nback to the debug key for local `flutter run --release`), so every APK\nGradle emits is signed.\n- Split-per-ABI APKs now keep the **same `versionCode`** as the universal\nAPK (`force-version-code-ignoring-abi`), so installing over a universal\nAPK is an upgrade, never a signature/downgrade clash.\n- The long-unreleased `0.5.0` changelog was promoted into its own released\nsection; the release pipeline fails if `## [0.6.0]` (or whatever the current\nversion is) is missing from CHANGELOG.md, keeping release notes and the\nin-app \"What's new\" pane truthful.\n\n### Changed\n\n- Release automation follows the brewline flow: a `build.sh` script carries the\nbuild/signing logic and `.github/workflows/release.yml` stays a thin wrapper\n(push to `main` → auto-tag `v<version>` → signed release + OTA manifest).",
+  "publishedAt": "2026-09-20T14:52:43.171628+00:00"
 }
