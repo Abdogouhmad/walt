@@ -164,7 +164,7 @@ class _NavItem extends StatelessWidget {
               // the pill out without buying any extra clearance.
               padding: EdgeInsets.symmetric(
                 horizontal: isSelected ? 8 : 12,
-                vertical: 10,
+                vertical: 15,
               ),
               decoration: ShapeDecoration(
                 color: isSelected

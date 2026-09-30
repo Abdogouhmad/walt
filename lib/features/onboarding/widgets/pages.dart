@@ -25,7 +25,7 @@ class WelcomeStep extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/icon/wallet.png', height: 100),
+              Image.asset('assets/icon/walt_icon.png', height: 100),
               const SizedBox(width: 12),
               const Text(
                 "Walt",
