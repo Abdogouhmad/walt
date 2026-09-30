@@ -113,9 +113,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
+          # Drop the LOCAL tag before asking gh to clean up the remote one --
+          # otherwise the push below races the deletion and the run dies.
+          git tag -d "$TAG" >/dev/null 2>&1 || true
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release delete "$TAG" --yes --cleanup-tag
-            git tag -d "$TAG" >/dev/null 2>&1 || true
           fi
 
           shopt -s nullglob
@@ -138,6 +140,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           VERSION_CODE: ${{ steps.version.outputs.versionCode }}
           TAG: ${{ steps.version.outputs.tag }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -146,6 +149,7 @@ jobs:
           version = os.environ["VERSION"]
           version_code = int(os.environ["VERSION_CODE"])
           tag = os.environ["TAG"]
+          repo = os.environ["REPO"]
 
           with open("dist/notes.md") as fh:
               release_notes = fh.read().strip()
@@ -158,15 +162,18 @@ jobs:
           manifest["minSupportedVersionCode"] = int(
               manifest.get("minSupportedVersionCode") or version_code
           )
+          # Derived from the repository this run is actually in, so a fork or a
+          # rename can never publish a manifest pointing at someone else's APK.
           manifest["apkUrl"] = (
-              f"https://github.com/Abdogouhmad/walt/releases/download/"
+              f"https://github.com/{repo}/releases/download/"
               f"{tag}/walt-v{version}-universal.apk"
           )
 
           # sha256 of the freshly built, staged universal APK.
           built = glob.glob(f"dist/walt-v{version}-universal.apk")[0]
           with open(built, "rb") as fh:
-              manifest["sha256"] = hashlib.sha256(fh.read()).hexdigest()
+              digest = hashlib.sha256(fh.read()).hexdigest()
+          manifest["sha256"] = digest
 
           manifest["releaseNotes"] = release_notes
           manifest["publishedAt"] = (
@@ -176,8 +183,40 @@ jobs:
           with open("update_manifest.json", "w") as fh:
               json.dump(manifest, fh, indent=2, ensure_ascii=False)
               fh.write("\n")
+
+          # Emit what we hashed so the verification step can prove the file we
+          # published is byte-for-byte the file the manifest points at.
+          print(digest)
           PY
-          cat update_manifest.json
+
+      # The manifest's sha256 is only meaningful if it describes the APK that
+      # was actually published. A glob mismatch or a mangled upload would
+      # otherwise ship an update that fails verification on every device.
+      - name: Verify published APK matches the manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          local_sha="$(sha256sum "dist/walt-v${VERSION}-universal.apk" | cut -d' ' -f1)"
+          manifest_sha="$(python3 -c \
+            "import json;print(json.load(open('update_manifest.json'))['sha256'])")"
+          if [[ "$local_sha" != "$manifest_sha" ]]; then
+            echo "::error::Manifest sha256 ($manifest_sha) != built APK ($local_sha)"
+            exit 1
+          fi
+          if ! gh release download "${{ steps.version.outputs.tag }}" \
+              --pattern "walt-v${VERSION}-universal.apk" --dir /tmp/published-apk \
+              --clobber >/dev/null 2>&1; then
+            echo "::error::Published release is missing the universal APK"
+            exit 1
+          fi
+          published_sha="$(sha256sum "/tmp/published-apk/walt-v${VERSION}-universal.apk" | cut -d' ' -f1)"
+          if [[ "$published_sha" != "$manifest_sha" ]]; then
+            echo "::error::Published APK ($published_sha) != manifest sha256 ($manifest_sha)"
+            exit 1
+          fi
+          echo "Verified: published APK matches update_manifest.json ($published_sha)"
 
       - name: Commit manifest back to main
         env:

@@ -133,6 +133,7 @@ class UpdateState {
     UpdateErrorCode? error,
     String? errorDetail,
     bool clearError = false,
+    bool clearProgress = false,
     bool clearManifest = false,
     bool clearCheckResult = false,
   }) {
@@ -140,7 +141,10 @@ class UpdateState {
       status: status ?? this.status,
       manifest: clearManifest ? null : manifest ?? this.manifest,
       checkResult: clearCheckResult ? null : checkResult ?? this.checkResult,
-      progress: progress ?? this.progress,
+      // `progress` is nullable, so a plain `progress: null` would fall through
+      // to `this.progress` and silently keep a stale bar. Clearing needs its
+      // own flag.
+      progress: clearProgress ? null : progress ?? this.progress,
       error: clearError ? null : error ?? this.error,
       errorDetail: clearError ? null : errorDetail ?? this.errorDetail,
     );
@@ -176,6 +180,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
         status: UpdateStatus.idle,
         checkResult: UpdateCheckResult.checkFailed,
         clearManifest: true,
+        clearProgress: true,
       );
       return;
     }
@@ -184,7 +189,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
       status: UpdateStatus.available,
       manifest: manifest,
       checkResult: outcome,
-      progress: null,
+      clearProgress: true,
       clearError: true,
     );
 
@@ -269,30 +274,35 @@ class UpdateNotifier extends Notifier<UpdateState> {
             status: UpdateStatus.idle,
             clearManifest: true,
             clearCheckResult: true,
+            clearProgress: true,
           );
         case OtaStatus.ALREADY_RUNNING_ERROR:
           state = state.copyWith(
             status: UpdateStatus.error,
             error: UpdateErrorCode.downloadFailed,
             errorDetail: 'An update is already in progress.',
+            clearProgress: true,
           );
         case OtaStatus.PERMISSION_NOT_GRANTED_ERROR:
           state = state.copyWith(
             status: UpdateStatus.error,
             error: UpdateErrorCode.install,
             errorDetail: 'Permission to install apps was denied.',
+            clearProgress: true,
           );
         case OtaStatus.CHECKSUM_ERROR:
           state = state.copyWith(
             status: UpdateStatus.error,
             error: UpdateErrorCode.integrity,
             errorDetail: event.value,
+            clearProgress: true,
           );
         case OtaStatus.INSTALLATION_ERROR:
           state = state.copyWith(
             status: UpdateStatus.error,
             error: UpdateErrorCode.install,
             errorDetail: event.value,
+            clearProgress: true,
           );
         case OtaStatus.DOWNLOAD_ERROR:
         case OtaStatus.INTERNAL_ERROR:
@@ -300,9 +310,15 @@ class UpdateNotifier extends Notifier<UpdateState> {
             status: UpdateStatus.error,
             error: UpdateErrorCode.downloadFailed,
             errorDetail: event.value,
+            clearProgress: true,
           );
         case OtaStatus.CANCELED:
-          state = state.copyWith(status: UpdateStatus.available);
+          // A cancelled download leaves a partial bar behind; drop it so the
+          // next attempt starts from a clean state.
+          state = state.copyWith(
+            status: UpdateStatus.available,
+            clearProgress: true,
+          );
       }
     }
   }

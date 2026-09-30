@@ -95,13 +95,22 @@ fi
 # ── Mode: extract this release's CHANGELOG section into dist/notes.md ─────────
 if [[ "$MODE" == release-notes ]]; then
   mkdir -p dist
+  # Strip only TRAILING whitespace — leading indentation is Markdown structure
+  # (nested bullets, code blocks) and must survive into the release body and
+  # the in-app "What's new" pane.
   sed -n "/^## \\[$VERSION\\]/,/^## \\[/p" CHANGELOG.md \
     | sed '$d' \
     | sed -E '/^[[:space:]]*\[[^]]+\]:[[:space:]]/d' \
-    | sed 's/^[[:space:]]*//' \
+    | sed -E 's/[[:space:]]+$//' \
     > dist/notes.md
   if [[ ! -s dist/notes.md ]]; then
     err "CHANGELOG.md has no '## [$VERSION]' section — add the release notes first."
+    exit 1
+  fi
+  # The extracted text must actually be about THIS version. Guards against a
+  # stale/duplicated heading silently shipping the previous release's notes.
+  if ! grep -qF "## [$VERSION]" dist/notes.md; then
+    err "Extracted notes do not contain the '## [$VERSION]' heading."
     exit 1
   fi
   info "Release notes extracted -> dist/notes.md ($(wc -l < dist/notes.md) lines)"

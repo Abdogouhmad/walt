@@ -14,6 +14,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-09-30
+
+### Changed
+
+- **Onboarding icon** — the welcome step now shows the app's real launcher icon
+  (`walt_icon.png`) instead of the old generic wallet glyph.
+- **Updates are picked up immediately** — the update check now asks for a fresh
+  copy of the manifest, so a newly published release shows up on the very next
+  check instead of waiting for the CDN cache to expire.
+
+### Fixed
+
+- **OTA releases resolve against the right repository** — the release workflow
+  now derives the download URL from the repository it actually runs in, so a
+  fork or a renamed repo can no longer publish a manifest that points at
+  somebody else's APK.
+- **Release notes are no longer mangled** — leading indentation is preserved,
+  so nested bullets and code blocks survive into the GitHub release body and
+  the in-app "What's new" pane.
+- **Stale release notes can no longer be published** — the published APK and
+  the APK recorded in the manifest are verified to be the same file, and a
+  release whose CHANGELOG section does not match its version fails the build.
+- **"Check for updates" no longer hangs forever** — the network fetch is
+  bounded by a timeout, so a stalled connection resolves to a normal "couldn't
+  check" state instead of spinning indefinitely.
+- **A download that is cancelled or fails now resets cleanly** — the stale
+  progress bar is cleared instead of being carried into the next attempt.
+
 ## [0.8.0] - 2026-09-30
 
 ### Added

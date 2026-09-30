@@ -21,6 +21,21 @@ const String kGitHubRepo = 'Abdogouhmad/walt';
 const String kUpdateManifestUrl =
     'https://raw.githubusercontent.com/$kGitHubRepo/main/update_manifest.json';
 
+/// Upper bound on a single manifest fetch. A stalled connection must resolve
+/// to a normal failed check, never leave the UI in `checking` indefinitely.
+const Duration kUpdateCheckTimeout = Duration(seconds: 15);
+
+/// The manifest URI, with a cache-busting parameter.
+///
+/// `raw.githubusercontent.com` is fronted by a CDN that serves a stale copy for
+/// minutes after a release is committed. The server ignores the query string
+/// when resolving the path but varies its cache on it, so a per-request
+/// timestamp makes every check read the manifest that was just published.
+Uri manifestUri({DateTime? now}) {
+  final stamp = (now ?? DateTime.now()).millisecondsSinceEpoch;
+  return Uri.parse('$kUpdateManifestUrl?ts=$stamp');
+}
+
 /// Result of comparing the installed version against the latest manifest.
 enum UpdateCheckResult {
   /// The app is already up to date.
@@ -39,15 +54,23 @@ class UpdateService {
 
   /// Fetches the newest update manifest. Returns `null` on any failure so
   /// callers can treat a failed background check as "check again later".
-  Future<UpdateManifest?> fetchManifest() async {
+  ///
+  /// The request is bounded by [timeout] so a connection that stalls without
+  /// failing would otherwise leave the UI spinning in `checking` forever
+  /// instead of resolving to a plain "couldn't check".
+  Future<UpdateManifest?> fetchManifest({Duration? timeout}) async {
     try {
-      final response = await http.get(
-        Uri.parse(kUpdateManifestUrl),
-        headers: const {
-          'Accept': 'application/json',
-          'User-Agent': 'Walt-Updater',
-        },
-      );
+      final response = await http
+          .get(
+            manifestUri(),
+            headers: const {
+              'Accept': 'application/json',
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'User-Agent': 'Walt-Updater',
+            },
+          )
+          .timeout(timeout ?? kUpdateCheckTimeout);
       if (response.statusCode != 200) return null;
       final decoded = json.decode(response.body);
       if (decoded is! Map<String, dynamic>) return null;
