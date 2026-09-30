@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:walt/core/utils/context.dart';
 import 'package:walt/data/services/pdf_export_service.dart';
-import 'package:walt/shared/text_ui.dart';
 
 class ExportPdfButton extends ConsumerWidget {
   const ExportPdfButton({super.key});
@@ -71,8 +69,7 @@ class ExportPdfButton extends ConsumerWidget {
                                   ),
                             child: Text(
                               monthName,
-                              style: TextStyle(
-                                color: isFuture ? Colors.grey : null,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -99,12 +96,8 @@ class ExportPdfButton extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: context.colorAppScheme.primaryContainer,
-          content: UiText(
-            text:
-                'Generating PDF for ${DateFormat('MMMM yyyy').format(picked)}...',
-            type: UiTextType.bodyMedium,
-            style: TextStyle(color: context.colorAppScheme.primary),
+          content: Text(
+            'Generating PDF for ${DateFormat('MMMM yyyy').format(picked)}...',
           ),
           duration: const Duration(seconds: 2),
         ),
@@ -114,16 +107,9 @@ class ExportPdfButton extends ConsumerWidget {
         await PdfExportService().exportMonthToPdf(picked.year, picked.month);
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: context.colorAppScheme.primaryContainer,
-            content: UiText(
-              text: 'Error generating PDF: $e',
-              type: UiTextType.bodyMedium,
-              style: TextStyle(color: context.colorAppScheme.primary),
-            ),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error generating PDF: $e')));
       }
     }
   }

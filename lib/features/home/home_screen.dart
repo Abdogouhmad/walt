@@ -1,45 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/features/home/widgets/recent_activity.dart';
-import 'package:walt/shared/bottons.dart';
-import 'package:walt/features/home/widgets/summary_card.dart';
-import 'package:walt/features/home/widgets/bottom_sheet.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/text_theme.dart';
+import 'package:walt/core/widgets/walt_chrome.dart';
+import 'package:walt/features/home/widgets/balance_hero.dart';
+import 'package:walt/features/home/widgets/recent_activity.dart';
+import 'package:walt/features/home/widgets/weekly_spending_chart.dart';
+import 'package:walt/shared/profile_app_bar_action.dart';
+
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: const [
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  0,
-                ),
-                child: SummaryCard(),
-              ),
-              RecentActivity(),
-            ],
+      backgroundColor: Colors.transparent,
+      // The shell already sets `extendBody` so content scrolls under the
+      // floating nav; repeating it here keeps Home correct in isolation.
+      extendBody: true,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            // Type decisions live in the theme, not the screen.
+            title: Text('WALT', style: AppTextTheme.wordmark(theme.textTheme)),
+            actions: const [ProfileAppBarAction()],
           ),
-        ),
-      ),
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: AppButton(
-        type: ButtonType.fab,
-        icon: Icons.add,
-        onPressed: () => showAddTransactionSheet(context),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            sliver: SliverToBoxAdapter(
+              child: WaltChrome.constrain(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const BalanceHero(),
+                    const SizedBox(height: AppSpacing.lg),
+                    const WeeklySpendingChart(),
+                    const SizedBox(height: AppSpacing.sm),
+                    const RecentActivity(),
+                    SizedBox(
+                      height:
+                          WaltChrome.scrollBottomPadding(context) -
+                          AppSpacing.lg,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

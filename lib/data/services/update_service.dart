@@ -26,12 +26,9 @@ enum UpdateCheckResult {
   /// The app is already up to date.
   upToDate,
 
-  /// An update is available but not mandatory.
+  /// An update is available. Always optional: Walt never blocks use of an
+  /// older version.
   updateAvailable,
-
-  /// An update is available and mandatory — the installed build is out of
-  /// support and the app must be updated to keep working.
-  updateMandatory,
 
   /// The check failed (offline, HTTP error, malformed manifest).
   checkFailed,
@@ -46,7 +43,10 @@ class UpdateService {
     try {
       final response = await http.get(
         Uri.parse(kUpdateManifestUrl),
-        headers: const {'Accept': 'application/json', 'User-Agent': 'Walt-Updater'},
+        headers: const {
+          'Accept': 'application/json',
+          'User-Agent': 'Walt-Updater',
+        },
       );
       if (response.statusCode != 200) return null;
       final decoded = json.decode(response.body);
@@ -58,7 +58,9 @@ class UpdateService {
   }
 
   /// Compares the installed [currentVersionCode] against [manifest] and
-  /// reports whether an update is available and/or required.
+  /// reports whether an update is available. An available update is never
+  /// mandatory — the result set is the same whether or not the manifest still
+  /// carries a legacy `mandatory` flag.
   UpdateCheckResult check({
     required UpdateManifest? manifest,
     required int currentVersionCode,
@@ -71,9 +73,6 @@ class UpdateService {
     if (!manifest.isNewerThan(currentVersionCode)) {
       return UpdateCheckResult.upToDate;
     }
-    if (manifest.isMandatoryFor(currentVersionCode)) {
-      return UpdateCheckResult.updateMandatory;
-    }
     return UpdateCheckResult.updateAvailable;
   }
 
@@ -83,9 +82,7 @@ class UpdateService {
   /// from the manifest against the downloaded bytes **before** anything is
   /// installed (it surfaces `OtaStatus.CHECKSUM_ERROR` on a mismatch), and
   /// hands off to Android's system `PackageInstaller`.
-  Stream<OtaEvent> downloadAndInstall({
-    required UpdateManifest manifest,
-  }) {
+  Stream<OtaEvent> downloadAndInstall({required UpdateManifest manifest}) {
     return OtaUpdate().execute(
       manifest.apkUrl,
       destinationFilename: 'walt-update.apk',

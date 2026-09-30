@@ -1,103 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/design/spacing.dart';
-import 'package:walt/features/reports/widgets/export_button.dart';
+import 'package:walt/core/widgets/amount_text.dart';
+import 'package:walt/core/widgets/pill_switcher.dart';
+import 'package:walt/core/widgets/wavy_progress.dart';
+import 'package:walt/data/reports/report_aggregation.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/bottons.dart';
-import 'package:walt/shared/text_ui.dart';
+import 'package:walt/shared/state_views.dart';
 
-/// Header block of the Reports screen: the month's total spending, the export
-/// button and the 6M/Yearly range filter.
+/// Reports hero: the total for the selected period, plus the Week/Month/Year
+/// switcher and the period navigator that walks backwards through history.
 class SummaryReportUi extends ConsumerWidget {
   const SummaryReportUi({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final report = ref.watch(reportProvider);
-    final selectedIndex = ref.watch(reportFilterProvider);
-    final currency = ref.watch(settingsProvider).currency;
+    final period = ref.watch(reportPeriodProvider);
+    final range = ref.watch(reportRangeProvider);
+    final selectedBucket = ref.watch(reportSelectedBucketProvider);
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _monthlySpending(context, report.totalSpending, currency),
-            const ExportPdfButton(),
-          ],
+        Text(
+          'Total spending',
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        report.when(
+          data: (data) {
+            // With a bar selected the hero shows that bucket's total, which is
+            // what makes "tap a bar to see that bucket's total" legible.
+            final showingBucket = selectedBucket != null;
+            final total = reportSelectedTotal(data, selectedBucket);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AmountText(
+                  amount: total,
+                  currency: currency,
+                  hero: true,
+                  showSign: false,
+                  color: scheme.onSurface,
+                  animate: true,
+                  style: theme.textTheme.displayMedium,
+                ),
+                if (showingBucket)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.xs),
+                    child: Text(
+                      data.buckets[selectedBucket].label,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+          loading: () => const SizedBox(
+            width: 160,
+            height: 56,
+            child: WavyProgressIndicator(height: 8),
+          ),
+          error: (error, _) => InlineErrorView(
+            message: 'Could not load total spending',
+            onRetry: () => ref.read(reportProvider.notifier).refresh(),
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
-        _filterButtons(context, ref, selectedIndex),
-        const SizedBox(height: AppSpacing.lg),
-      ],
-    );
-  }
-
-  Widget _monthlySpending(
-    BuildContext ctx,
-    AsyncValue<double> totalSpending,
-    String currency,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        UiText(
-          text: "Monthly Spending",
-          type: UiTextType.labelMedium,
-          style: TextStyle(
-            color: ctx.summaryCardTextSecondary,
-            fontWeight: FontWeight.w500,
-          ),
+        PillSwitcher<ReportPeriod>(
+          value: period,
+          options: ReportPeriod.values,
+          labelBuilder: (p) => p.label,
+          semanticLabel: 'Report period',
+          onChanged: (p) {
+            ref.read(reportPeriodProvider.notifier).state = p;
+            ref.read(reportSelectedBucketProvider.notifier).state = null;
+          },
         ),
-        totalSpending.when(
-          data: (amount) => UiText(
-            text: "${amount.toStringAsFixed(2)} $currency",
-            type: UiTextType.headlineSmall,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          loading: () => const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-          error: (_, _) =>
-              const UiText(text: "Error", type: UiTextType.headlineSmall),
+        const SizedBox(height: AppSpacing.xs),
+        PeriodNavigator(
+          label: range.label(),
+          canGoNext: canGoToNextPeriod(range),
+          onPrevious: () => navigatePeriod(ref, -1),
+          onNext: () => navigatePeriod(ref, 1),
         ),
-      ],
-    );
-  }
-
-  Widget _filterButtons(
-    BuildContext ctx,
-    WidgetRef ref,
-    int selectedIndex,
-  ) {
-    const filters = ['6 Months', 'Yearly'];
-
-    return Row(
-      children: [
-        for (var i = 0; i < filters.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.sm),
-          AppButton(
-            onPressed: () => ref.read(reportProvider.notifier).changeFilter(i),
-            label: filters[i],
-            size: ButtonSize.small,
-            backgroundColor: selectedIndex == i
-                ? ctx.primaryButton
-                : Colors.transparent,
-            foregroundColor: selectedIndex == i
-                ? ctx.primaryTextButton
-                : ctx.summaryCardTextSecondary,
-          ),
-        ],
       ],
     );
   }

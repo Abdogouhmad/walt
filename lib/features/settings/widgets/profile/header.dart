@@ -1,86 +1,102 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:walt/core/constants/app_colors.dart';
-import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/text_ui.dart';
 
-// 1. Changed to ConsumerWidget for simplicity
+import 'package:walt/core/design/spacing.dart';
+import 'package:walt/data/services/image_store.dart';
+import 'package:walt/providers/settings_provider.dart';
+
+/// Avatar + name block at the top of Settings. Tapping the avatar picks a new
+/// profile picture, which is copied into the app's documents directory and
+/// never leaves the device.
 class ProfileApp extends ConsumerWidget {
   const ProfileApp({super.key});
 
   Future<void> _updatePic(WidgetRef ref) async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      await ref.read(settingsProvider.notifier).updateProfilePic(image.path);
-    }
+    if (image == null) return;
+    final stored = await ImageStore.importImage(image.path);
+    if (stored == null) return;
+    await ref.read(settingsProvider.notifier).updateProfilePic(stored);
   }
 
   @override
-  // 2. Added 'ref' to the build parameters
   Widget build(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // Centers vertically in the middle
-        children: [
-          GestureDetector(
-            onTap: () => _updatePic(ref),
-            child: Stack(
-              children: [
-                _pfp(context, ref),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit,
-                      size: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10), // Added 'height' parameter
-          _accountName(context, ref),
-        ],
-      ),
-    );
-  }
-
-  // 3. Implemented the helper methods
-  Widget _pfp(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final profilePic = ref.watch(
       settingsProvider.select((s) => s.profilePicPath),
     );
-
-    return CircleAvatar(
-      radius: 42,
-      backgroundColor: context.appBarIcon,
-      child: CircleAvatar(
-        radius: 40,
-        backgroundImage: profilePic != null
-            ? FileImage(File(profilePic)) as ImageProvider
-            : const AssetImage('assets/profile/meme.jpg'),
-      ),
-    );
-  }
-
-  Widget _accountName(BuildContext context, WidgetRef ref) {
     final userName = ref.watch(settingsProvider.select((s) => s.userName));
 
-    return UiText(
-      text: userName,
-      type: UiTextType.headlineMedium,
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    final ImageProvider? image = ImageStore.exists(profilePic)
+        ? FileImage(File(profilePic!)) as ImageProvider
+        : null;
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Semantics(
+            button: true,
+            label: 'Change profile picture',
+            child: InkWell(
+              onTap: () => _updatePic(ref),
+              customBorder: const CircleBorder(),
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 44,
+                    backgroundColor: scheme.primaryContainer,
+                    foregroundImage: image,
+                    child: image != null
+                        ? null
+                        : Text(
+                            userName.trim().isEmpty
+                                ? ''
+                                : userName
+                                      .trim()
+                                      .characters
+                                      .first
+                                      .toUpperCase(),
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: scheme.onPrimaryContainer,
+                            ),
+                          ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        color: scheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: scheme.surface, width: 2),
+                      ),
+                      child: Icon(
+                        Icons.edit_rounded,
+                        size: 14,
+                        color: scheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            userName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleMedium,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,21 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// Screen-proportional sizing, derived from a 375×812 reference window.
+///
+/// Only the scale-to-width helpers survive here. The `colorAppScheme` /
+/// `textTheme` / `isDarkMode` accessors this used to carry are gone: they were
+/// one indirection in front of `Theme.of(context)`, and every call site reads
+/// better — and one build cheaper — saying so directly.
 extension BuildContextExtension on BuildContext {
-  /// Easily access the ThemeData from the current BuildContext.
-  ThemeData get theme => Theme.of(this);
-
-  /// Easily access the ColorScheme from the current BuildContext.
-  ColorScheme get colorAppScheme => Theme.of(this).colorScheme;
-
-  /// Easily access the Brightness from the current BuildContext.
-  Brightness get brightness => Theme.of(this).brightness;
-
-  /// Check if the current theme is dark.
-  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
-
-  /// Easily access the TextTheme from the current BuildContext.
-  TextTheme get textTheme => Theme.of(this).textTheme;
-
   /// Get the current screen width.
   double get screenWidth => MediaQuery.of(this).size.width;
 
@@ -30,7 +21,4 @@ extension BuildContextExtension on BuildContext {
 
   /// Scale font size based on screen width.
   double sp(double fontSize) => (fontSize / 375) * screenWidth;
-
-  /// Scale radius based on screen width.
-  double r(double radius) => (radius / 375) * screenWidth;
 }

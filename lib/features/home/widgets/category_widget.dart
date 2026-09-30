@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:walt/core/design/motion.dart';
-import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/shapes.dart';
 import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/core/utils/category_icon.dart';
 
@@ -54,7 +54,7 @@ class CategoryPicker extends StatelessWidget {
               color: isSelected
                   ? cs.primaryContainer
                   : cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppRadius.field),
+              borderRadius: BorderRadius.circular(AppShape.medium),
               border: Border.all(
                 color: isSelected ? cs.primary : Colors.transparent,
                 width: 2,

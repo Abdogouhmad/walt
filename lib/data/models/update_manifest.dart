@@ -14,11 +14,15 @@ class UpdateManifest {
   /// Human-facing semver string of the newest release, e.g. `2.3.0`.
   final String latestVersionName;
 
-  /// Oldest `versionCode` the current build supports. Releases older than this
-  /// are considered breaking and become a non-dismissible full-screen block.
+  /// Oldest `versionCode` the current build supports.
+  ///
+  /// Retained so older manifests still parse. It is deliberately *not* acted
+  /// upon: Walt no longer blocks use of any version (see [hasMinimumSupport]
+  /// for the informational check).
   final int? minSupportedVersionCode;
 
-  /// When true the update cannot be declined — see [minSupportedVersionCode].
+  /// Legacy manifest flag. Parsed for backwards compatibility and otherwise
+  /// ignored — updates are always optional.
   final bool mandatory;
 
   /// The matching `CHANGELOG.md` section, injected by CI — shown in-app.
@@ -62,13 +66,10 @@ class UpdateManifest {
   bool isNewerThan(int currentVersionCode) =>
       latestVersionCode > currentVersionCode;
 
-  /// Whether an installed [currentVersionCode] is forced to update: either the
-  /// newest release is explicitly [mandatory], or the installed build has
-  /// dropped below [minSupportedVersionCode] (the breaking-change escape
-  /// hatch, spec §3.2). Only meaningful when an update is actually available.
-  bool isMandatoryFor(int currentVersionCode) {
-    if (!isNewerThan(currentVersionCode)) return false;
-    if (mandatory) return true;
+  /// Informational only: whether the installed build is below the manifest's
+  /// declared support floor. Never gates the app — an out-of-support build
+  /// keeps working and simply keeps seeing the update banner.
+  bool hasMinimumSupport(int currentVersionCode) {
     final floor = minSupportedVersionCode;
     return floor != null && currentVersionCode < floor;
   }

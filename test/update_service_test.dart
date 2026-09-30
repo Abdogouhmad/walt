@@ -53,26 +53,18 @@ void main() {
     });
   });
 
-  group('UpdateManifest.isMandatoryFor', () {
-    test('explicit mandatory flag forces an update', () {
-      final m = makeManifest(code: 500, mandatory: true);
-      expect(m.isMandatoryFor(401), isTrue);
-    });
-
-    test('below the minSupportedVersionCode floor forces an update', () {
+  group('UpdateManifest.hasMinimumSupport (informational only)', () {
+    // `minSupportedVersionCode` still parses, but it can no longer force
+    // anything: spec §7.1 removed all forced-update gating.
+    test('flags an install below the floor without forcing anything', () {
       final m = makeManifest(code: 500, minSupported: 400);
-      expect(m.isMandatoryFor(300), isTrue);
-      expect(m.isMandatoryFor(400), isFalse);
+      expect(m.hasMinimumSupport(300), isTrue);
+      expect(m.hasMinimumSupport(500), isFalse);
     });
 
-    test('an up-to-date install is never forced', () {
-      final m = makeManifest(code: 500, minSupported: 999);
-      expect(m.isMandatoryFor(500), isFalse);
-      expect(m.isMandatoryFor(600), isFalse);
-    });
-
-    test('non-mandatory, within-floor update is declineable', () {
-      expect(makeManifest(code: 500).isMandatoryFor(401), isFalse);
+    test('legacy mandatory flag is parsed but never acted on', () {
+      final m = makeManifest(code: 500, mandatory: true);
+      expect(m.mandatory, isTrue, reason: 'kept for old manifests on the wire');
     });
   });
 
@@ -99,8 +91,10 @@ void main() {
     const service = UpdateService();
 
     test('null manifest fails the check silently', () {
-      expect(service.check(manifest: null, currentVersionCode: 401),
-          UpdateCheckResult.checkFailed);
+      expect(
+        service.check(manifest: null, currentVersionCode: 401),
+        UpdateCheckResult.checkFailed,
+      );
     });
 
     test('up to date', () {
@@ -123,20 +117,26 @@ void main() {
       );
     });
 
-    test('mandatory update when flagged or out of support', () {
-      expect(
-        service.check(
-          manifest: makeManifest(code: 500, mandatory: true),
-          currentVersionCode: 401,
-        ),
-        UpdateCheckResult.updateMandatory,
-      );
+    test(
+      'a legacy mandatory flag only yields a normal, declineable update',
+      () {
+        expect(
+          service.check(
+            manifest: makeManifest(code: 500, mandatory: true),
+            currentVersionCode: 401,
+          ),
+          UpdateCheckResult.updateAvailable,
+        );
+      },
+    );
+
+    test('an install below minSupported is still only updateAvailable', () {
       expect(
         service.check(
           manifest: makeManifest(code: 500, minSupported: 400),
           currentVersionCode: 300,
         ),
-        UpdateCheckResult.updateMandatory,
+        UpdateCheckResult.updateAvailable,
       );
     });
 

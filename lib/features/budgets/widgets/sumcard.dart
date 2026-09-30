@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
-import 'package:walt/shared/m3e_card.dart';
-import 'package:walt/shared/progress_bar.dart';
-import 'package:walt/shared/status_badge.dart';
-import 'package:walt/shared/text_ui.dart';
+import 'package:walt/core/theme/walt_colors.dart';
+import 'package:walt/core/widgets/amount_text.dart';
+import 'package:walt/core/widgets/pill_switcher.dart';
+import 'package:walt/core/widgets/thick_progress.dart';
+import 'package:walt/data/reports/budget_aggregation.dart';
 
-/// Big summary card at the top of the Budgets screen: month, total spent vs
-/// budget, a shared [RoundedProgressBar] and status pills.
+/// The Budgets hero: the period's total spent against the total budget, with a
+/// progress bar and a status chip. Typed [BudgetSummary] — no stringly-typed map.
 class BudgetSumCard extends StatelessWidget {
-  final Map<String, dynamic> summary;
+  final BudgetSummary summary;
   final String currency;
   final String month;
 
@@ -23,122 +23,82 @@ class BudgetSumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final totalBudget = (summary['totalBudget'] ?? 0.0).toDouble();
-    final totalSpent = (summary['totalSpent'] ?? 0.0).toDouble();
-    final percentage = (summary['percentage'] ?? 0.0).toDouble();
-    final remainingDays = (summary['remainingDays'] ?? 0.0).toInt();
-    final usedPercent = (percentage * 100).toStringAsFixed(0);
-    final isOverBudget = totalSpent > totalBudget;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final walt = WaltColors.of(context);
 
-    return M3Ecard(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      data: AppCardData(
-        colorCard: scheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.surface),
-          side: BorderSide(
-            color: scheme.primary.withValues(alpha: 0.6),
-            width: 1.2,
+    final isOverBudget = summary.isOver;
+    final tone = isOverBudget ? walt.expense : scheme.primary;
+    final ratio = summary.totalBudget > 0
+        ? (summary.totalSpent / summary.totalBudget).clamp(0.0, 1.0)
+        : 0.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          month,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: scheme.onSurfaceVariant,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: AppSpacing.xs),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    UiText(
-                      text: "Monthly Budget",
-                      type: UiTextType.labelLarge,
-                      style: TextStyle(
-                        color: scheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    UiText(
-                      text: month,
-                      type: UiTextType.titleLarge,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                StatusBadge(
-                  label: "$usedPercent% used",
-                  variant: StatusBadgeVariant.accent,
-                  icon: Icons.percent,
-                ),
-              ],
+            Flexible(
+              child: AmountText(
+                amount: summary.totalSpent,
+                currency: currency,
+                hero: true,
+                showSign: false,
+                color: scheme.onSurface,
+                animate: true,
+                fractionDigits: 0,
+                style: theme.textTheme.displayMedium,
+              ),
             ),
-
-            const SizedBox(height: AppSpacing.md),
-
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Flexible(
-                  child: UiText(
-                    text: "$currency ${totalSpent.toStringAsFixed(0)}",
-                    type: UiTextType.headlineMedium,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 34,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: AppSpacing.xs,
-                    left: AppSpacing.xs,
-                  ),
-                  child: UiText(
-                    text: "/ $currency ${totalBudget.toStringAsFixed(0)}",
-                    type: UiTextType.bodyMedium,
-                    style: TextStyle(
-                      color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            RoundedProgressBar(
-              value: percentage,
-              color: isOverBudget ? scheme.error : scheme.primary,
-              height: 8,
-            ),
-
-            const SizedBox(height: AppSpacing.md),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                UiText(
-                  text: "$remainingDays days remaining",
-                  type: UiTextType.labelSmall,
-                  style: TextStyle(color: scheme.onSurfaceVariant),
-                ),
-                StatusBadge(
-                  label: isOverBudget ? "Over budget" : "On track",
-                  variant: isOverBudget
-                      ? StatusBadgeVariant.error
-                      : StatusBadgeVariant.success,
-                  icon: isOverBudget
-                      ? Icons.error_outline_rounded
-                      : Icons.check_circle_outline_rounded,
-                ),
-              ],
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              'of $currency ${summary.totalBudget.toStringAsFixed(0)}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: AppSpacing.lg),
+        ThickProgress(value: ratio, color: tone, height: 8),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              summary.remainingDays == 1
+                  ? '1 day remaining'
+                  : '${summary.remainingDays} days remaining',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+            StatPill(
+              label: isOverBudget ? 'Over budget' : 'On track',
+              amount: '${summary.percent.toStringAsFixed(0)}%',
+              icon: isOverBudget
+                  ? Icons.error_outline_rounded
+                  : Icons.check_circle_outline_rounded,
+              compact: true,
+              foreground: isOverBudget
+                  ? scheme.onErrorContainer
+                  : scheme.onTertiaryContainer,
+              background: isOverBudget
+                  ? walt.expenseContainer
+                  : walt.incomeContainer,
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

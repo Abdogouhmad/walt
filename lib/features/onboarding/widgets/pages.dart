@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/input_ui.dart';
@@ -15,6 +14,8 @@ class WelcomeStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
@@ -24,7 +25,7 @@ class WelcomeStep extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/icons/wallet.png', height: 100),
+              Image.asset('assets/icon/wallet.png', height: 100),
               const SizedBox(width: 12),
               const Text(
                 "Walt",
@@ -41,7 +42,7 @@ class WelcomeStep extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: context.textSecondary,
+              color: scheme.colorScheme.onSurfaceVariant,
             ),
           ),
           const Spacer(),
@@ -57,7 +58,7 @@ class WelcomeStep extends StatelessWidget {
                 size: ButtonSize.large,
                 type: ButtonType.iconOnly,
                 icon: Icons.navigate_next_rounded,
-                iconColor: context.primaryButton,
+                iconColor: scheme.colorScheme.primary,
               ),
             ),
           ),
@@ -80,7 +81,11 @@ class SecurityStep extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.lock_outline_rounded, size: 100, color: Colors.blue),
+          Icon(
+            Icons.lock_outline_rounded,
+            size: 100,
+            color: Theme.of(context).colorScheme.primary,
+          ),
           const SizedBox(height: 40),
           const Text(
             "Privacy First",
@@ -147,15 +152,17 @@ class _SignupStepState extends ConsumerState<SignupStep> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 60,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest,
                 backgroundImage: _imagePath != null
                     ? FileImage(File(_imagePath!))
                     : null,
                 child: _imagePath == null
-                    ? const Icon(
+                    ? Icon(
                         Icons.add_a_photo_rounded,
                         size: 40,
-                        color: Colors.grey,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       )
                     : null,
               ),

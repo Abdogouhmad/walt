@@ -28,8 +28,8 @@ enum StatusBadgeVariant {
 
 /// Consistent status pill used across the app.
 ///
-/// Uses the current [ColorScheme]'s container/on-container pairs so it
-/// automatically adapts to dynamic color and dark/light mode.
+/// Uses the current [ColorScheme]'s container/on-container pairs, so it follows
+/// whichever palette the user picked in every mode — light, dark and AMOLED.
 class StatusBadge extends StatelessWidget {
   final String label;
   final StatusBadgeVariant variant;
@@ -73,10 +73,7 @@ class StatusBadge extends StatelessWidget {
           UiText(
             text: label,
             type: UiTextType.labelSmall,
-            style: TextStyle(
-              color: foreground,
-              fontWeight: FontWeight.w700,
-            ),
+            style: TextStyle(color: foreground, fontWeight: FontWeight.w700),
           ),
         ],
       ),

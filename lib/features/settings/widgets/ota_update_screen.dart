@@ -5,6 +5,7 @@ import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
 import 'package:walt/data/services/update_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
+import 'package:walt/features/settings/widgets/markdown_notes.dart';
 import 'package:walt/providers/update_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/status_badge.dart';
@@ -34,7 +35,8 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
     // auto-check already surfaced an update.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final snapshot = ref.read(updateProvider);
-      if (snapshot.status == UpdateStatus.idle && snapshot.checkResult == null) {
+      if (snapshot.status == UpdateStatus.idle &&
+          snapshot.checkResult == null) {
         ref.read(updateProvider.notifier).checkForUpdates();
       }
     });
@@ -47,7 +49,7 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: UiText(text:'Software update', type: UiTextType.titleLarge),
+        title: UiText(text: 'Software update', type: UiTextType.titleLarge),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -200,7 +202,10 @@ class _StatusHeader extends StatelessWidget {
                 Container(
                   width: 84,
                   height: 84,
-                  decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: accent,
+                    shape: BoxShape.circle,
+                  ),
                   child: Icon(
                     checking
                         ? Icons.sync_rounded
@@ -257,7 +262,6 @@ class _VersionCard extends ConsumerWidget {
     return switch (result) {
       UpdateCheckResult.upToDate => 'Up to date',
       UpdateCheckResult.updateAvailable => 'Update available',
-      UpdateCheckResult.updateMandatory => 'Mandatory update',
       UpdateCheckResult.checkFailed => 'Check failed',
       null => 'Never checked',
     };
@@ -302,12 +306,8 @@ class _VersionCard extends ConsumerWidget {
         _InfoRow(
           icon: Icons.rule_rounded,
           label: 'Last result',
-          value: _resultLabel(
-            ref.watch(lastUpdateCheckResultProvider),
-          ),
-          highlight:
-              lastResult == UpdateCheckResult.checkFailed ||
-              lastResult == UpdateCheckResult.updateMandatory,
+          value: _resultLabel(ref.watch(lastUpdateCheckResultProvider)),
+          highlight: lastResult == UpdateCheckResult.checkFailed,
         ),
       ],
     );
@@ -341,14 +341,14 @@ class _InfoRow extends StatelessWidget {
         children: [
           Icon(icon, size: 24, color: colorScheme.onSurfaceVariant),
           const SizedBox(width: AppSpacing.md),
-          UiText(text:
-            label,
+          UiText(
+            text: label,
             type: UiTextType.bodyMedium,
             style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
           const Spacer(),
-          UiText(text:
-            value,
+          UiText(
+            text: value,
             type: UiTextType.bodyMedium,
             style: TextStyle(
               fontWeight: FontWeight.w700,
@@ -362,152 +362,19 @@ class _InfoRow extends StatelessWidget {
 }
 
 /// "What's new" card rendering the CHANGELOG section shipped in the manifest
-/// (spec §2 — single source, used verbatim).
+/// as real Markdown (spec §7.4).
 class _ChangelogCard extends StatelessWidget {
   final String notes;
 
   const _ChangelogCard({required this.notes});
 
-  static final RegExp _headingRe = RegExp(r'^#{1,3}\s+(.*)$');
-  static final RegExp _bulletRe = RegExp(r'^[-•*]\s+(.*)$');
-  static final RegExp _boldRe = RegExp(r'\*\*(.+?)\*\*');
-
   @override
   Widget build(BuildContext context) {
-    final lines = notes
-        .split('\n')
-        .map((l) => l.trim())
-        .where((l) => l.isNotEmpty)
-        .toList();
-
     return _Card(
       title: 'What\'s new',
       icon: Icons.new_releases_outlined,
-      children: [
-        if (lines.isEmpty)
-          UiText(text:
-            'No release notes available for this release.',
-            type: UiTextType.bodyMedium,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontStyle: FontStyle.italic,
-            ),
-          )
-        else
-          for (var i = 0; i < lines.length; i++) _row(context, lines[i], i),
-      ],
+      children: [Flexible(child: MarkdownNotes(notes: notes))],
     );
-  }
-
-  Widget _row(BuildContext context, String line, int index) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final heading = _headingRe.firstMatch(line);
-    if (heading != null) {
-      return Padding(
-        padding: EdgeInsets.only(
-          top: index == 0 ? 0 : AppSpacing.md,
-          bottom: AppSpacing.sm,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              height: 18,
-              decoration: BoxDecoration(
-                color: colorScheme.primary,
-                borderRadius: BorderRadius.circular(AppRadius.full),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: UiText(text:
-                heading.group(1)!,
-                type: UiTextType.titleSmall,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final bullet = _bulletRe.firstMatch(line);
-    if (bullet != null) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.xs + 2),
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withValues(alpha: 0.8),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: _RichText(
-                text: bullet.group(1)!,
-                color: colorScheme.onSurfaceVariant,
-                boldColor: colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: _RichText(
-        text: line,
-        color: colorScheme.onSurfaceVariant,
-        boldColor: colorScheme.onSurface,
-      ),
-    );
-  }
-}
-
-class _RichText extends StatelessWidget {
-  final String text;
-  final Color color;
-  final Color boldColor;
-
-  const _RichText({
-    required this.text,
-    required this.color,
-    required this.boldColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final base = (Theme.of(context).textTheme.bodyMedium ?? const TextStyle())
-        .copyWith(color: color);
-
-    final spans = <TextSpan>[];
-    int last = 0;
-    for (final m in _ChangelogCard._boldRe.allMatches(text)) {
-      if (m.start > last) {
-        spans.add(TextSpan(text: text.substring(last, m.start)));
-      }
-      spans.add(
-        TextSpan(
-          text: m.group(1),
-          style: TextStyle(color: boldColor, fontWeight: FontWeight.w700),
-        ),
-      );
-      last = m.end;
-    }
-    if (last < text.length) spans.add(TextSpan(text: text.substring(last)));
-    if (spans.isEmpty) spans.add(TextSpan(text: text));
-
-    return Text.rich(TextSpan(style: base, children: spans));
   }
 }
 
@@ -529,13 +396,13 @@ class _DownloadCard extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            UiText(text:
-              'Downloading…',
+            UiText(
+              text: 'Downloading…',
               type: UiTextType.bodyMedium,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
-            UiText(text:
-              '$percent%',
+            UiText(
+              text: '$percent%',
               type: UiTextType.titleSmall,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
@@ -572,8 +439,8 @@ class _ReadyCard extends StatelessWidget {
       children: [
         Icon(Icons.check_circle_rounded, color: colorScheme.primary, size: 64),
         const SizedBox(height: AppSpacing.md),
-        UiText(text:
-          'The update is verified and ready to install.',
+        UiText(
+          text: 'The update is verified and ready to install.',
           type: UiTextType.bodyMedium,
           style: TextStyle(color: colorScheme.onSurfaceVariant),
           textAlign: TextAlign.center,
@@ -666,11 +533,15 @@ class _Card extends StatelessWidget {
                   color: colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.field),
                 ),
-                child: Icon(icon, size: 24, color: colorScheme.onSecondaryContainer),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: colorScheme.onSecondaryContainer,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
-              UiText(text:
-                title,
+              UiText(
+                text: title,
                 type: UiTextType.titleMedium,
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
