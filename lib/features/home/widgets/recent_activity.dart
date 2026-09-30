@@ -1,181 +1,123 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:walt/core/design/spacing.dart';
-import 'package:walt/shared/state_views.dart';
-import 'package:walt/shared/text_ui.dart';
-import 'package:walt/core/constants/app_colors.dart';
+import 'package:walt/core/widgets/amount_text.dart';
+import 'package:walt/core/widgets/category_icon.dart';
+import 'package:walt/core/widgets/grouped_list.dart';
+import 'package:walt/core/widgets/section_header.dart';
+import 'package:walt/core/widgets/staggered_entry.dart';
+import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/data/models/walt_transaction.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:walt/providers/transaction_provider.dart';
-import 'package:walt/providers/category_provider.dart'; // Import category provider
-import 'package:walt/core/utils/category_icon.dart'; // Import mapper
-
+import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt/shared/state_views.dart';
 
+/// Home's "Recent" section: the latest few transactions as one grouped list.
+///
+/// The list follows the week recap: with a day selected in the recap, this
+/// shows only that day's transactions. At most five items.
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactions = ref.watch(recentTransactionsProvider);
-    // Access categories to map IDs to Names/Icons
     final categoriesAsync = ref.watch(categoryProvider);
+    final selectedDay = ref.watch(selectedDayProvider);
     final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
-    return transactions.isEmpty
-        ? _buildEmptyState(context)
-        : categoriesAsync.maybeWhen(
-            data: (categories) {
-              if (categories.isEmpty) return _buildEmptyState(context);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _titleUi(
-                    context,
-                    'Recent Transactions',
-                    onTap: () => context.go('/transactions'),
-                  ),
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: transactions.length,
-                    separatorBuilder: (_, _) =>
-                        const Divider(height: 1, indent: 72),
-                    itemBuilder: (context, index) {
-                      final tx = transactions[index];
-                      final category = categories.firstWhere(
-                        (c) => c.id == tx.categoryId,
-                        orElse: () => categories.first,
-                      );
-                      return _transactionTile(
-                        context,
-                        tx,
-                        category.name,
-                        category.icon,
-                        currency,
-                      );
-                    },
-                  ),
-                ],
-              );
-            },
-            orElse: () => _buildEmptyState(context),
-          );
-  }
+    if (transactions.isEmpty) {
+      return _empty(context, selectedDay != null);
+    }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return const EmptyStateView(
-      title: "No activity in the last 2 days",
-      message: "Add a transaction to start tracking your spending.",
-      icon: Icons.history_rounded,
-    );
-  }
+    return categoriesAsync.maybeWhen(
+      data: (categories) {
+        if (categories.isEmpty) return _empty(context, selectedDay != null);
 
-  Widget _transactionTile(
-    BuildContext context,
-    WaltTransaction tx,
-    String catName,
-    String catIcon,
-    String currency,
-  ) {
-    final isIncome = tx.type.toLowerCase() == 'income';
-    final amount =
-        '${isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(2)} $currency';
-    final formattedDate = DateFormat('MMM dd, yyyy').format(tx.date);
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      leading: CircleAvatar(
-        backgroundColor: context.listContainer,
-        child: Icon(
-          CategoryIcons.getIcon(catIcon),
-          color: context.listIconBk,
-          size: AppSpacing.lg,
-        ),
-      ),
-      title: Text(
-        tx.merchant ?? 'Unknown',
-        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-      ),
-      subtitle: Text(
-        '$formattedDate • $catName',
-        style: TextStyle(color: context.listSubLabel, fontSize: 12),
-      ),
-      trailing: SizedBox(
-        width: 120,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              amount,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isIncome ? context.listIncome : context.listExpense,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+            SectionHeader(
+              title: selectedDay == null ? 'Recent' : _dayLabel(selectedDay),
+              trailing: TextButton(
+                onPressed: () => context.go('/transactions'),
+                child: const Text('See all'),
               ),
             ),
-            Text(
-              tx.type.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 10,
-                color: context.listSubLabel,
-              ),
+            GroupedList(
+              children: [
+                for (var i = 0; i < transactions.length; i++)
+                  StaggeredEntry(
+                    key: ValueKey(transactions[i].id),
+                    index: i,
+                    child: _tile(
+                      context,
+                      transactions[i],
+                      categories,
+                      currency,
+                    ),
+                  ),
+              ],
             ),
           ],
-        ),
-      ),
-      onTap: () => context.go('/transactions'),
+        );
+      },
+      orElse: () => _empty(context, selectedDay != null),
     );
   }
-}
 
-Widget _titleUi(
-  BuildContext context,
-  String title, {
-  required VoidCallback onTap,
-}) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: AppSpacing.md,
-      vertical: AppSpacing.sm,
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        UiText(
-          text: title,
-          type: UiTextType.titleLarge,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: context.listTitle,
-            fontSize: 22,
-          ),
-        ),
-        TextButton(
-          onPressed: onTap,
-          child: UiText(
-            text: "View All",
-            type: UiTextType.labelLarge,
-            style: TextStyle(
-              color: context.listColorLinks,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+  Widget _empty(BuildContext context, bool filtered) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+      child: EmptyStateView(
+        title: filtered ? 'Nothing on this day' : 'No recent activity',
+        message: filtered
+            ? 'Pick another day, or add a transaction.'
+            : 'Add a transaction to start tracking your spending.',
+        icon: Icons.receipt_long_outlined,
+      ),
+    );
+  }
+
+  Widget _tile(
+    BuildContext context,
+    WaltTransaction transaction,
+    List<WaltCategory> categories,
+    String currency,
+  ) {
+    final category = categories.firstWhere(
+      (c) => c.id == transaction.categoryId,
+      orElse: () => categories.first,
+    );
+    final isIncome = transaction.type.toLowerCase() == 'income';
+
+    return GroupedListTile(
+      onTap: () => context.go('/transactions'),
+      leading: CategoryAvatar(icon: category.icon, color: category.color),
+      title: Text(transaction.merchant ?? 'Unknown'),
+      subtitle: Text(category.name),
+      trailing: AmountText(
+        amount: transaction.amount,
+        currency: currency,
+        isIncome: isIncome,
+      ),
+    );
+  }
+
+  static String _dayLabel(DateTime day) {
+    const names = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    return names[day.weekday - 1];
+  }
 }

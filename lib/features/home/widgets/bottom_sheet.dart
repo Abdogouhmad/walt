@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/text_theme.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/features/home/widgets/category_widget.dart';
 import 'package:walt/features/home/widgets/date.dart';
 import 'package:walt/features/home/widgets/txtype_picker.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/report_provider.dart';
+import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/input_ui.dart';
 import 'package:walt/shared/ui_modal.dart';
 
 /// Opens the shared bottom sheet with the add-transaction form.
-void showAddTransactionSheet(BuildContext context) {
+///
+/// [type] pre-selects Expense or Income, letting the shell's FAB menu deep-link
+/// straight into the right mode.
+void showAddTransactionSheet(BuildContext context, {String type = 'expense'}) {
   showWaltModal<void>(
     context,
-    content: const AddTransactionSheet(),
+    content: AddTransactionSheet(initialType: type),
     heightFactor: 0.92,
   );
 }
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
-  const AddTransactionSheet({super.key});
+  final String initialType;
+
+  const AddTransactionSheet({super.key, this.initialType = 'expense'});
 
   @override
   ConsumerState<AddTransactionSheet> createState() =>
@@ -37,7 +45,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   final _noteController = TextEditingController();
   final _merchantController = TextEditingController();
 
-  String _type = 'expense';
+  late String _type = widget.initialType;
   int? _selectedCategoryId; // null until categories load
   DateTime _selectedDate = DateTime.now();
   bool _isSaving = false;
@@ -94,7 +102,10 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final scheme = theme.colorScheme;
+    final currency = ref.watch(settingsProvider.select((s) => s.currency));
     final categoriesAsync = ref.watch(categoryProvider);
 
     // Auto-select first category of matching type once data loads.
@@ -114,11 +125,24 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
         physics: const BouncingScrollPhysics(),
         padding: waltModalPadding(context),
         children: [
-          Text(
-            'Add Transaction',
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Add transaction',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Close',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sm),
 
           TypeToggle(
             value: _type,
@@ -129,20 +153,47 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               });
             },
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.xl),
 
-          InputUI(
-            controller: _amountController,
-            labelText: 'Amount',
-            keyboardType: const TextInputType.numberWithOptions(
-              decimal: true,
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              'Amount ($currency)',
+              textAlign: TextAlign.center,
+              style: textTheme.labelMedium?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
-            hintText: '0.00',
-            textError: 'Please enter a valid amount',
-            regexPattern: r'^\d+\.?\d{0,2}',
-            icon: Icons.attach_money,
           ),
-          const SizedBox(height: AppSpacing.md),
+          TextFormField(
+            controller: _amountController,
+            autofocus: true,
+            textAlign: TextAlign.center,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
+            style: textTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              fontFeatures: AppTextTheme.tabular,
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: '0.00',
+              hintStyle: textTheme.displaySmall?.copyWith(
+                color: scheme.onSurfaceVariant.withValues(alpha: 0.35),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            validator: (value) {
+              final parsed = double.tryParse(value?.trim() ?? '');
+              if (parsed == null || parsed <= 0) {
+                return 'Please enter a valid amount';
+              }
+              return null;
+            },
+          ),
+          Divider(height: AppSpacing.xl, color: scheme.outlineVariant),
 
           Text('Category', style: textTheme.labelLarge),
           const SizedBox(height: AppSpacing.sm),
@@ -190,31 +241,22 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           ),
           const SizedBox(height: AppSpacing.lg),
 
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: InputUI(
-                  controller: _merchantController,
-                  labelText: 'Merchant',
-                  textError: 'Enter a description',
-                  keyboardType: TextInputType.text,
-                  regexPattern: r'^.{3,}$',
-                  icon: Icons.store,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: InputUI(
-                  controller: _noteController,
-                  labelText: 'Note',
-                  keyboardType: TextInputType.text,
-                  regexPattern: r'^.{3,}$',
-                  textError: null,
-                  icon: Icons.edit_note,
-                ),
-              ),
-            ],
+          InputUI(
+            controller: _merchantController,
+            labelText: 'Merchant',
+            textError: 'Enter a description',
+            keyboardType: TextInputType.text,
+            regexPattern: r'^.{3,}$',
+            icon: Icons.store,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          InputUI(
+            controller: _noteController,
+            labelText: 'Note (optional)',
+            keyboardType: TextInputType.text,
+            regexPattern: r'^.{3,}$',
+            textError: null,
+            icon: Icons.edit_note,
           ),
           const SizedBox(height: AppSpacing.lg),
 

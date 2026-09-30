@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/widgets/grouped_list.dart';
 import 'package:walt/data/services/update_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/ota_update_screen.dart';
 import 'package:walt/features/settings/widgets/update_prompt_sheet.dart';
 import 'package:walt/providers/update_provider.dart';
-import 'package:walt/shared/list_ui.dart';
 import 'package:walt/shared/status_badge.dart';
 
 /// Settings entry point for the whole OTA surface (spec §3.5): the tile shows
@@ -44,9 +43,9 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
   Future<void> _onTap() async {
     // An explicit tap these days is a deliberate visit: skip the sheet and
     // land on the full screen so the changelog/progress UI is visible.
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const OtaUpdateScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const OtaUpdateScreen()));
   }
 
   void _maybePrompt(UpdateState state) {
@@ -77,23 +76,24 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
 
     final state = ref.watch(updateProvider);
     final cs = Theme.of(context).colorScheme;
-    return AppListGroup(
-      useCard: false,
-      children: [
-        AppListTile(
-          style: ListStyle.outlined,
-          title: 'Update',
-          subtitle: _subtitle(state),
-          leading: AppListAvatar(
-            icon: Icons.system_update_alt_rounded,
-            size: AppSpacing.x2l,
-            backgroundColor: cs.primaryContainer,
-            iconColor: cs.onPrimaryContainer,
-          ),
-          trailing: _trailing(state),
-          onTap: _onTap,
+    return GroupedListTile(
+      title: const Text('Update'),
+      subtitle: Text(_subtitle(state)),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: cs.secondaryContainer,
+          shape: BoxShape.circle,
         ),
-      ],
+        child: Icon(
+          Icons.system_update_alt_rounded,
+          size: 20,
+          color: cs.onSecondaryContainer,
+        ),
+      ),
+      trailing: _trailing(state),
+      onTap: _onTap,
     );
   }
 
@@ -113,8 +113,7 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
   Widget? _trailing(UpdateState state) {
     if (state.status == UpdateStatus.checking) return null;
     final Widget badge;
-    if (state.checkResult == UpdateCheckResult.updateMandatory ||
-        state.checkResult == UpdateCheckResult.updateAvailable) {
+    if (state.checkResult == UpdateCheckResult.updateAvailable) {
       badge = const StatusBadge(
         label: 'Update',
         variant: StatusBadgeVariant.accent,
@@ -135,9 +134,6 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
     } else {
       badge = const StatusBadge(label: '—', variant: StatusBadgeVariant.info);
     }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: badge,
-    );
+    return Padding(padding: const EdgeInsets.only(bottom: 4), child: badge);
   }
 }

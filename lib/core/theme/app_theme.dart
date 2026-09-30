@@ -1,73 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/color_schemes.dart';
+import 'package:walt/core/theme/shapes.dart';
+import 'package:walt/core/theme/text_theme.dart';
+import 'package:walt/core/theme/theme_settings.dart';
+import 'package:walt/core/theme/walt_chart_colors.dart';
+import 'package:walt/core/theme/walt_colors.dart';
+import 'package:walt/core/theme/walt_palette.dart';
 
-/// Fallback seed color when the platform can't provide a dynamic scheme
-/// (older Android or non-Material-You devices). Walt's deep slate brand tone.
+export 'package:walt/core/theme/shapes.dart' show AppShape;
+export 'package:walt/core/theme/walt_palette.dart' show WaltPalette;
+
+/// The single place where Walt's `ThemeData` is built (spec §1).
 ///
-/// This is the **only** hardcoded color constant allowed in the app — every
-/// other surface derives from the resolved [ColorScheme] (spec §1.1).
-const Color kBrandSeedColor = Color(0xFF1F2937);
-
-/// Corner profile mandated by the design system: 28dp for large *surfaces*
-/// (cards, sheets, dialogs) and 16dp for *fields and buttons*.
-final BorderRadius kSurfaceRadius = BorderRadius.circular(AppRadius.surface);
-final BorderRadius kFieldRadius = BorderRadius.circular(AppRadius.field);
-
+/// Both brightnesses share a single builder so a component can never be themed
+/// in light but forgotten in dark.
 class AppTheme {
-  /// Kept as an alias so existing call sites (`ColorScheme.fromSeed(...)`)
-  /// still read naturally; prefer [kBrandSeedColor].
-  static const Color brandColor = kBrandSeedColor;
+  /// Android page transitions honour the system predictive-back gesture
+  /// (spec §1.5). Other platforms keep the M3 expressive fade-forwards.
+  static const PageTransitionsBuilder _transitions =
+      PredictiveBackPageTransitionsBuilder();
 
-  static ThemeData lightTheme(ColorScheme? dynamicScheme) {
-    final colorScheme =
-        dynamicScheme ??
-        ColorScheme.fromSeed(seedColor: kBrandSeedColor, brightness: Brightness.light);
-    return _baseTheme(colorScheme);
-  }
+  /// The light theme for [settings]. Defaults to the default palette.
+  static ThemeData lightTheme([ThemeSettings? settings]) =>
+      buildTheme(settings ?? ThemeSettings.defaults, Brightness.light);
 
-  static ThemeData darkTheme(ColorScheme? dynamicScheme) {
-    final colorScheme =
-        dynamicScheme ??
-        ColorScheme.fromSeed(seedColor: kBrandSeedColor, brightness: Brightness.dark);
-    return _baseTheme(colorScheme);
-  }
+  /// The dark theme for [settings]. Defaults to the default palette.
+  static ThemeData darkTheme([ThemeSettings? settings]) =>
+      buildTheme(settings ?? ThemeSettings.defaults, Brightness.dark);
 
   static ThemeData _baseTheme(ColorScheme colorScheme) {
-    // M3 default typography re-tinted to the resolved scheme. Walt ships no
-    // custom font yet, so the platform default (Roboto) is used app-wide.
-    final textTheme = (colorScheme.brightness == Brightness.dark
-            ? Typography.material2021().white
-            : Typography.material2021().black)
-        .apply(
-          bodyColor: colorScheme.onSurface,
-          displayColor: colorScheme.onSurface,
-        );
+    final textTheme = AppTextTheme.build(colorScheme);
 
-    final roundedShape = RoundedRectangleBorder(borderRadius: kSurfaceRadius);
-    final fieldBorder = OutlineInputBorder(borderRadius: kFieldRadius);
+    const roundedShape = RoundedRectangleBorder(
+      borderRadius: AppShape.radiusExtraLarge,
+    );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      // Semantic money colors (income / expense / warning) and the chart series
+      // live here rather than being hardcoded at call sites.
+      extensions: <ThemeExtension<dynamic>>[
+        WaltColors.fromScheme(colorScheme),
+        WaltChartColors.fromScheme(colorScheme),
+      ],
       // M3 expressive ripple — a soft, gradient ink splash instead of the
       // flat Material ripple. Falls back gracefully where unsupported.
       splashFactory: InkSparkle.splashFactory,
       scaffoldBackgroundColor: colorScheme.surface,
       textTheme: textTheme,
       visualDensity: VisualDensity.standard,
-      // App-wide motion: the M3 expressive fade-forwards page transition.
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
-          TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
-          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
-          TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
-          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
-          TargetPlatform.fuchsia: FadeForwardsPageTransitionsBuilder(),
-        },
-      ),
 
       // ---------------------------------------------------------------------
       // Surfaces — cards, dialogs, sheets share one 28dp radius + flat outline.
@@ -75,21 +60,21 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 0,
         color: colorScheme.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: kSurfaceRadius,
-          side: BorderSide(color: colorScheme.outlineVariant),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppShape.radiusExtraLarge,
         ),
       ),
       dialogTheme: DialogThemeData(
         elevation: 0,
-        backgroundColor: colorScheme.surface,
+        backgroundColor: colorScheme.surfaceContainerHigh,
         surfaceTintColor: Colors.transparent,
         shape: roundedShape,
         clipBehavior: Clip.antiAlias,
         titleTextStyle: textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: colorScheme.onSurface,
         ),
       ),
@@ -99,36 +84,65 @@ class AppTheme {
         elevation: 0,
         showDragHandle: true,
         dragHandleColor: colorScheme.outlineVariant,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.surface)),
+        shape: AppShape.sheet(),
+      ),
+
+      // ---------------------------------------------------------------------
+      // Sliver app bars — collapsing large titles with a scrolled-under tint.
+      // ---------------------------------------------------------------------
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: colorScheme.surfaceTint,
+        foregroundColor: colorScheme.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 3,
+        centerTitle: false,
+        systemOverlayStyle: systemOverlayStyle(colorScheme),
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
         ),
       ),
 
       // ---------------------------------------------------------------------
-      // Buttons — 16dp radius, M3 hover/pressed overlays, no drop shadow.
+      // Buttons — M3 hierarchy, full-round primary CTAs, springy press states.
       // ---------------------------------------------------------------------
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: kFieldRadius),
+          minimumSize: const Size(64, 48),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          shape: const StadiumBorder(),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          minimumSize: const Size(64, 48),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           side: BorderSide(color: colorScheme.outline),
-          shape: RoundedRectangleBorder(borderRadius: kFieldRadius),
+          shape: const StadiumBorder(),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          shape: RoundedRectangleBorder(borderRadius: kFieldRadius),
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          shape: const StadiumBorder(),
+          textStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: kFieldRadius),
-          ),
+          minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+          shape: WidgetStatePropertyAll(AppShape.stadium),
           // Subtle hover + pressed tint that follows the color scheme instead
           // of the default grey overlay.
           overlayColor: WidgetStateProperty.resolveWith(
@@ -140,42 +154,141 @@ class AppTheme {
           ),
         ),
       ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size(48, 44)),
+          shape: const WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: AppShape.radiusMedium),
+          ),
+        ),
+      ),
 
       // ---------------------------------------------------------------------
-      // Inputs — 16dp outlined fields.
+      // Inputs — filled fields with a 16dp radius and a floating label.
       // ---------------------------------------------------------------------
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        fillColor: colorScheme.surfaceContainerHighest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs + AppSpacing.sm,
+          vertical: AppSpacing.md,
         ),
-        border: fieldBorder.copyWith(borderSide: BorderSide(color: colorScheme.outline)),
-        enabledBorder:
-            fieldBorder.copyWith(borderSide: BorderSide(color: colorScheme.outline)),
-        focusedBorder: fieldBorder.copyWith(
+        border: const OutlineInputBorder(
+          borderRadius: AppShape.radiusMedium,
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: const OutlineInputBorder(
+          borderRadius: AppShape.radiusMedium,
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppShape.radiusMedium,
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
-        errorBorder:
-            fieldBorder.copyWith(borderSide: BorderSide(color: colorScheme.error)),
-        focusedErrorBorder: fieldBorder.copyWith(
+        errorBorder: OutlineInputBorder(
+          borderRadius: AppShape.radiusMedium,
+          borderSide: BorderSide(color: colorScheme.error),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: AppShape.radiusMedium,
           borderSide: BorderSide(color: colorScheme.error, width: 2),
         ),
-        labelStyle: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+        labelStyle: textTheme.bodyLarge?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
         floatingLabelStyle: WidgetStateTextStyle.resolveWith(
           (states) =>
               textTheme.bodyMedium?.copyWith(
                 color: states.contains(WidgetState.error)
                     ? colorScheme.error
                     : colorScheme.primary,
+                fontWeight: FontWeight.w600,
               ) ??
               const TextStyle(),
         ),
       ),
+      searchBarTheme: SearchBarThemeData(
+        backgroundColor: WidgetStatePropertyAll(
+          colorScheme.surfaceContainerHigh,
+        ),
+        elevation: const WidgetStatePropertyAll(0),
+        side: WidgetStatePropertyAll(
+          BorderSide(color: colorScheme.outlineVariant),
+        ),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: AppShape.radiusFull),
+        ),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        ),
+        textStyle: WidgetStatePropertyAll(textTheme.bodyMedium),
+      ),
 
       // ---------------------------------------------------------------------
-      // Navigation — M3 bars with colour-scheme-tinted indicators.
+      // Feedback — snackbars float above the nav pill, chips, progress.
+      // ---------------------------------------------------------------------
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        backgroundColor: colorScheme.inverseSurface,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onInverseSurface,
+          fontWeight: FontWeight.w500,
+        ),
+        actionTextColor: colorScheme.inversePrimary,
+        insetPadding: const EdgeInsets.all(AppSpacing.md),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppShape.radiusMedium,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: colorScheme.surfaceContainer,
+        selectedColor: colorScheme.secondaryContainer,
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+        secondarySelectedColor: colorScheme.secondaryContainer,
+        iconTheme: IconThemeData(color: colorScheme.onSurfaceVariant),
+        showCheckmark: false,
+        side: BorderSide(color: colorScheme.outlineVariant),
+        shape: const StadiumBorder(),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colorScheme.primary,
+        linearTrackColor: colorScheme.surfaceContainerHighest,
+        circularTrackColor: colorScheme.surfaceContainerHighest,
+        linearMinHeight: 6,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbIcon: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? Icon(
+                  Icons.check_rounded,
+                  size: 16,
+                  color: colorScheme.onPrimary,
+                )
+              : null,
+        ),
+      ),
+      sliderTheme: SliderThemeData(
+        showValueIndicator: ShowValueIndicator.onDrag,
+        trackHeight: 8,
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: colorScheme.inverseSurface,
+          borderRadius: AppShape.radiusSmall,
+        ),
+        textStyle: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onInverseSurface,
+        ),
+        waitDuration: const Duration(milliseconds: 400),
+        showDuration: const Duration(milliseconds: 900),
+      ),
+
+      // ---------------------------------------------------------------------
+      // Navigation — the custom pill bar is the primary chrome; the M3
+      // NavigationBar theme is kept in sync for its large-screen fallback.
       // ---------------------------------------------------------------------
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: colorScheme.surfaceContainer,
@@ -183,7 +296,7 @@ class AppTheme {
         elevation: 0,
         height: 72,
         indicatorColor: colorScheme.secondaryContainer,
-        indicatorShape: RoundedRectangleBorder(borderRadius: kFieldRadius),
+        indicatorShape: const StadiumBorder(),
         labelTextStyle: WidgetStateTextStyle.resolveWith(
           (states) =>
               textTheme.labelMedium?.copyWith(
@@ -204,106 +317,125 @@ class AppTheme {
           ),
         ),
       ),
-
-      // ---------------------------------------------------------------------
-      // Feedback — snackbars, chips, progress, switches.
-      // ---------------------------------------------------------------------
-      snackBarTheme: SnackBarThemeData(
-        behavior: SnackBarBehavior.floating,
-        elevation: 0,
-        backgroundColor: colorScheme.inverseSurface,
-        contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onInverseSurface,
-          fontWeight: FontWeight.w600,
-        ),
-        actionTextColor: colorScheme.inversePrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.field)),
-      ),
-      chipTheme: ChipThemeData(
-        backgroundColor: colorScheme.surfaceContainerHighest,
-        selectedColor: colorScheme.secondaryContainer,
-        labelStyle: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
-        secondarySelectedColor: colorScheme.secondaryContainer,
-        iconTheme: IconThemeData(color: colorScheme.primary),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          side: BorderSide(color: colorScheme.outlineVariant),
-        ),
-      ),
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: colorScheme.primary,
-        linearTrackColor: colorScheme.surfaceContainerHighest,
-        circularTrackColor: colorScheme.surfaceContainerHighest,
-      ),
-      switchTheme: SwitchThemeData(
-        thumbIcon: WidgetStateProperty.resolveWith(
-          (states) => Icon(
-            Icons.circle,
-            size: 16,
-            color: states.contains(WidgetState.selected)
-                ? colorScheme.onPrimary
-                : colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ),
-      segmentedButtonTheme: SegmentedButtonThemeData(
-        style: ButtonStyle(
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: kFieldRadius),
-          ),
-        ),
-      ),
-      tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(
-          color: colorScheme.inverseSurface,
-          borderRadius: BorderRadius.circular(AppRadius.field),
-        ),
-        textStyle: textTheme.bodySmall?.copyWith(color: colorScheme.onInverseSurface),
-        waitDuration: const Duration(milliseconds: 400),
-        showDuration: const Duration(milliseconds: 900),
-      ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        elevation: 1,
-        hoverElevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: kSurfaceRadius),
+        elevation: 3,
+        hoverElevation: 6,
+        highlightElevation: 6,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppShape.radiusExtraLarge,
+        ),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
       ),
 
       // ---------------------------------------------------------------------
-      // Menus / pickers / lists.
+      // Menus / pickers / lists / motion.
       // ---------------------------------------------------------------------
       menuTheme: MenuThemeData(
         style: MenuStyle(
-          backgroundColor: WidgetStatePropertyAll(colorScheme.surfaceContainer),
-          elevation: const WidgetStatePropertyAll(4),
+          backgroundColor: WidgetStatePropertyAll(
+            colorScheme.surfaceContainerHigh,
+          ),
+          elevation: const WidgetStatePropertyAll(3),
           shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: kSurfaceRadius),
+            RoundedRectangleBorder(borderRadius: AppShape.radiusMedium),
           ),
         ),
       ),
       popupMenuTheme: PopupMenuThemeData(
-        color: colorScheme.surfaceContainer,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: kSurfaceRadius),
+        color: colorScheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        elevation: 3,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppShape.radiusMedium,
+        ),
       ),
       listTileTheme: ListTileThemeData(
-        shape: RoundedRectangleBorder(borderRadius: kSurfaceRadius),
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppShape.radiusMedium,
+        ),
         iconColor: colorScheme.onSurfaceVariant,
         textColor: colorScheme.onSurface,
       ),
       dividerTheme: DividerThemeData(
-        color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+        color: colorScheme.outlineVariant,
         thickness: 1,
         space: 1,
       ),
-
-      appBarTheme: AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: colorScheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppShape.radiusExtraLarge,
+        ),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: _transitions,
+          TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: FadeForwardsPageTransitionsBuilder(),
+        },
       ),
     );
   }
 }
+
+/// Builds the `ThemeData` for [settings] at [brightness].
+///
+/// This is the whole theming contract: the user's palette becomes a scheme, the
+/// scheme becomes a theme, and every screen reads roles off that theme. Nothing
+/// downstream knows what a palette is, which is why adding one is a single
+/// entry in [WaltPalette].
+///
+/// Memoised on the scheme. `_baseTheme` is a pure function of the `ColorScheme`,
+/// and `MaterialApp` asks for *both* brightnesses on every rebuild of the widget
+/// that watches the appearance provider — as well as the appearance screen's own
+/// preview card. Without the cache that is two full theme constructions (text
+/// theme, every component theme, both extensions) per rebuild, for a result that
+/// cannot have changed.
+///
+/// The cache is bounded by construction rather than by eviction: the key is the
+/// scheme, and the schemes come from a fixed palette list times two brightnesses
+/// times a single AMOLED flag, so it holds at most a few dozen entries and never
+/// evicts anything.
+ThemeData buildTheme(ThemeSettings settings, Brightness brightness) {
+  final colorScheme = AppColorSchemes.of(settings, brightness);
+  return _themeCache.putIfAbsent(
+    colorScheme,
+    () => AppTheme._baseTheme(colorScheme),
+  );
+}
+
+final Map<ColorScheme, ThemeData> _themeCache = <ColorScheme, ThemeData>{};
+
+/// The system-bar treatment for [colorScheme].
+///
+/// Walt draws edge to edge, so the bars are always transparent and only the
+/// *icon* brightness has to track the theme. Returning this from one place is
+/// what keeps the root region and the app bars from disagreeing after a palette
+/// swap.
+SystemUiOverlayStyle systemOverlayStyle(ColorScheme colorScheme) {
+  final isDark = colorScheme.brightness == Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: isDark
+        ? Brightness.light
+        : Brightness.dark,
+    systemNavigationBarContrastEnforced: false,
+  );
+}
+
+/// How a palette or mode change cross-fades.
+///
+/// Deliberately *not* sprung, unlike the rest of the app's motion: a whole-app
+/// recolour that overshoots reads as a glitch, and one that snaps reads as a
+/// flicker. `kThemeAnimationDuration` (300ms) with an eased-out curve is the
+/// point where the new colours are legible before attention moves on.
+const Curve waltThemeAnimationCurve = Curves.easeOutCubic;

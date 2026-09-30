@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/motion.dart';
-import 'package:walt/core/design/radius.dart';
-import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/walt_colors.dart';
 
-/// Expense/Income segmented toggle used at the top of the add-transaction form.
+/// Expense/Income segmented control at the top of the add-transaction form
+/// (spec §4).
 class TypeToggle extends StatelessWidget {
   final String value;
   final ValueChanged<String> onChanged;
@@ -13,67 +12,26 @@ class TypeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final walt = WaltColors.of(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppRadius.field),
-      ),
-      padding: const EdgeInsets.all(AppSpacing.xs),
-      child: Row(
-        children: [
-          _tab(context, 'expense', 'Expense', Icons.arrow_upward, cs.error),
-          _tab(
-            context,
-            'income',
-            'Income',
-            Icons.arrow_downward,
-            Colors.green,
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<String>(
+        showSelectedIcon: false,
+        segments: [
+          ButtonSegment<String>(
+            value: 'expense',
+            label: const Text('Expense'),
+            icon: Icon(Icons.north_east_rounded, color: walt.expense),
+          ),
+          ButtonSegment<String>(
+            value: 'income',
+            label: const Text('Income'),
+            icon: Icon(Icons.south_west_rounded, color: walt.income),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _tab(
-    BuildContext context,
-    String type,
-    String label,
-    IconData icon,
-    Color activeColor,
-  ) {
-    final isActive = value == type;
-    final cs = Theme.of(context).colorScheme;
-    final textColor = isActive ? activeColor : cs.onSurfaceVariant;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onChanged(type),
-        child: AnimatedContainer(
-          duration: AppMotion.short,
-          curve: AppMotion.standard,
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: isActive ? activeColor.withValues(alpha: 0.28) : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppRadius.full),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: AppSpacing.md, color: textColor),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-        ),
+        selected: {value},
+        onSelectionChanged: (selection) => onChanged(selection.first),
       ),
     );
   }

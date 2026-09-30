@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
 import 'package:walt/core/design/motion.dart';
-import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/shapes.dart';
+import 'package:walt/core/widgets/empty_state.dart';
+import 'package:walt/core/widgets/wavy_progress.dart';
 import 'package:walt/shared/text_ui.dart';
 
 /// One visual treatment for "there is nothing here yet" (empty expenses,
 /// empty budgets, …) so no screen invents its own (spec §1.1).
+///
+/// Thin compatibility wrapper over the shared [WaltEmptyState].
 class EmptyStateView extends StatelessWidget {
   final String title;
   final String? message;
@@ -23,57 +27,17 @@ class EmptyStateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer.withValues(alpha: 0.6),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                size: 44,
-                color: colorScheme.onSecondaryContainer,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            UiText(
-              text: title,
-              type: UiTextType.titleMedium,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (message != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              UiText(
-                text: message!,
-                type: UiTextType.bodyMedium,
-                style: TextStyle(color: colorScheme.onSurfaceVariant),
-                textAlign: TextAlign.center,
-              ),
-            ],
-            if (action != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              action!,
-            ],
-          ],
-        ),
-      ),
+    return WaltEmptyState(
+      icon: icon,
+      title: title,
+      message: message,
+      action: action,
     );
   }
 }
 
-/// One loading treatment — a centered, scheme-coloured spinner.
+/// One loading treatment — the small wavy indicator reserved for loading
+/// states (spec §3), plus an optional quiet label.
 class LoadingStateView extends StatelessWidget {
   final String? label;
 
@@ -84,12 +48,9 @@ class LoadingStateView extends StatelessWidget {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 36,
-            height: 36,
-            child: CircularProgressIndicator(strokeWidth: 3),
-          ),
+          const SizedBox(width: 120, child: WavyProgressIndicator(height: 8)),
           if (label != null) ...[
             const SizedBox(height: AppSpacing.md),
             UiText(
@@ -121,10 +82,8 @@ class InlineErrorView extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: colorScheme.errorContainer.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(AppRadius.field),
-        border: Border.all(
-          color: colorScheme.error.withValues(alpha: 0.35),
-        ),
+        borderRadius: BorderRadius.circular(AppShape.medium),
+        border: Border.all(color: colorScheme.error.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
@@ -170,13 +129,19 @@ class _PressableScaleState extends State<PressableScale> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onTap,
-      onTapDown: widget.onTap == null ? null : (_) => setState(() => _pressed = true),
-      onTapUp: widget.onTap == null ? null : (_) => setState(() => _pressed = false),
-      onTapCancel: widget.onTap == null ? null : () => setState(() => _pressed = false),
+      onTapDown: widget.onTap == null
+          ? null
+          : (_) => setState(() => _pressed = true),
+      onTapUp: widget.onTap == null
+          ? null
+          : (_) => setState(() => _pressed = false),
+      onTapCancel: widget.onTap == null
+          ? null
+          : () => setState(() => _pressed = false),
       child: AnimatedScale(
-        scale: _pressed ? 0.985 : 1.0,
+        scale: _pressed ? 0.97 : 1.0,
         duration: AppMotion.short,
-        curve: AppMotion.standard,
+        curve: AppSpring.curve(AppSpring.spatial),
         child: widget.child,
       ),
     );

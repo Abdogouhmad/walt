@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 
+/// The icon key stored per category in the database, mapped to a Material glyph
+/// and a display name.
+///
+/// There is deliberately no colour here. A fixed rainbow of category colours was
+/// the one place in the app that ignored the palette, and it was never read:
+/// a category's colour is a *user* value (`WaltCategory.color`), and the one
+/// derived for the icon comes from `WaltChartColors.harmonizeCategory`, so it
+/// follows the theme.
 class CategoryIcons {
   static const Map<String, IconData> _iconMap = {
     'restaurant': Icons.restaurant,
@@ -14,21 +22,6 @@ class CategoryIcons {
     'shopping_basket_outlined': Icons.shopping_basket_outlined,
     'work_outline': Icons.work_outline,
     'attach_money': Icons.attach_money,
-  };
-
-  static const Map<String, Color> _colorMap = {
-    'restaurant': Colors.orange,
-    'account_balance_wallet': Colors.blue,
-    'coffee': Colors.brown,
-    'directions_car': Colors.red,
-    'shopping_bag': Colors.pink,
-    'favorite': Colors.redAccent,
-    'bolt': Colors.amber,
-    'laptop': Colors.blueGrey,
-    'category': Colors.teal,
-    'shopping_basket_outlined': Colors.green,
-    'work_outline': Colors.indigo,
-    'attach_money': Colors.lightGreen,
   };
 
   static const Map<String, String> _nameMap = {
@@ -48,10 +41,6 @@ class CategoryIcons {
 
   static IconData getIcon(String name) {
     return _iconMap[name] ?? Icons.label_outline;
-  }
-
-  static Color getColor(String name) {
-    return _colorMap[name] ?? Colors.grey;
   }
 
   static String getName(String name) {

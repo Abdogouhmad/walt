@@ -41,14 +41,16 @@ Future<T?> showWaltModal<T>(
       curve: AppMotion.standard,
       reverseCurve: AppMotion.exit,
     ),
-    builder: (_) => FractionallySizedBox(heightFactor: heightFactor, child: content),
+    builder: (_) =>
+        FractionallySizedBox(heightFactor: heightFactor, child: content),
   );
 }
 
 /// Padding for form bodies inside [showWaltModal] content. The extra bottom
 /// clearance keeps the on-screen keyboard from covering the submit button.
 EdgeInsets waltModalPadding(BuildContext context) {
-  final bottom = MediaQuery.of(context).viewInsets.bottom +
+  final bottom =
+      MediaQuery.of(context).viewInsets.bottom +
       MediaQuery.paddingOf(context).bottom +
       AppSpacing.lg;
   return EdgeInsets.fromLTRB(

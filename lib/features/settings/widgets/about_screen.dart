@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:walt/core/design/spacing.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
+import 'package:walt/features/settings/widgets/ota_update_screen.dart';
 import 'package:walt/features/settings/widgets/socialmedia.dart';
+import 'package:walt/features/settings/widgets/update_banner.dart';
 import 'package:walt/shared/m3e_card.dart';
 import 'package:walt/shared/text_ui.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
 
@@ -24,6 +27,15 @@ class AboutScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
+          // Soft, dismissible, inline. Never a dialog or a takeover screen.
+          UpdateBanner(
+            onOpen: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const OtaUpdateScreen())),
+            onInstall: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const OtaUpdateScreen())),
+          ),
           UiText(
             text: 'About',
             type: UiTextType.headlineLarge,
@@ -48,7 +60,7 @@ class AboutScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: colors.primaryContainer,
-                    foregroundImage: const AssetImage('assets/icons/wallet.png'),
+                    foregroundImage: const AssetImage('assets/icon/wallet.png'),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(

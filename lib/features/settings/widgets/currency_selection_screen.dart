@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/core/constants/app_colors.dart';
-import 'package:walt/core/utils/context.dart';
+import 'package:walt/core/design/radius.dart';
+import 'package:walt/core/design/spacing.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/text_ui.dart';
 
@@ -11,6 +11,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
+    final scheme = Theme.of(context).colorScheme;
 
     final currencies = [
       {'code': 'USD', 'name': 'US Dollar', 'symbol': '\$'},
@@ -21,7 +22,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: context.colorAppScheme.surfaceContainerLowest,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -30,7 +31,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
       ),
 
       body: ListView(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(AppSpacing.md),
         children: [
           // Header like AboutScreen
           UiText(
@@ -44,10 +45,12 @@ class CurrencySelectionScreen extends ConsumerWidget {
           UiText(
             text: "Select your preferred currency",
             type: UiTextType.bodyMedium,
-            style: TextStyle(color: context.colorAppScheme.onSurfaceVariant),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.lg),
 
           // Currency cards
           ...List.generate(currencies.length, (index) {
@@ -56,10 +59,10 @@ class CurrencySelectionScreen extends ConsumerWidget {
             final isSelected = settings.currency == currency['code'];
 
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
 
               child: InkWell(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
 
                 onTap: () {
                   ref
@@ -74,15 +77,15 @@ class CurrencySelectionScreen extends ConsumerWidget {
 
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? context.primary.withAlpha(20)
-                        : context.surfaceContainer,
+                        ? scheme.primary.withValues(alpha: 0.08)
+                        : scheme.surfaceContainerHighest,
 
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
 
                     border: Border.all(
                       color: isSelected
-                          ? context.primary
-                          : context.colorAppScheme.outline.withAlpha(40),
+                          ? scheme.primary
+                          : scheme.outline.withValues(alpha: 0.4),
 
                       width: 1.5,
                     ),
@@ -97,10 +100,10 @@ class CurrencySelectionScreen extends ConsumerWidget {
 
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? context.primary.withAlpha(30)
-                              : context.colorAppScheme.surface,
+                              ? scheme.primary.withValues(alpha: 0.12)
+                              : scheme.surface,
 
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
 
                         alignment: Alignment.center,
@@ -112,8 +115,8 @@ class CurrencySelectionScreen extends ConsumerWidget {
 
                           style: TextStyle(
                             color: isSelected
-                                ? context.primary
-                                : context.textSecondary,
+                                ? scheme.primary
+                                : scheme.onSurfaceVariant,
 
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -148,7 +151,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
 
                               type: UiTextType.bodySmall,
 
-                              style: TextStyle(color: context.textSecondary),
+                              style: TextStyle(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
@@ -162,7 +165,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
                             ? Icon(
                                 Icons.check_circle,
                                 key: const ValueKey("selected"),
-                                color: context.primary,
+                                color: scheme.primary,
                               )
                             : const SizedBox.shrink(),
                       ),

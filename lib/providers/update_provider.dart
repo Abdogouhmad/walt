@@ -11,14 +11,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ota_update/ota_update.dart';
 
 import 'package:walt/data/local/hive_service.dart';
+import 'package:walt/data/models/changelog.dart';
 import 'package:walt/data/models/update_manifest.dart';
 import 'package:walt/data/services/notification_service.dart';
 import 'package:walt/data/services/update_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
+import 'package:walt/providers/settings_provider.dart';
 
-final hiveServiceProvider = Provider<HiveService>((ref) => HiveService.instance);
+final hiveServiceProvider = Provider<HiveService>(
+  (ref) => HiveService.instance,
+);
 
-final updateServiceProvider = Provider<UpdateService>((ref) => const UpdateService());
+final updateServiceProvider = Provider<UpdateService>(
+  (ref) => const UpdateService(),
+);
 
 /// Hive keys for the update settings.
 const String kLastUpdateCheckKey = 'last_update_check_ms';
@@ -73,7 +79,14 @@ class LastUpdateCheckResultNotifier extends Notifier<UpdateCheckResult?> {
   }
 }
 
-enum UpdateStatus { idle, checking, available, downloading, readyToInstall, error }
+enum UpdateStatus {
+  idle,
+  checking,
+  available,
+  downloading,
+  readyToInstall,
+  error,
+}
 
 /// Failure kinds surfaced while [UpdateStatus.error]. The provider stores a
 /// code (never a user-facing string — the UI maps it to copy).
@@ -109,11 +122,8 @@ class UpdateState {
     this.errorDetail,
   });
 
-  bool get hasUpdate =>
-      checkResult == UpdateCheckResult.updateAvailable ||
-      checkResult == UpdateCheckResult.updateMandatory;
-
-  bool get isMandatory => checkResult == UpdateCheckResult.updateMandatory;
+  /// An update exists. Optional by construction — there is no mandatory state.
+  bool get hasUpdate => checkResult == UpdateCheckResult.updateAvailable;
 
   UpdateState copyWith({
     UpdateStatus? status,
@@ -138,8 +148,9 @@ class UpdateState {
 }
 
 /// The single OTA update notifier driving the whole flow.
-final updateProvider =
-    NotifierProvider<UpdateNotifier, UpdateState>(UpdateNotifier.new);
+final updateProvider = NotifierProvider<UpdateNotifier, UpdateState>(
+  UpdateNotifier.new,
+);
 
 class UpdateNotifier extends Notifier<UpdateState> {
   @override
@@ -151,10 +162,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
     final manifest = await ref.read(updateServiceProvider).fetchManifest();
 
-    final outcome = ref.read(updateServiceProvider).check(
-      manifest: manifest,
-      currentVersionCode: Appinfo.buildNumber,
-    );
+    final outcome = ref
+        .read(updateServiceProvider)
+        .check(manifest: manifest, currentVersionCode: Appinfo.buildNumber);
 
     if (outcome == UpdateCheckResult.checkFailed) {
       // A failed check is still a check: persist the timestamp + "failed"
@@ -185,12 +195,14 @@ class UpdateNotifier extends Notifier<UpdateState> {
   /// Shown once per release: fires the local notification the first time this
   /// device discovers [manifest]'s update. The in-app banner always shows the
   /// update; the notification is the passive nudge for when the user isn't
-  /// looking at the settings tab.
-  Future<void> _notifyIfNew(UpdateManifest? manifest, UpdateCheckResult outcome) async {
-    final hasUpdate =
-        outcome == UpdateCheckResult.updateAvailable ||
-        outcome == UpdateCheckResult.updateMandatory;
-    if (manifest == null || !hasUpdate) return;
+  /// looking at Settings. Respects the user's "Update notifications" toggle.
+  Future<void> _notifyIfNew(
+    UpdateManifest? manifest,
+    UpdateCheckResult outcome,
+  ) async {
+    if (manifest == null) return;
+    if (outcome != UpdateCheckResult.updateAvailable) return;
+    if (!ref.read(settingsProvider).updateNotificationsEnabled) return;
     final hive = ref.read(hiveServiceProvider);
     if (hive.getSetting(kLastUpdateNotifiedKey, defaultValue: '') ==
         manifest.latestVersionName) {
@@ -200,9 +212,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
     try {
       await NotificationService().showUpdateNotification(
         latestVersion: manifest.latestVersionName,
-        changelogSummary: manifest.releaseNotes,
+        changelogSummary: firstChangelogLine(manifest.releaseNotes),
       );
-      await hive.saveSetting(kLastUpdateNotifiedKey, manifest.latestVersionName);
+      await hive.saveSetting(
+        kLastUpdateNotifiedKey,
+        manifest.latestVersionName,
+      );
     } catch (_) {
       // Notifications are best-effort — never fail the update flow on them.
     }
@@ -225,7 +240,9 @@ class UpdateNotifier extends Notifier<UpdateState> {
 
     Stream<OtaEvent> stream;
     try {
-      stream = ref.read(updateServiceProvider).downloadAndInstall(manifest: manifest);
+      stream = ref
+          .read(updateServiceProvider)
+          .downloadAndInstall(manifest: manifest);
     } catch (e) {
       state = state.copyWith(
         status: UpdateStatus.error,
@@ -243,7 +260,10 @@ class UpdateNotifier extends Notifier<UpdateState> {
           final progress = double.tryParse(event.value ?? '') ?? 0;
           state = state.copyWith(progress: (progress / 100).clamp(0, 1));
         case OtaStatus.INSTALLING:
-          state = state.copyWith(status: UpdateStatus.readyToInstall, progress: 1);
+          state = state.copyWith(
+            status: UpdateStatus.readyToInstall,
+            progress: 1,
+          );
         case OtaStatus.INSTALLATION_DONE:
           state = state.copyWith(
             status: UpdateStatus.idle,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/utils/context.dart';
 
@@ -217,7 +218,7 @@ class AppButton extends StatelessWidget {
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: context.colorAppScheme.outline, width: 1),
+          side: BorderSide(color: cs.outline, width: 1),
         ),
         foregroundColor: color,
         padding: _padding(context),

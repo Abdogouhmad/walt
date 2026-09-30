@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:walt/core/constants/app_colors.dart';
 import 'package:walt/core/design/motion.dart';
 import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/utils/context.dart';
 import 'package:walt/shared/state_views.dart';
 import 'package:walt/shared/text_ui.dart';
 
@@ -52,6 +50,7 @@ class M3Ecard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context);
     final content = Padding(
       padding: padding ?? EdgeInsets.all(AppSpacing.md),
       child: Column(
@@ -76,12 +75,15 @@ class M3Ecard extends StatelessWidget {
                         text: data.title ?? "",
                         type: UiTextType.titleMedium,
                         style: TextStyle(
-                          color: context.textSecondary,
+                          color: scheme.colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       if (data.subtitle != null)
-                        UiText(text: data.subtitle!, type: UiTextType.bodySmall),
+                        UiText(
+                          text: data.subtitle!,
+                          type: UiTextType.bodySmall,
+                        ),
                     ],
                   ),
                 ),
@@ -111,52 +113,37 @@ class M3Ecard extends StatelessWidget {
       ),
     );
 
-    final surfaceRadius = data.shape ??
+    final surfaceRadius =
+        data.shape ??
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.surface),
-          side: BorderSide(
-            color: context.colorAppScheme.outlineVariant,
-            width: 1,
-          ),
+          side: BorderSide(color: scheme.colorScheme.outlineVariant, width: 1),
         );
 
     // The ripple should follow the card's shape; only RoundedRectangleBorder
     // exposes a borderRadius, so fall back to the surfaced radius otherwise.
-    final inkRadius =
-        surfaceRadius is RoundedRectangleBorder
-            ? (surfaceRadius.borderRadius as BorderRadius)
-            : BorderRadius.circular(AppRadius.surface);
+    final inkRadius = surfaceRadius is RoundedRectangleBorder
+        ? (surfaceRadius.borderRadius as BorderRadius)
+        : BorderRadius.circular(AppRadius.surface);
 
     final card = switch (variant) {
       M3ECardVariant.elevated => Card(
         color: data.colorCard,
         shape: surfaceRadius,
         elevation: 1,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: inkRadius,
-          child: content,
-        ),
+        child: InkWell(onTap: onTap, borderRadius: inkRadius, child: content),
       ),
       M3ECardVariant.filled => Card.filled(
         color: data.colorCard,
         shape: surfaceRadius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: inkRadius,
-          child: content,
-        ),
+        child: InkWell(onTap: onTap, borderRadius: inkRadius, child: content),
       ),
       M3ECardVariant.outlined => Card.outlined(
         borderOnForeground: true,
         color: data.colorCard,
         shape: surfaceRadius,
         elevation: 0,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: inkRadius,
-          child: content,
-        ),
+        child: InkWell(onTap: onTap, borderRadius: inkRadius, child: content),
       ),
     };
 

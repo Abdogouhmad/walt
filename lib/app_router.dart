@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:walt/features/settings/settings_screen.dart';
+import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/shared/bottom_nav.dart';
 // Providers
 import 'providers/settings_provider.dart';
@@ -25,10 +26,18 @@ class RouterListenable extends ChangeNotifier {
   }
 }
 
+/// Root navigator key so nested routes can escape the shell.
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final listenable = RouterListenable(ref);
 
   return GoRouter(
+    // Must be handed to GoRouter. Routes above the shell opt out of it with
+    // `parentNavigatorKey: rootNavigatorKey`, and go_router only accepts a
+    // parent key that is *its* root navigator or an ancestor shell's key —
+    // an unreferenced GlobalKey fails that assertion at construction time.
+    navigatorKey: rootNavigatorKey,
     refreshListenable: listenable,
     initialLocation: '/splash',
 
@@ -76,7 +85,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: '/lock', builder: (context, state) => const LockScreen()),
 
-      // Main App Shell with Bottom Navigation
+      // Main App Shell with the floating pill navigation (4 destinations).
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
@@ -86,19 +95,40 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const TransactionListScreen(),
           ),
           GoRoute(
-            path: '/reports',
-            builder: (context, state) => const ReportsScreen(),
-          ),
-          GoRoute(
-            path: '/settings',
-            builder: (context, state) => const SettingsScreen(),
-          ),
-          GoRoute(
             path: '/budgets',
             builder: (context, state) => const BudgetsScreen(),
           ),
+          GoRoute(
+            path: '/reports',
+            builder: (context, state) => const ReportsScreen(),
+          ),
         ],
+      ),
+
+      // Settings is *not* a tab. It lives on the root navigator so the profile
+      // avatar can `push` it as a normal route — which gives it a back arrow
+      // and predictive back for free — while the shell (and its floating nav)
+      // stays mounted underneath.
+      GoRoute(
+        path: '/settings',
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) =>
+            const MaterialPage(child: SettingsScreen()),
+      ),
+
+      // About sits on the root navigator too: it is a plain push, and it is
+      // also where the update notification lands, so it has to be reachable
+      // without a tab.
+      GoRoute(
+        path: kAboutRoute,
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) =>
+            const MaterialPage(child: AboutScreen()),
       ),
     ],
   );
 });
+
+/// Route paths reachable from a notification tap.
+const String kBudgetsRoute = '/budgets';
+const String kAboutRoute = '/settings/about';

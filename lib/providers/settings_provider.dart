@@ -9,10 +9,17 @@ import 'package:walt/data/local/transaction_dao.dart';
 import 'package:walt/providers/account_provider.dart';
 import 'package:walt/providers/auth_provider.dart';
 import 'package:walt/providers/budget_provider.dart';
+import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 
+/// Everything that is *not* appearance.
+///
+/// The palette / mode / AMOLED decision lives in
+/// `providers/theme_provider.dart` as its own [ThemeSettings] value: it is read
+/// on every frame to build the `ThemeData` and it is written as a unit, so
+/// keeping it apart stops a currency change from re-reading the theme and
+/// stops the theme from being persisted on an unrelated save.
 class SettingsState {
-  final ThemeMode themeMode;
   final String currency;
   final String userName;
   final String? profilePicPath;
@@ -21,8 +28,16 @@ class SettingsState {
   final bool isPasswordEnabled;
   final bool isFingerprintEnabled;
 
+  /// Budget threshold notifications (80% / 100%). Default on.
+  final bool budgetAlertsEnabled;
+
+  /// "New version available" notification. Default on.
+  final bool updateNotificationsEnabled;
+
+  /// Renders the floating nav opaque instead of frosted. Default off.
+  final bool reduceTransparency;
+
   SettingsState({
-    this.themeMode = ThemeMode.system,
     this.currency = 'MAD',
     this.userName = 'User',
     this.profilePicPath,
@@ -30,10 +45,12 @@ class SettingsState {
     this.isLoaded = false,
     this.isPasswordEnabled = false,
     this.isFingerprintEnabled = false,
+    this.budgetAlertsEnabled = true,
+    this.updateNotificationsEnabled = true,
+    this.reduceTransparency = false,
   });
 
   SettingsState copyWith({
-    ThemeMode? themeMode,
     String? currency,
     String? userName,
     String? profilePicPath,
@@ -41,9 +58,11 @@ class SettingsState {
     bool? isLoaded,
     bool? isPasswordEnabled,
     bool? isFingerprintEnabled,
+    bool? budgetAlertsEnabled,
+    bool? updateNotificationsEnabled,
+    bool? reduceTransparency,
   }) {
     return SettingsState(
-      themeMode: themeMode ?? this.themeMode,
       currency: currency ?? this.currency,
       userName: userName ?? this.userName,
       profilePicPath: profilePicPath ?? this.profilePicPath,
@@ -52,6 +71,10 @@ class SettingsState {
       isLoaded: isLoaded ?? this.isLoaded,
       isPasswordEnabled: isPasswordEnabled ?? this.isPasswordEnabled,
       isFingerprintEnabled: isFingerprintEnabled ?? this.isFingerprintEnabled,
+      budgetAlertsEnabled: budgetAlertsEnabled ?? this.budgetAlertsEnabled,
+      updateNotificationsEnabled:
+          updateNotificationsEnabled ?? this.updateNotificationsEnabled,
+      reduceTransparency: reduceTransparency ?? this.reduceTransparency,
     );
   }
 }
@@ -66,23 +89,33 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   SettingsState _loadSettings() {
     try {
-      final themeModeStr = _hive.getThemeMode();
-      final themeMode = ThemeMode.values.firstWhere(
-        (e) => e.name == themeModeStr,
-        orElse: () => ThemeMode.system,
-      );
       final currency = _hive.getCurrency();
       final userName = _hive.getUserName();
       final profilePicPath = _hive.getProfilePicPath();
       final onboardingCompleted = _hive.isOnboardingCompleted();
 
-      final isPasswordEnabled =
-          _hive.getSetting('isPasswordEnabled', defaultValue: false) as bool;
-      final isFingerprintEnabled =
-          _hive.getSetting('isFingerprintEnabled', defaultValue: false) as bool;
+      final isPasswordEnabled = _hive.getFlag(
+        'isPasswordEnabled',
+        defaultValue: false,
+      );
+      final isFingerprintEnabled = _hive.getFlag(
+        'isFingerprintEnabled',
+        defaultValue: false,
+      );
+      final budgetAlertsEnabled = _hive.getFlag(
+        'budgetAlertsEnabled',
+        defaultValue: true,
+      );
+      final updateNotificationsEnabled = _hive.getFlag(
+        'updateNotificationsEnabled',
+        defaultValue: true,
+      );
+      final reduceTransparency = _hive.getFlag(
+        'reduceTransparency',
+        defaultValue: false,
+      );
 
       return SettingsState(
-        themeMode: themeMode,
         currency: currency,
         userName: userName,
         profilePicPath: profilePicPath,
@@ -90,15 +123,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
         isLoaded: true,
         isPasswordEnabled: isPasswordEnabled,
         isFingerprintEnabled: isFingerprintEnabled,
+        budgetAlertsEnabled: budgetAlertsEnabled,
+        updateNotificationsEnabled: updateNotificationsEnabled,
+        reduceTransparency: reduceTransparency,
       );
     } catch (e) {
+      // Last-resort fallback. Reaching here means the store itself is
+      // unreadable, not that one value is odd — every individual read is
+      // already type-checked, so a failure now means the whole box is broken and
+      // defaulting is the only useful thing to do. `isLoaded: true` either way,
+      // because a failed read must not strand the app on a splash screen.
+      debugPrint('Could not read settings, using defaults: $e');
       return SettingsState(isLoaded: true);
     }
-  }
-
-  Future<void> setThemeMode(ThemeMode mode) async {
-    await _hive.setThemeMode(mode.name);
-    state = state.copyWith(themeMode: mode);
   }
 
   Future<void> setCurrency(String newCurrency) async {
@@ -138,6 +175,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     ref.read(accountProvider.notifier).refresh();
     ref.read(transactionProvider.notifier).refresh();
     ref.read(budgetProvider.notifier).refresh();
+    // Reports hold converted amounts, so they must be rebuilt too.
+    ref.invalidate(reportProvider);
   }
 
   Future<void> setUserProfile({
@@ -175,6 +214,23 @@ class SettingsNotifier extends Notifier<SettingsState> {
       state = state.copyWith(isFingerprintEnabled: newValue);
     }
     return true;
+  }
+
+  Future<void> setBudgetAlertsEnabled(bool value) async {
+    await _hive.saveSetting('budgetAlertsEnabled', value);
+    if (ref.mounted) state = state.copyWith(budgetAlertsEnabled: value);
+  }
+
+  Future<void> setUpdateNotificationsEnabled(bool value) async {
+    await _hive.saveSetting('updateNotificationsEnabled', value);
+    if (ref.mounted) {
+      state = state.copyWith(updateNotificationsEnabled: value);
+    }
+  }
+
+  Future<void> setReduceTransparency(bool value) async {
+    await _hive.saveSetting('reduceTransparency', value);
+    if (ref.mounted) state = state.copyWith(reduceTransparency: value);
   }
 
   Future<void> completeOnboarding() async {
