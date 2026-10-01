@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "0.8.1",
-  "latestVersionCode": 801,
+  "latestVersionName": "0.8.2",
+  "latestVersionCode": 802,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v0.8.1/walt-v0.8.1-universal.apk",
-  "sha256": "f8ea8126d588a2a3f1661d2aa47ac6453dd13b8f7098e44afb1ca3a8439ce62b",
-  "releaseNotes": "## [0.8.1] - 2026-09-30\n\n### Changed\n\n- **Onboarding icon** — the welcome step now shows the app's real launcher icon\n  (`walt_icon.png`) instead of the old generic wallet glyph.\n- **Updates are picked up immediately** — the update check now asks for a fresh\n  copy of the manifest, so a newly published release shows up on the very next\n  check instead of waiting for the CDN cache to expire.\n\n### Fixed\n\n- **OTA releases resolve against the right repository** — the release workflow\n  now derives the download URL from the repository it actually runs in, so a\n  fork or a renamed repo can no longer publish a manifest that points at\n  somebody else's APK.\n- **Release notes are no longer mangled** — leading indentation is preserved,\n  so nested bullets and code blocks survive into the GitHub release body and\n  the in-app \"What's new\" pane.\n- **Stale release notes can no longer be published** — the published APK and\n  the APK recorded in the manifest are verified to be the same file, and a\n  release whose CHANGELOG section does not match its version fails the build.\n- **\"Check for updates\" no longer hangs forever** — the network fetch is\n  bounded by a timeout, so a stalled connection resolves to a normal \"couldn't\n  check\" state instead of spinning indefinitely.\n- **A download that is cancelled or fails now resets cleanly** — the stale\n  progress bar is cleared instead of being carried into the next attempt.",
-  "publishedAt": "2026-09-30T17:39:21.193980+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v0.8.2/walt-v0.8.2-universal.apk",
+  "sha256": "3f393ae17401f3007dee62a3dbe7459a0d21321a9a5963263e32aec70f6ffb59",
+  "releaseNotes": "## [0.8.2] - 2026-10-01\n\n### Fixed\n\n- **Recent activity never appeared on Home** — the section filtered\n  transactions down to a date window that ended *yesterday*, and a transaction\n  is stamped with the moment it was added, so every entry carried a time of day\n  and fell outside it. Home said \"No recent activity\" while the Activity tab\n  listed those same transactions. The same window also emptied the section for\n  anyone whose newest entry was more than three days old. \"Recent\" is now simply\n  the newest entries, with no date window at all, and picking a day in the week\n  recap still narrows the list to that day — now matched on the calendar day, so\n  the time of day can no longer hide an entry.",
+  "publishedAt": "2026-10-01T18:28:42.366236+00:00"
 }
