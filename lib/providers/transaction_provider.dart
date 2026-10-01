@@ -56,24 +56,26 @@ class TransactionNotifier extends Notifier<AsyncValue<List<WaltTransaction>>> {
 final selectedDayProvider = StateProvider<DateTime?>((ref) => null);
 
 /// Recent transactions, newest first, limited to a handful for the home list.
+///
+/// No day selected means "the latest transactions", full stop — not a window
+/// around today. A window here silently hides the list from anyone whose newest
+/// entry is older than it, which reads as an empty home screen while the Activity
+/// tab lists the very same rows.
 final recentTransactionsProvider = Provider<List<WaltTransaction>>((ref) {
   final transactions = ref.watch(transactionProvider).value ?? const [];
   final selected = ref.watch(selectedDayProvider);
   final maxItems = ref.watch(recentActivityLimitProvider);
 
-  final now = DateTime.now();
-  final today = dateOnly(now);
-  // Default view: the last three days, so the home list is never empty.
-  // With a day selected: that day only, as a half-open window.
-  final start = selected == null ? addDays(today, -2) : dateOnly(selected);
-  final end = addDays(start, 1);
-
-  final inRange = transactions.where((tx) {
-    if (tx.date.isBefore(start) || tx.date.isAfter(end)) return false;
-    return true;
+  final candidates = transactions.where((tx) {
+    if (selected == null) return true;
+    // A day selected in the recap filters to that day. Matching on the calendar
+    // day (not the instant) is what keeps this working: transactions are stamped
+    // with the moment they were added, so they carry a time-of-day, and comparing
+    // against a midnight boundary would drop them.
+    return daysBetween(dateOnly(selected), dateOnly(tx.date)) == 0;
   }).toList()..sort((a, b) => b.date.compareTo(a.date));
 
-  return inRange.take(maxItems).toList();
+  return candidates.take(maxItems).toList();
 });
 
 /// Home shows at most five recent items.

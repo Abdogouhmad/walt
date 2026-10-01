@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-10-01
+
+### Fixed
+
+- **Recent activity never appeared on Home** — the section filtered
+  transactions down to a date window that ended *yesterday*, and a transaction
+  is stamped with the moment it was added, so every entry carried a time of day
+  and fell outside it. Home said "No recent activity" while the Activity tab
+  listed those same transactions. The same window also emptied the section for
+  anyone whose newest entry was more than three days old. "Recent" is now simply
+  the newest entries, with no date window at all, and picking a day in the week
+  recap still narrows the list to that day — now matched on the calendar day, so
+  the time of day can no longer hide an entry.
+
 ## [0.8.1] - 2026-09-30
 
 ### Changed
@@ -373,6 +387,8 @@ resilience, and UI/theme refinements (449 additions, 861 deletions).
 - Reformatted and lint-cleaned most files under `lib/`.
 - Trimmed `test/widget_test.dart` to match current app structure.
 
+[0.8.2]: https://github.com/Abdogouhmad/walt/compare/v0.8.1...v0.8.2
+[0.8.1]: https://github.com/Abdogouhmad/walt/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/Abdogouhmad/walt/compare/v0.6.0...v0.8.0
 [0.6.0]: https://github.com/Abdogouhmad/walt/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Abdogouhmad/walt/compare/v0.4.1...v0.5.0
