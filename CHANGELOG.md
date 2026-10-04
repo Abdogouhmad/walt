@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-04
+
+### Changed
+
+- **The app now ships as `com.freesoftware.walt`** — Walt finally has a real
+  application ID instead of the `com.example.*` placeholder Flutter generates,
+  so it is no longer labelled as a sample project on the device, in the
+  launcher, in Android's app info, or in the notification-listener permission
+  screen. Android treats a new application ID as a brand-new app: an existing
+  `com.example.walt` install is not replaced by this build and must be
+  uninstalled first, and the old app's local data does not carry over.
+
 ## [0.8.2] - 2026-10-01
 
 ### Fixed

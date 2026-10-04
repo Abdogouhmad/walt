@@ -31,7 +31,7 @@ val derivedVersionCode =
     versionParts.getOrElse(2) { 0 }
 
 android {
-    namespace = "com.example.walt"
+    namespace = "com.freesoftware.walt"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -52,7 +52,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.walt"
+        applicationId = "com.freesoftware.walt"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = derivedVersionCode

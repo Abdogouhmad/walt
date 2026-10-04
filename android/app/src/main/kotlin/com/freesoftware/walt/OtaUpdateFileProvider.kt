@@ -1,4 +1,4 @@
-package com.example.walt
+package com.freesoftware.walt
 
 import androidx.core.content.FileProvider
 
