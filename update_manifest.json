@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "0.8.2",
-  "latestVersionCode": 802,
+  "latestVersionName": "1.0.0",
+  "latestVersionCode": 10000,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v0.8.2/walt-v0.8.2-universal.apk",
-  "sha256": "3f393ae17401f3007dee62a3dbe7459a0d21321a9a5963263e32aec70f6ffb59",
-  "releaseNotes": "## [0.8.2] - 2026-10-01\n\n### Fixed\n\n- **Recent activity never appeared on Home** — the section filtered\n  transactions down to a date window that ended *yesterday*, and a transaction\n  is stamped with the moment it was added, so every entry carried a time of day\n  and fell outside it. Home said \"No recent activity\" while the Activity tab\n  listed those same transactions. The same window also emptied the section for\n  anyone whose newest entry was more than three days old. \"Recent\" is now simply\n  the newest entries, with no date window at all, and picking a day in the week\n  recap still narrows the list to that day — now matched on the calendar day, so\n  the time of day can no longer hide an entry.",
-  "publishedAt": "2026-10-01T18:28:42.366236+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.0/walt-v1.0.0-universal.apk",
+  "sha256": "ebd196447bf968188d7ee6084934732151ffa0f7aea37470b379dd961d01780a",
+  "releaseNotes": "## [1.0.0] - 2026-10-04\n\n### Changed\n\n- **The app now ships as `com.freesoftware.walt`** — Walt finally has a real\n  application ID instead of the `com.example.*` placeholder Flutter generates,\n  so it is no longer labelled as a sample project on the device, in the\n  launcher, in Android's app info, or in the notification-listener permission\n  screen. Android treats a new application ID as a brand-new app: an existing\n  `com.example.walt` install is not replaced by this build and must be\n  uninstalled first, and the old app's local data does not carry over.",
+  "publishedAt": "2026-10-04T19:19:06.795761+00:00"
 }
