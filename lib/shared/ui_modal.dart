@@ -10,6 +10,9 @@ import 'package:walt/core/design/spacing.dart';
 /// flows through here so they share one visual shape: draggable, 28dp
 /// rounded top corners, animated with the M3 expressive curves.
 ///
+/// The sheet resizes above the on-screen keyboard, so a form's scroll view
+/// always ends at the top of the keyboard and focused fields scroll into view.
+///
 /// ```dart
 /// await showWaltModal<void>(
 ///   context,
@@ -41,18 +44,22 @@ Future<T?> showWaltModal<T>(
       curve: AppMotion.standard,
       reverseCurve: AppMotion.exit,
     ),
-    builder: (_) =>
-        FractionallySizedBox(heightFactor: heightFactor, child: content),
+    builder: (ctx) => AnimatedPadding(
+      duration: const Duration(milliseconds: 100),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+      child: FractionallySizedBox(heightFactor: heightFactor, child: content),
+    ),
   );
 }
 
-/// Padding for form bodies inside [showWaltModal] content. The extra bottom
-/// clearance keeps the on-screen keyboard from covering the submit button.
+/// Padding for form bodies inside [showWaltModal] content.
+///
+/// The keyboard inset is NOT added here: [showWaltModal] already lifts the
+/// whole sheet above the keyboard. This only adds the system-bar clearance
+/// and a comfortable gap below the last widget (e.g. the submit button).
 EdgeInsets waltModalPadding(BuildContext context) {
-  final bottom =
-      MediaQuery.of(context).viewInsets.bottom +
-      MediaQuery.paddingOf(context).bottom +
-      AppSpacing.lg;
+  final bottom = MediaQuery.paddingOf(context).bottom + AppSpacing.lg;
   return EdgeInsets.fromLTRB(
     AppSpacing.lg,
     AppSpacing.lg,

@@ -123,6 +123,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       key: _formKey,
       child: ListView(
         physics: const BouncingScrollPhysics(),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: waltModalPadding(context),
         children: [
           Row(
@@ -210,15 +211,12 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 Icon(
                   Icons.warning_amber_rounded,
                   size: AppSpacing.md,
-                  color: Theme.of(context).colorScheme.error,
+                  color: scheme.error,
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   'Failed to load categories',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: scheme.error, fontSize: 13),
                 ),
                 const Spacer(),
                 TextButton(
@@ -254,8 +252,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             controller: _noteController,
             labelText: 'Note (optional)',
             keyboardType: TextInputType.text,
-            regexPattern: r'^.{3,}$',
-            textError: null,
+            isRequired: false,
             icon: Icons.edit_note,
           ),
           const SizedBox(height: AppSpacing.lg),
