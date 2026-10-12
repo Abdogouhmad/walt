@@ -13,6 +13,7 @@ class InputUI extends StatelessWidget {
   final String? hintText;
   final String? regexPattern;
   final IconData? icon;
+  final bool isRequired;
   final Function(String)? onchange;
 
   const InputUI({
@@ -25,6 +26,7 @@ class InputUI extends StatelessWidget {
     this.regexPattern,
     this.icon,
     this.onchange,
+    this.isRequired = true,
   });
 
   @override
@@ -50,9 +52,8 @@ class InputUI extends StatelessWidget {
       validator: (value) {
         // 1. Basic empty check
         if (value == null || value.trim().isEmpty) {
-          return textError ?? 'Field required';
+          return isRequired ? (textError ?? 'Field required') : null;
         }
-
         // 2. Numeric validation
         if (isNumeric) {
           final n = double.tryParse(value);

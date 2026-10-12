@@ -14,6 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-12
+
+### Fixed
+
+- **Form fields no longer hide behind the on-screen keyboard** — opening a
+  modal (for example, add transaction) now lifts the whole sheet above the
+  keyboard, so the focused field and the submit button stay visible, and
+  dragging the form dismisses the keyboard.
+- **The transaction note is now optional** — leaving the "Note (optional)"
+  field empty no longer blocks adding a transaction.
+
 ## [1.0.0] - 2026-10-04
 
 ### Changed
