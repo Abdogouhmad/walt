@@ -14,6 +14,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Continuous integration** — `.github/workflows/ci.yml` now runs
+  `dart format --set-exit-if-changed`, `flutter analyze` and
+  `flutter test --coverage` on every pull request and push to `main`, plus a
+  debug-APK smoke build.
+- **Notification routing tests** — unit tests covering notification payload
+  parsing and the destination-to-route mapping.
+- **Documentation** — rewritten `README.md`, new `CONTRIBUTING.md`,
+  `CODE_OF_CONDUCT.md`, `SECURITY.md`, and GitHub issue/pull-request templates.
+
+### Changed
+
+- **Stricter static analysis** — enabled `prefer_const_constructors`,
+  `prefer_const_declarations`, `prefer_final_locals`, `prefer_single_quotes`,
+  `directives_ordering`, `avoid_print` and the async lints on top of
+  `flutter_lints`, and resolved every resulting diagnostic. `flutter analyze`
+  reports no issues.
+- **README** now reflects the current app (Material 3, SQLite + Hive, nine
+  palettes, OTA updates) instead of the removed Material You / dynamic-colour
+  and AI features.
+
+### Removed
+
+- **Unused bundled assets** — `assets/profile/meme.jpg` and
+  `assets/icon/wallet.png` were declared but never referenced; they are no
+  longer shipped.
+
 ## [1.0.1] - 2026-10-12
 
 ### Fixed
@@ -410,6 +438,9 @@ resilience, and UI/theme refinements (449 additions, 861 deletions).
 - Reformatted and lint-cleaned most files under `lib/`.
 - Trimmed `test/widget_test.dart` to match current app structure.
 
+[Unreleased]: https://github.com/Abdogouhmad/walt/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/Abdogouhmad/walt/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/Abdogouhmad/walt/compare/v0.8.2...v1.0.0
 [0.8.2]: https://github.com/Abdogouhmad/walt/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/Abdogouhmad/walt/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/Abdogouhmad/walt/compare/v0.6.0...v0.8.0
