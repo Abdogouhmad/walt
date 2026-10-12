@@ -27,7 +27,10 @@ class PdfHeader extends pw.StatelessWidget {
                 ),
                 pw.Text(
                   'Summary of your financial activity',
-                  style: pw.TextStyle(fontSize: 10, color: PdfColors.grey500),
+                  style: const pw.TextStyle(
+                    fontSize: 10,
+                    color: PdfColors.grey500,
+                  ),
                 ),
               ],
             ),
@@ -43,7 +46,10 @@ class PdfHeader extends pw.StatelessWidget {
                 ),
                 pw.Text(
                   monthName,
-                  style: pw.TextStyle(fontSize: 14, color: PdfColors.blue700),
+                  style: const pw.TextStyle(
+                    fontSize: 14,
+                    color: PdfColors.blue700,
+                  ),
                 ),
               ],
             ),

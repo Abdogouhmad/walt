@@ -1,6 +1,6 @@
 import 'package:walt/data/models/walt_budget.dart';
-import 'package:walt/data/reports/date_math.dart';
 import 'package:walt/data/models/walt_transaction.dart';
+import 'package:walt/data/reports/date_math.dart';
 
 /// Recurrence of a budget. Stored as a free-form string in SQLite, so parsing
 /// is lenient and always falls back to monthly.
@@ -231,7 +231,7 @@ BudgetSummary summariseBudgets(
 }) {
   final reference = now ?? DateTime.now();
   if (calculations.isEmpty) {
-    return BudgetSummary(
+    return const BudgetSummary(
       totalBudget: 0,
       totalSpent: 0,
       remaining: 0,

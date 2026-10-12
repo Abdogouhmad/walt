@@ -1,9 +1,10 @@
+import 'dart:io' as platform;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'dart:io' as platform;
 
 class AuthState {
   final bool isAuthenticated;
@@ -44,7 +45,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
     if (platform.Platform.isLinux) {
       state = state.copyWith(isAuthenticated: true);
-      debugPrint("this is linux i cant auth i allowed you");
+      debugPrint('this is linux i cant auth i allowed you');
       return true;
     }
 

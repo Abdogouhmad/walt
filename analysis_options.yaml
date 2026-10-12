@@ -3,11 +3,26 @@ include: package:flutter_lints/flutter.yaml
 # Customize lint rules here
 linter:
   rules:
-    # You can enable/disable specific rules
-    # avoid_print: false
-    # prefer_single_quotes: true
-    # unnecessary_brace_in_string_interps: false
-    # sort_pub_dependencies: false   # useful when you have many packages
+    # `print` writes to stdout on every platform and is stripped from release
+    # builds. Use `debugPrint`/`dart:developer` `log` instead.
+    avoid_print: true
+
+    # Prefer immutable locals and const literals/constructors: less mutable
+    # state, cheaper rebuilds, and the compiler can canonicalise instances.
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_final_locals: true
+
+    # Surfaces a widget running a `Future` after its `BuildContext` may be
+    # unmounted, and dropped futures awaiting on nothing.
+    use_build_context_synchronously: true
+    unawaited_futures: true
+
+    # Consistency / readability.
+    directives_ordering: true
+    prefer_single_quotes: true
+    unnecessary_brace_in_string_interps: true
 
 analyzer:
   errors:

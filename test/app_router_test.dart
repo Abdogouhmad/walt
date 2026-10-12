@@ -1,6 +1,6 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:walt/app_router.dart';
 import 'package:walt/providers/auth_provider.dart';
 import 'package:walt/providers/settings_provider.dart';

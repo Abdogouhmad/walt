@@ -209,7 +209,7 @@ class _SaturationValuePad extends StatelessWidget {
                       ),
                       child: const SizedBox.expand(),
                     ),
-                    DecoratedBox(
+                    const DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Colors.transparent, Colors.black],
@@ -217,7 +217,7 @@ class _SaturationValuePad extends StatelessWidget {
                           end: Alignment.bottomCenter,
                         ),
                       ),
-                      child: const SizedBox.expand(),
+                      child: SizedBox.expand(),
                     ),
                     Positioned(
                       left: saturation * constraints.maxWidth - _thumbRadius,

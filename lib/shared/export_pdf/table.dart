@@ -1,6 +1,6 @@
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:intl/intl.dart';
 import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 

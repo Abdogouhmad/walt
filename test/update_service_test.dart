@@ -153,7 +153,7 @@ void main() {
 
   group('NotificationService update id', () {
     test('never collides with budget alert ids (sequential from 1)', () {
-      final updateId = NotificationService.updateNotificationId;
+      const updateId = NotificationService.updateNotificationId;
       expect(updateId, isNot(equals(1)));
       // Budget ids are tiny; the update id must stay far above any plausible
       // budget count so Android never replaces one notification with the other.

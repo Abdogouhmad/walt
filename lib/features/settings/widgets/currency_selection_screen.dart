@@ -34,7 +34,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
           // Header like AboutScreen
-          UiText(
+          const UiText(
             text: 'Currency',
             type: UiTextType.headlineLarge,
             style: TextStyle(fontWeight: FontWeight.w700),
@@ -43,7 +43,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
           const SizedBox(height: 4),
 
           UiText(
-            text: "Select your preferred currency",
+            text: 'Select your preferred currency',
             type: UiTextType.bodyMedium,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -164,7 +164,7 @@ class CurrencySelectionScreen extends ConsumerWidget {
                         child: isSelected
                             ? Icon(
                                 Icons.check_circle,
-                                key: const ValueKey("selected"),
+                                key: const ValueKey('selected'),
                                 color: scheme.primary,
                               )
                             : const SizedBox.shrink(),

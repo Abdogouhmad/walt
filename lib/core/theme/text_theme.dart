@@ -60,7 +60,7 @@ abstract final class AppTextTheme {
     // theme whose `fontSize` is null everywhere, which silently drops the whole
     // scale and lets every role fall back to the ambient default. Taking the
     // geometry explicitly is what makes the pinned sizes below real.
-    final geometry = Typography.englishLike2021;
+    const geometry = Typography.englishLike2021;
     final base = geometry.apply(
       fontFamily: fontFamily,
       bodyColor: scheme.onSurface,

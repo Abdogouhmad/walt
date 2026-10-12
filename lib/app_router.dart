@@ -4,16 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:walt/features/settings/settings_screen.dart';
 import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/shared/bottom_nav.dart';
-// Providers
-import 'providers/settings_provider.dart';
-import 'providers/auth_provider.dart';
+
+import 'features/auth/lock_screen.dart';
+import 'features/budgets/budgets_screen.dart';
+import 'features/home/home_screen.dart';
 // Screens
 import 'features/onboarding/onboarding_screen.dart';
-import 'features/home/home_screen.dart';
-import 'features/transactions/transaction_list_screen.dart';
 import 'features/reports/reports_screen.dart';
-import 'features/budgets/budgets_screen.dart';
-import 'features/auth/lock_screen.dart';
+import 'features/transactions/transaction_list_screen.dart';
+import 'providers/auth_provider.dart';
+// Providers
+import 'providers/settings_provider.dart';
 import 'shared/splash_screen.dart';
 
 /// A Listenable that notifies GoRouter when to re-evaluate the redirect logic.

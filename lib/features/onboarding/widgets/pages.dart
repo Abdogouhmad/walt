@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +29,7 @@ class WelcomeStep extends StatelessWidget {
               Image.asset('assets/icon/walt_icon.png', height: 100),
               const SizedBox(width: 12),
               const Text(
-                "Walt",
+                'Walt',
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
             ],
@@ -37,7 +38,7 @@ class WelcomeStep extends StatelessWidget {
           const SizedBox(height: 20),
           UiText(
             text:
-                "Your simple, secured, private and beautiful personal finance tracker",
+                'Your simple, secured, private and beautiful personal finance tracker',
             type: UiTextType.bodyMedium,
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -88,19 +89,19 @@ class SecurityStep extends ConsumerWidget {
           ),
           const SizedBox(height: 40),
           const Text(
-            "Privacy First",
+            'Privacy First',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           const Text(
-            "Protect your financial data with biometric authentication or a passcode.",
+            'Protect your financial data with biometric authentication or a passcode.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, height: 1.5),
           ),
           const SizedBox(height: 40),
           SwitchListTile(
-            title: const Text("Enable Biometrics"),
+            title: const Text('Enable Biometrics'),
             value: settings.isFingerprintEnabled,
             onChanged: (v) => notifier.toggleFingerprint(),
           ),
@@ -133,9 +134,11 @@ class _SignupStepState extends ConsumerState<SignupStep> {
     final image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() => _imagePath = image.path);
-      ref
-          .read(settingsProvider.notifier)
-          .setUserProfile(name: _nameController.text, profilePic: _imagePath);
+      unawaited(
+        ref
+            .read(settingsProvider.notifier)
+            .setUserProfile(name: _nameController.text, profilePic: _imagePath),
+      );
     }
   }
 
@@ -169,15 +172,15 @@ class _SignupStepState extends ConsumerState<SignupStep> {
             ),
             const SizedBox(height: 40),
             const Text(
-              "Setup Your Profile",
+              'Setup Your Profile',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
             InputUI(
               controller: _nameController,
-              labelText: "Full Name",
-              hintText: "John Doe",
+              labelText: 'Full Name',
+              hintText: 'John Doe',
               icon: Icons.person_outline_rounded,
               onchange: (v) => ref
                   .read(settingsProvider.notifier)
@@ -187,7 +190,7 @@ class _SignupStepState extends ConsumerState<SignupStep> {
             DropdownButtonFormField<String>(
               initialValue: _currency,
               decoration: const InputDecoration(
-                labelText: "Default Currency",
+                labelText: 'Default Currency',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.payments_outlined),
               ),

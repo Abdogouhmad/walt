@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:walt/features/onboarding/widgets/pages.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
-import 'package:walt/features/onboarding/widgets/pages.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -39,8 +39,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _next() {
-    // print("NEXT CALLED -> page: $_page");
-
     if (_page < _pages.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -76,7 +74,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 controller: _controller,
                 itemCount: _pages.length,
                 onPageChanged: (i) {
-                  // print("PAGE CHANGED -> $i");
                   setState(() => _page = i);
                 },
                 itemBuilder: (_, i) => _pages[i],
@@ -94,8 +91,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   if (_page != 0) ...[
                     AppButton(
                       label: _page == _pages.length - 1
-                          ? "Get Started"
-                          : "Next",
+                          ? 'Get Started'
+                          : 'Next',
                       onPressed: _next,
                       type: ButtonType.primary,
                       isFullWidth: true,
@@ -114,7 +111,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           );
                         },
                         type: ButtonType.secondary,
-                        label: "Skip",
+                        label: 'Skip',
                         icon: Icons.arrow_forward_rounded,
                         isFullWidth: true,
                         size: ButtonSize.large,

@@ -25,7 +25,7 @@ class AboutInfoDialog extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return AlertDialog(
-      icon: Icon(Icons.mosque_rounded),
+      icon: const Icon(Icons.mosque_rounded),
       title: Text(
         Appinfo.appname,
         style: theme.textTheme.titleLarge?.copyWith(

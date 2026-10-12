@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
 import 'package:walt/data/services/update_service.dart';
@@ -8,8 +7,8 @@ import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/markdown_notes.dart';
 import 'package:walt/providers/update_provider.dart';
 import 'package:walt/shared/bottons.dart';
-import 'package:walt/shared/status_badge.dart';
 import 'package:walt/shared/state_views.dart';
+import 'package:walt/shared/status_badge.dart';
 import 'package:walt/shared/text_ui.dart';
 
 /// Full-page OTA update center, reachable from the settings "Update" entry.
@@ -49,7 +48,10 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: UiText(text: 'Software update', type: UiTextType.titleLarge),
+        title: const UiText(
+          text: 'Software update',
+          type: UiTextType.titleLarge,
+        ),
         centerTitle: true,
       ),
       body: SafeArea(

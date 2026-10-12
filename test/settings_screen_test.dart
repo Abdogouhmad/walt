@@ -2,18 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive_ce/hive.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:hive_ce/hive.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:walt/core/theme/app_theme.dart';
 import 'package:walt/core/widgets/grouped_list.dart';
 import 'package:walt/data/local/hive_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
-import 'package:walt/features/settings/widgets/about_info_dialog.dart';
 import 'package:walt/features/settings/settings_screen.dart';
+import 'package:walt/features/settings/widgets/about_info_dialog.dart';
 import 'package:walt/providers/settings_provider.dart';
 
 /// Satisfies `HiveService.init` without touching the real filesystem layout.

@@ -31,7 +31,7 @@ Future<T?> showWaltModal<T>(
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: showDragHandle,
-    shape: RoundedRectangleBorder(
+    shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
         top: Radius.circular(AppRadius.surface),
       ),

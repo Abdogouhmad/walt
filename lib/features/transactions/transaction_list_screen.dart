@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-
 import 'package:walt/core/design/spacing.dart';
 import 'package:walt/core/widgets/grouped_list.dart';
 import 'package:walt/core/widgets/section_header.dart';
 import 'package:walt/core/widgets/staggered_entry.dart';
 import 'package:walt/core/widgets/walt_chrome.dart';
-import 'package:walt/shared/profile_app_bar_action.dart';
 import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/features/transactions/widgets/tx_list.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt/shared/profile_app_bar_action.dart';
 import 'package:walt/shared/state_views.dart';
 
 /// Retained (app-lifetime) activity filters so switching tabs does not clear

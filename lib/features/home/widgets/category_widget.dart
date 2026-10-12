@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'package:walt/core/design/motion.dart';
 import 'package:walt/core/design/spacing.dart';
 import 'package:walt/core/theme/shapes.dart';
-import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/core/utils/category_icon.dart';
+import 'package:walt/data/models/walt_category.dart';
 
 /// Wrap of selectable category chips used inside the add-transaction sheet.
 ///

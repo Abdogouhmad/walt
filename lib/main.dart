@@ -1,22 +1,22 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:walt/data/services/notification_router.dart';
-import 'package:walt/data/services/notification_service.dart';
-import 'package:walt/features/settings/widgets/soft_update_bootstrap.dart';
-
 // sqflite FFI support for Desktop
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:walt/data/services/notification_router.dart';
+import 'package:walt/data/services/notification_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
+import 'package:walt/features/settings/widgets/soft_update_bootstrap.dart';
 
+import 'app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_settings.dart';
 // Your local files
 import 'data/local/database_helper.dart';
 import 'data/local/hive_service.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/theme_settings.dart';
-import 'app_router.dart';
 // Providers
 import 'providers/theme_provider.dart';
 

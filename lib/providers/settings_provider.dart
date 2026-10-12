@@ -1,7 +1,9 @@
+import 'dart:async';
+
+import 'package:currency_converter/currency.dart';
+import 'package:currency_converter/currency_converter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:currency_converter/currency_converter.dart';
-import 'package:currency_converter/currency.dart';
 import 'package:walt/data/local/account_dao.dart';
 import 'package:walt/data/local/budget_dao.dart';
 import 'package:walt/data/local/hive_service.dart';
@@ -172,9 +174,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await TransactionDao().updateAllAmounts(rate);
     await BudgetDao().updateAllAmounts(rate);
 
-    ref.read(accountProvider.notifier).refresh();
-    ref.read(transactionProvider.notifier).refresh();
-    ref.read(budgetProvider.notifier).refresh();
+    unawaited(ref.read(accountProvider.notifier).refresh());
+    unawaited(ref.read(transactionProvider.notifier).refresh());
+    unawaited(ref.read(budgetProvider.notifier).refresh());
     // Reports hold converted amounts, so they must be rebuilt too.
     ref.invalidate(reportProvider);
   }

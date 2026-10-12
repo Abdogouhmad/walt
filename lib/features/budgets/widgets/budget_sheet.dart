@@ -107,7 +107,7 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
         return;
       }
 
-      budgetNotifier.addBudget(
+      await budgetNotifier.addBudget(
         WaltBudget(
           id: 0,
           categoryId: selectedCategoryId!,
@@ -129,7 +129,7 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
         await evaluateBudgetAlertsNow(ref);
       }
     } else {
-      budgetNotifier.updateBudget(
+      await budgetNotifier.updateBudget(
         widget.budgetToEdit!.copyWith(
           categoryId: selectedCategoryId!,
           amount: amount,
@@ -169,7 +169,7 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     UiText(
-                      text: isEditing ? "Edit Budget" : "New Budget",
+                      text: isEditing ? 'Edit Budget' : 'New Budget',
                       type: UiTextType.titleLarge,
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
@@ -179,8 +179,8 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                     const SizedBox(height: AppSpacing.xs),
                     UiText(
                       text: isEditing
-                          ? "Adjust your spending limits"
-                          : "Set bounds to save smarter",
+                          ? 'Adjust your spending limits'
+                          : 'Set bounds to save smarter',
                       type: UiTextType.bodySmall,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -204,18 +204,18 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
           ),
           const SizedBox(height: AppSpacing.xl),
 
-          _SectionLabel("MONTHLY LIMIT"),
+          const _SectionLabel('MONTHLY LIMIT'),
           const SizedBox(height: AppSpacing.md),
           InputUI(
-            labelText: "Amount",
+            labelText: 'Amount',
             controller: _amountController,
-            hintText: "0.00 ($currency)",
+            hintText: '0.00 ($currency)',
             icon: Icons.account_balance_wallet_outlined,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: AppSpacing.xl),
 
-          const _SectionLabel("SELECT CATEGORY"),
+          const _SectionLabel('SELECT CATEGORY'),
           const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: AppSpacing.sm,
@@ -235,7 +235,7 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     curve: Curves.easeOutCubic,
-                    padding: EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
                       vertical: AppSpacing.sm,
                     ),
@@ -288,9 +288,9 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const _SectionLabel("ALERT THRESHOLD"),
+              const _SectionLabel('ALERT THRESHOLD'),
               StatusBadge(
-                label: "${(alertThreshold * 100).toInt()}% spent",
+                label: '${(alertThreshold * 100).toInt()}% spent',
                 variant: StatusBadgeVariant.accent,
               ),
             ],
@@ -321,7 +321,7 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
           const SizedBox(height: AppSpacing.lg),
 
           AppButton(
-            label: isEditing ? "Update Budget" : "Create Budget",
+            label: isEditing ? 'Update Budget' : 'Create Budget',
             onPressed: saveBudget,
             size: ButtonSize.large,
             isFullWidth: true,

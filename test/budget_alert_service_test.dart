@@ -179,7 +179,7 @@ void main() {
   group('calculateBudget wiring', () {
     test('a real transaction list drives the threshold', () {
       final calc = calculateBudget(
-        budget: WaltBudget(
+        budget: const WaltBudget(
           id: 1,
           categoryId: 3,
           amount: 100,

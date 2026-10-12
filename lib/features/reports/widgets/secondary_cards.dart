@@ -103,9 +103,9 @@ class SecondaryReportCardUi extends ConsumerWidget {
       // `BoxConstraints`. Two tiles of differing content height are better
       // served by letting them size to their own content and aligning at the
       // top, which is what the loaded state above already does.
-      loading: () => Row(
+      loading: () => const Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Expanded(
             child: _MetricTile(
               icon: Icons.account_balance_wallet_outlined,

@@ -52,7 +52,7 @@ class M3Ecard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context);
     final content = Padding(
-      padding: padding ?? EdgeInsets.all(AppSpacing.md),
+      padding: padding ?? const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -65,14 +65,14 @@ class M3Ecard extends StatelessWidget {
               children: [
                 if (data.leading != null) ...[
                   data.leading!,
-                  SizedBox(width: AppSpacing.lg),
+                  const SizedBox(width: AppSpacing.lg),
                 ],
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       UiText(
-                        text: data.title ?? "",
+                        text: data.title ?? '',
                         type: UiTextType.titleMedium,
                         style: TextStyle(
                           color: scheme.colorScheme.onSurfaceVariant,
@@ -92,18 +92,18 @@ class M3Ecard extends StatelessWidget {
 
           // Body
           if (data.body != null) ...[
-            SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.lg),
             UiText(text: data.body!, type: UiTextType.bodyMedium),
           ],
 
           if (data.child != null) ...[
             if (data.title != null || data.leading != null)
-              SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
             data.child!,
           ],
           // Actions
           if (data.actions != null) ...[
-            SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: data.actions!,

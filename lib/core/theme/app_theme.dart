@@ -142,7 +142,7 @@ class AppTheme {
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
           minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-          shape: WidgetStatePropertyAll(AppShape.stadium),
+          shape: const WidgetStatePropertyAll(AppShape.stadium),
           // Subtle hover + pressed tint that follows the color scheme instead
           // of the default grey overlay.
           overlayColor: WidgetStateProperty.resolveWith(
@@ -154,10 +154,10 @@ class AppTheme {
           ),
         ),
       ),
-      segmentedButtonTheme: SegmentedButtonThemeData(
+      segmentedButtonTheme: const SegmentedButtonThemeData(
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(48, 44)),
-          shape: const WidgetStatePropertyAll(
+          minimumSize: WidgetStatePropertyAll(Size(48, 44)),
+          shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(borderRadius: AppShape.radiusMedium),
           ),
         ),
@@ -215,7 +215,7 @@ class AppTheme {
         side: WidgetStatePropertyAll(
           BorderSide(color: colorScheme.outlineVariant),
         ),
-        shape: WidgetStatePropertyAll(
+        shape: const WidgetStatePropertyAll(
           RoundedRectangleBorder(borderRadius: AppShape.radiusFull),
         ),
         padding: const WidgetStatePropertyAll(
@@ -270,7 +270,7 @@ class AppTheme {
               : null,
         ),
       ),
-      sliderTheme: SliderThemeData(
+      sliderTheme: const SliderThemeData(
         showValueIndicator: ShowValueIndicator.onDrag,
         trackHeight: 8,
       ),
@@ -337,7 +337,7 @@ class AppTheme {
             colorScheme.surfaceContainerHigh,
           ),
           elevation: const WidgetStatePropertyAll(3),
-          shape: WidgetStatePropertyAll(
+          shape: const WidgetStatePropertyAll(
             RoundedRectangleBorder(borderRadius: AppShape.radiusMedium),
           ),
         ),

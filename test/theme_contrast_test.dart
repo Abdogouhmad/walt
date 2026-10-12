@@ -202,7 +202,7 @@ void main() {
 
       test('${palette.name} keeps text readable on pure black', () {
         final amoled = AppColorSchemes.of(
-          ThemeSettings(amoled: true).copyWith(palette: palette),
+          const ThemeSettings(amoled: true).copyWith(palette: palette),
           Brightness.dark,
         );
 
@@ -243,7 +243,7 @@ void main() {
 
       test('${palette.name} ignores AMOLED while light', () {
         final light = AppColorSchemes.of(
-          ThemeSettings(amoled: true).copyWith(palette: palette),
+          const ThemeSettings(amoled: true).copyWith(palette: palette),
           Brightness.light,
         );
         final plain = AppColorSchemes.fromSeedColor(
@@ -328,7 +328,7 @@ void main() {
         brightness: Brightness.light,
       );
       final charts = WaltChartColors.fromScheme(scheme);
-      final own = const Color(0xFF8E5CD9);
+      const own = Color(0xFF8E5CD9);
 
       final harmonized = charts.harmonizeCategory(own, 0);
 

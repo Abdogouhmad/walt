@@ -36,7 +36,7 @@ class AboutScreen extends ConsumerWidget {
               context,
             ).push(MaterialPageRoute(builder: (_) => const OtaUpdateScreen())),
           ),
-          UiText(
+          const UiText(
             text: 'About',
             type: UiTextType.headlineLarge,
             style: TextStyle(fontWeight: FontWeight.w700),
@@ -57,7 +57,7 @@ class AboutScreen extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(Icons.mosque_rounded, size: 30),
+                  const Icon(Icons.mosque_rounded, size: 30),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +65,7 @@ class AboutScreen extends ConsumerWidget {
                         UiText(
                           text: Appinfo.appname,
                           type: UiTextType.titleLarge,
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         UiText(
@@ -107,7 +107,7 @@ class AboutScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            UiText(
+                            const UiText(
                               text: 'Abdogouhmad',
                               type: UiTextType.titleLarge,
                               style: TextStyle(fontWeight: FontWeight.w600),
@@ -125,17 +125,17 @@ class AboutScreen extends ConsumerWidget {
                               children: [
                                 SocialBubble(
                                   icon: Icons.code,
-                                  url: "https://github.com/Abdogouhmad",
+                                  url: 'https://github.com/Abdogouhmad',
                                 ),
                                 SizedBox(width: AppSpacing.sm),
                                 SocialBubble(
                                   icon: Icons.message,
-                                  url: "mailto:gouhmad@hotmail.com",
+                                  url: 'mailto:gouhmad@hotmail.com',
                                 ),
                                 SizedBox(width: AppSpacing.sm),
                                 SocialBubble(
                                   icon: Icons.web_asset_rounded,
-                                  url: "https://agouhmad.vercel.app/",
+                                  url: 'https://agouhmad.vercel.app/',
                                 ),
                               ],
                             ),

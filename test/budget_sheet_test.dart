@@ -6,15 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-
 import 'package:walt/core/theme/app_theme.dart';
 import 'package:walt/data/local/hive_service.dart';
 import 'package:walt/data/models/walt_budget.dart';
+import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/features/budgets/widgets/budget_sheet.dart';
 import 'package:walt/providers/budget_provider.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/data/models/walt_category.dart';
 
 class _StubSettings extends SettingsNotifier {
   @override
@@ -44,7 +43,7 @@ class _StubBudget extends BudgetNotifier {
 
 class _StubCategories extends CategoryNotifier {
   @override
-  AsyncValue<List<WaltCategory>> build() => AsyncData(const [
+  AsyncValue<List<WaltCategory>> build() => const AsyncData([
     WaltCategory(
       id: 1,
       name: 'Food',

@@ -29,7 +29,7 @@ class TrendChart extends ConsumerWidget {
       data: (data) {
         final buckets = data.buckets;
         if (buckets.isEmpty || !data.hasExpense) {
-          return EmptyStateView(
+          return const EmptyStateView(
             title: 'No spending in this period',
             icon: Icons.bar_chart_rounded,
           );
@@ -126,7 +126,7 @@ class TrendChart extends ConsumerWidget {
                     width: barWidth(buckets.length),
                     // Only the top of the bar is rounded — a full-round rod on a
                     // zero-height bar would draw a dot.
-                    borderRadius: BorderRadius.vertical(
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(AppRadius.xs),
                     ),
                     color: isSelected
