@@ -77,6 +77,15 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   hive_ce_generator: ^1.11.1
 
+# `image` 4.11.0 calls `ZLibDecoder.decodeLazy`, which only exists in
+# `archive >= 4.1.0`, but `pdf` 3.12.0 constrains `archive` to `<4.1.0`. The
+# two cannot be satisfied together, so a fresh resolve (CI ignores the lock)
+# picks the incompatible pair and the release build fails to compile. Pin
+# `image` to the last release that works with archive 4.0.9 until upstream
+# fixes the constraint. Drop this override once `pdf` allows archive >= 4.1.0.
+dependency_overrides:
+  image: 4.9.2
+
 flutter_launcher_icons:
   android: true
   ios: false
