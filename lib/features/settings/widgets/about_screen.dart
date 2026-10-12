@@ -57,12 +57,7 @@ class AboutScreen extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: colors.primaryContainer,
-                    foregroundImage: const AssetImage('assets/icon/wallet.png'),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
+                  Icon(Icons.mosque_rounded, size: 30),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
