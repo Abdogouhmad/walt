@@ -4,7 +4,7 @@
   "minSupportedVersionCode": 41,
   "mandatory": false,
   "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.1/walt-v1.0.1-universal.apk",
-  "sha256": "3159bb8298389352e93d473466a6a3b87e4441c5e4216b1ae410c53846a484d4",
+  "sha256": "eb2e23452a5bdd2862c1562d4ff0a99b025039e61551770aaa4af1944ddaeac6",
   "releaseNotes": "## [1.0.1] - 2026-10-12\n\n### Fixed\n\n- **Form fields no longer hide behind the on-screen keyboard** — opening a\n  modal (for example, add transaction) now lifts the whole sheet above the\n  keyboard, so the focused field and the submit button stay visible, and\n  dragging the form dismisses the keyboard.\n- **The transaction note is now optional** — leaving the \"Note (optional)\"\n  field empty no longer blocks adding a transaction.",
-  "publishedAt": "2026-10-12T10:01:47.871926+00:00"
+  "publishedAt": "2026-10-12T16:41:40.166181+00:00"
 }
