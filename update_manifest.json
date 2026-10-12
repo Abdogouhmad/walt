@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "1.0.0",
-  "latestVersionCode": 10000,
+  "latestVersionName": "1.0.1",
+  "latestVersionCode": 10001,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.0/walt-v1.0.0-universal.apk",
-  "sha256": "ebd196447bf968188d7ee6084934732151ffa0f7aea37470b379dd961d01780a",
-  "releaseNotes": "## [1.0.0] - 2026-10-04\n\n### Changed\n\n- **The app now ships as `com.freesoftware.walt`** — Walt finally has a real\n  application ID instead of the `com.example.*` placeholder Flutter generates,\n  so it is no longer labelled as a sample project on the device, in the\n  launcher, in Android's app info, or in the notification-listener permission\n  screen. Android treats a new application ID as a brand-new app: an existing\n  `com.example.walt` install is not replaced by this build and must be\n  uninstalled first, and the old app's local data does not carry over.",
-  "publishedAt": "2026-10-04T19:19:06.795761+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.1/walt-v1.0.1-universal.apk",
+  "sha256": "3159bb8298389352e93d473466a6a3b87e4441c5e4216b1ae410c53846a484d4",
+  "releaseNotes": "## [1.0.1] - 2026-10-12\n\n### Fixed\n\n- **Form fields no longer hide behind the on-screen keyboard** — opening a\n  modal (for example, add transaction) now lifts the whole sheet above the\n  keyboard, so the focused field and the submit button stay visible, and\n  dragging the form dismisses the keyboard.\n- **The transaction note is now optional** — leaving the \"Note (optional)\"\n  field empty no longer blocks adding a transaction.",
+  "publishedAt": "2026-10-12T10:01:47.871926+00:00"
 }
