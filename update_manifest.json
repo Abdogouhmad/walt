@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "1.0.1",
-  "latestVersionCode": 10001,
+  "latestVersionName": "1.0.2",
+  "latestVersionCode": 10002,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.1/walt-v1.0.1-universal.apk",
-  "sha256": "eb2e23452a5bdd2862c1562d4ff0a99b025039e61551770aaa4af1944ddaeac6",
-  "releaseNotes": "## [1.0.1] - 2026-10-12\n\n### Fixed\n\n- **Form fields no longer hide behind the on-screen keyboard** — opening a\n  modal (for example, add transaction) now lifts the whole sheet above the\n  keyboard, so the focused field and the submit button stay visible, and\n  dragging the form dismisses the keyboard.\n- **The transaction note is now optional** — leaving the \"Note (optional)\"\n  field empty no longer blocks adding a transaction.",
-  "publishedAt": "2026-10-12T16:41:40.166181+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.2/walt-v1.0.2-universal.apk",
+  "sha256": "6deb92cb1ad54f2127c910c1bfbbc5b9b140063cb594a0b638f8b9499bab8efe",
+  "releaseNotes": "## [1.0.2] - 2026-10-13\n\n### Changed\n\n- **The add-transaction form now walks itself with the keyboard** — the Amount\n  field shows **Next**, which moves into Merchant and then Note, and the last\n  field shows **Done**, which saves the transaction. Pressing Next on an empty\n  field no longer skips it: the field keeps focus and shows its \"Required\"\n  error, so a transaction can never be saved with a missing amount or merchant.\n- **The category is validated like a field** — saving without picking a chip now\n  shows a red \"Select a category\" message under the chips, and scrolls them into\n  view, instead of silently doing nothing.",
+  "publishedAt": "2026-10-13T18:19:33.092847+00:00"
 }
