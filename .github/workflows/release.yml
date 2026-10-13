@@ -43,6 +43,10 @@ on:
   push:
     branches:
       - main
+    # A workflow-only edit can't change the shipped APKs, so it must not spin up
+    # a full signed release. Code, `pubspec.yaml` and `CHANGELOG.md` still do.
+    paths-ignore:
+      - '.github/**'
   workflow_dispatch:
 
 permissions:
