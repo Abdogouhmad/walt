@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "1.0.2",
-  "latestVersionCode": 10002,
+  "latestVersionName": "1.0.3",
+  "latestVersionCode": 10003,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.2/walt-v1.0.2-universal.apk",
-  "sha256": "6deb92cb1ad54f2127c910c1bfbbc5b9b140063cb594a0b638f8b9499bab8efe",
-  "releaseNotes": "## [1.0.2] - 2026-10-13\n\n### Changed\n\n- **The add-transaction form now walks itself with the keyboard** — the Amount\n  field shows **Next**, which moves into Merchant and then Note, and the last\n  field shows **Done**, which saves the transaction. Pressing Next on an empty\n  field no longer skips it: the field keeps focus and shows its \"Required\"\n  error, so a transaction can never be saved with a missing amount or merchant.\n- **The category is validated like a field** — saving without picking a chip now\n  shows a red \"Select a category\" message under the chips, and scrolls them into\n  view, instead of silently doing nothing.",
-  "publishedAt": "2026-10-13T18:19:33.092847+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.3/walt-v1.0.3-universal.apk",
+  "sha256": "2bb7674c7c91b74044b4f2e5c045827761d71cad437f7481e061f2ad33d7adfc",
+  "releaseNotes": "## [1.0.3] - 2026-10-13\n\n### Added\n\n- **Continuous integration** — `.github/workflows/ci.yml` now runs\n  `dart format --set-exit-if-changed`, `flutter analyze` and\n  `flutter test --coverage` on every pull request and push to `main`, plus a\n  debug-APK smoke build.\n- **Notification routing tests** — unit tests covering notification payload\n  parsing and the destination-to-route mapping.\n- **Documentation** — rewritten `README.md`, new `CONTRIBUTING.md`,\n  `CODE_OF_CONDUCT.md`, `SECURITY.md`, and GitHub issue/pull-request templates.\n\n### Changed\n\n- **Stricter static analysis** — enabled `prefer_const_constructors`,\n  `prefer_const_declarations`, `prefer_final_locals`, `prefer_single_quotes`,\n  `directives_ordering`, `avoid_print` and the async lints on top of\n  `flutter_lints`, and resolved every resulting diagnostic. `flutter analyze`\n  reports no issues.\n- **README** now reflects the current app (Material 3, SQLite + Hive, nine\n  palettes, OTA updates) instead of the removed Material You / dynamic-colour\n  and AI features.\n\n### Fixed\n\n- **New-update notifications never reached Android 13+ users** — the\n  `POST_NOTIFICATIONS` runtime permission was only ever requested while turning\n  budget alerts on or creating the first budget, so a user who never used\n  budgets had every \"new version available\" ping discarded by the OS and had to\n  open Settings → Update to discover a release. Walt now asks for the permission\n  at the moment it has an update to announce, and only records a release as\n  announced once the notification is actually delivered — a declined prompt no\n  longer hides that version forever.\n\n### Removed\n\n- **Unused bundled assets** — `assets/profile/meme.jpg` and\n  `assets/icon/wallet.png` were declared but never referenced; they are no\n  longer shipped.",
+  "publishedAt": "2026-10-13T18:43:39.101132+00:00"
 }
