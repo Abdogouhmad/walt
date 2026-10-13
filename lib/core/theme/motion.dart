@@ -56,6 +56,11 @@ abstract final class AppSpring {
         bounce: 0,
       );
 
+  /// [spatial] as an implicit-animation [Curve]. Shared because the curve is
+  /// immutable — rebuilding one per call (they are used inside `build`) only
+  /// allocates garbage.
+  static final Curve spatialCurve = curve(spatial);
+
   /// Upper bound on a spring's settle window, in seconds. The spec caps every
   /// animation at 500 ms; a spring's asymptotic tail beyond that is
   /// imperceptible, so it is trimmed rather than rendered.
@@ -89,12 +94,6 @@ abstract final class AppSpring {
   /// when it returns `false`.
   static bool isDisabled(BuildContext context) =>
       MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-
-  /// A duration that collapses to zero when animations are disabled.
-  static Duration durationOf(
-    BuildContext context, {
-    Duration fallback = AppMotion.medium,
-  }) => isDisabled(context) ? Duration.zero : fallback;
 }
 
 /// A [Curve] backed by a real [SpringSimulation], normalised to the 0→1 range
@@ -105,7 +104,10 @@ class _SpringCurve extends Curve {
 
   final SpringSimulation simulation;
 
-  double get _settleSeconds {
+  /// Memoised so the settle scan runs once per curve, not once per frame.
+  late final double _settleSeconds = _computeSettleSeconds();
+
+  double _computeSettleSeconds() {
     // Sample until the simulation reports done, capped so no spring in the app
     // can drag on past the 500 ms ceiling.
     for (var t = 0.02; t <= AppSpring._maxSeconds; t += 0.02) {

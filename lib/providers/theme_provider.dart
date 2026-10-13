@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/core/theme/color_schemes.dart';
 import 'package:walt/core/theme/theme_settings.dart';
 import 'package:walt/core/theme/walt_palette.dart';
 import 'package:walt/data/local/hive_service.dart';
@@ -75,21 +74,6 @@ class ThemeController extends Notifier<ThemeSettings> {
   /// the preference itself is remembered, so a user who enables it in dark mode
   /// and then switches back to light still gets AMOLED when they return.
   Future<void> setAmoled(bool value) => _apply(state.copyWith(amoled: value));
-
-  /// Back to Emerald, system brightness, no AMOLED, no custom seed.
-  Future<void> reset() => _apply(ThemeSettings.defaults);
-
-  /// The scheme [palette] produces in [brightness].
-  ///
-  /// Used by the appearance screen so a swatch and the live preview can be drawn
-  /// in the brightness the user is currently looking at, without applying the
-  /// choice first.
-  ColorScheme schemeFor(WaltPalette palette, Brightness brightness) =>
-      AppColorSchemes.forPalette(palette, brightness: brightness);
-
-  /// The scheme the *current* settings produce in [brightness].
-  ColorScheme schemeAt(Brightness brightness) =>
-      AppColorSchemes.of(state, brightness);
 }
 
 final themeControllerProvider =

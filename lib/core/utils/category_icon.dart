@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The icon key stored per category in the database, mapped to a Material glyph
-/// and a display name.
+/// The icon key stored per category in the database, mapped to a Material glyph.
 ///
 /// There is deliberately no colour here. A fixed rainbow of category colours was
 /// the one place in the app that ignored the palette, and it was never read:
@@ -24,26 +23,7 @@ class CategoryIcons {
     'attach_money': Icons.attach_money,
   };
 
-  static const Map<String, String> _nameMap = {
-    'restaurant': 'Dining',
-    'account_balance_wallet': 'Finance',
-    'coffee': 'Coffee',
-    'directions_car': 'Transport',
-    'shopping_bag': 'Shopping',
-    'favorite': 'Health',
-    'bolt': 'Utilities',
-    'laptop': 'Tech',
-    'category': 'General',
-    'shopping_basket_outlined': 'Groceries',
-    'work_outline': 'Work',
-    'attach_money': 'Income',
-  };
-
   static IconData getIcon(String name) {
     return _iconMap[name] ?? Icons.label_outline;
-  }
-
-  static String getName(String name) {
-    return _nameMap[name] ?? 'Unknown';
   }
 }

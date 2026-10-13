@@ -10,6 +10,22 @@ import 'package:intl/intl.dart';
 abstract final class MoneyFormat {
   const MoneyFormat._();
 
+  /// Formatter cache keyed by fraction-digit count.
+  ///
+  /// `NumberFormat.decimalPatternDigits` does a locale lookup and builds a new
+  /// formatter on every call, and [digits] runs for every amount on every
+  /// rebuild. The key space is tiny (headers use 0, everything else 2), so
+  /// building each formatter once removes that work from the hot path.
+  static final Map<int, NumberFormat> _formats = {};
+
+  static NumberFormat _formatFor(int fractionDigits) => _formats.putIfAbsent(
+    fractionDigits,
+    () => NumberFormat.decimalPatternDigits(
+      locale: 'en_US',
+      decimalDigits: fractionDigits,
+    ),
+  );
+
   /// Formats [value] with grouping separators and a fixed decimal count.
   ///
   /// [fractionDigits] of 0 is used for round figures in headers; 2 elsewhere.
@@ -24,10 +40,7 @@ abstract final class MoneyFormat {
   /// reaching the screen at all.
   static String digits(double value, {int fractionDigits = 2}) {
     final safe = value.isFinite ? value : 0.0;
-    return NumberFormat.decimalPatternDigits(
-      locale: 'en_US',
-      decimalDigits: fractionDigits,
-    ).format(safe);
+    return _formatFor(fractionDigits).format(safe);
   }
 
   /// The full amount including a trailing currency code, for places that show

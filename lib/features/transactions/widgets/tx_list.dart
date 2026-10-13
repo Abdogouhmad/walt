@@ -11,6 +11,10 @@ import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 
+/// Shared time formatter — `DateFormat('HH:mm')` per row per rebuild is
+/// wasteful on a long list.
+final _timeFormat = DateFormat('HH:mm');
+
 /// One transaction row inside a [GroupedList], with swipe-to-delete and undo.
 class TxList extends ConsumerWidget {
   final WaltTransaction transaction;
@@ -52,7 +56,7 @@ class TxList extends ConsumerWidget {
         leading: CategoryAvatar(icon: categoryIcon, color: categoryColor),
         title: Text(transaction.merchant ?? 'Unknown Merchant'),
         subtitle: Text(
-          '$categoryName • ${DateFormat('HH:mm').format(transaction.date)}',
+          '$categoryName • ${_timeFormat.format(transaction.date)}',
         ),
         trailing: AmountText(
           amount: transaction.amount,

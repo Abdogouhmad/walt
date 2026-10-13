@@ -65,9 +65,6 @@ class BudgetProgress {
   double get remaining => calculation.remaining;
   bool get isOverBudget => calculation.isExceeded;
   bool get isNearLimit => calculation.isNearLimit;
-
-  /// Stable key for "once per threshold per period" notification persistence.
-  String get alertKey => '${budget.id}|${calculation.window.key}';
 }
 
 final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {

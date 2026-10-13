@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/motion.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/motion.dart';
 import 'package:walt/core/theme/shapes.dart';
 import 'package:walt/core/widgets/empty_state.dart';
 import 'package:walt/core/widgets/wavy_progress.dart';
@@ -141,7 +141,7 @@ class _PressableScaleState extends State<PressableScale> {
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: AppMotion.short,
-        curve: AppSpring.curve(AppSpring.spatial),
+        curve: AppSpring.spatialCurve,
         child: widget.child,
       ),
     );

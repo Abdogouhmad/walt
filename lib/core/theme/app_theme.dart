@@ -27,10 +27,6 @@ class AppTheme {
   static ThemeData lightTheme([ThemeSettings? settings]) =>
       buildTheme(settings ?? ThemeSettings.defaults, Brightness.light);
 
-  /// The dark theme for [settings]. Defaults to the default palette.
-  static ThemeData darkTheme([ThemeSettings? settings]) =>
-      buildTheme(settings ?? ThemeSettings.defaults, Brightness.dark);
-
   static ThemeData _baseTheme(ColorScheme colorScheme) {
     final textTheme = AppTextTheme.build(colorScheme);
 

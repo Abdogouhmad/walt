@@ -11,6 +11,12 @@ final transactionProvider =
       () => TransactionNotifier(),
     );
 
+/// Shared day-header formatter.
+///
+/// Built once rather than per transaction: the grouping provider walks the
+/// whole list on every change and `DateFormat` construction is not free.
+final _dayHeaderFormat = DateFormat('MMM dd, yyyy');
+
 class TransactionNotifier extends Notifier<AsyncValue<List<WaltTransaction>>> {
   final TransactionDao _dao = TransactionDao();
 
@@ -39,13 +45,6 @@ class TransactionNotifier extends Notifier<AsyncValue<List<WaltTransaction>>> {
 
   Future<void> deleteTransaction(int id) async {
     await _dao.deleteTransaction(id);
-    await loadTransactions();
-  }
-
-  /// Re-inserts a deleted transaction, preserving its identity so an "undo"
-  /// restores exactly what was there before.
-  Future<void> restoreTransaction(WaltTransaction transaction) async {
-    await _dao.insertTransaction(transaction);
     await loadTransactions();
   }
 
@@ -116,7 +115,7 @@ final transactionsByDayProvider = Provider<Map<String, List<WaltTransaction>>>((
     } else if (txDate.isAtSameMomentAs(yesterday)) {
       key = 'Yesterday';
     } else {
-      key = DateFormat('MMM dd, yyyy').format(tx.date);
+      key = _dayHeaderFormat.format(tx.date);
     }
 
     grouped.putIfAbsent(key, () => []).add(tx);

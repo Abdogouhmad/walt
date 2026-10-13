@@ -41,17 +41,21 @@ class TransactionDao {
   ) async {
     final db = await _dbHelper.database;
 
+    // Half-open range: `>= first of month` and `< first of next month`. The
+    // previous `<= lastDay - 1 day` form stopped at midnight on the final day,
+    // so every transaction *during* the last day of the month was dropped from
+    // reports and exports.
     final startOfMonth = DateTime(year, month, 1).millisecondsSinceEpoch;
-    final endOfMonth = DateTime(
+    final startOfNextMonth = DateTime(
       year,
       month + 1,
       1,
-    ).subtract(const Duration(days: 1)).millisecondsSinceEpoch;
+    ).millisecondsSinceEpoch;
 
     final List<Map<String, dynamic>> maps = await db.query(
       'transactions',
-      where: 'date >= ? AND date <= ?',
-      whereArgs: [startOfMonth, endOfMonth],
+      where: 'date >= ? AND date < ?',
+      whereArgs: [startOfMonth, startOfNextMonth],
       orderBy: 'date DESC',
     );
 
@@ -87,26 +91,6 @@ class TransactionDao {
   Future<void> updateAllAmounts(double rate) async {
     final db = await _dbHelper.database;
     await db.rawUpdate('UPDATE transactions SET amount = amount * ?', [rate]);
-  }
-
-  // Get transactions within a date range (inclusive)
-  Future<List<WaltTransaction>> getTransactionsBetween(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
-    final db = await _dbHelper.database;
-
-    final List<Map<String, dynamic>> maps = await db.query(
-      'transactions',
-      where: 'date >= ? AND date <= ?',
-      whereArgs: [
-        startDate.millisecondsSinceEpoch,
-        endDate.millisecondsSinceEpoch,
-      ],
-      orderBy: 'date DESC',
-    );
-
-    return maps.map(_mapToTransaction).toList();
   }
 
   // Convert Map from database → Transaction model

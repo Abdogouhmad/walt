@@ -223,13 +223,6 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (ref.mounted) state = state.copyWith(budgetAlertsEnabled: value);
   }
 
-  Future<void> setUpdateNotificationsEnabled(bool value) async {
-    await _hive.saveSetting('updateNotificationsEnabled', value);
-    if (ref.mounted) {
-      state = state.copyWith(updateNotificationsEnabled: value);
-    }
-  }
-
   Future<void> setReduceTransparency(bool value) async {
     await _hive.saveSetting('reduceTransparency', value);
     if (ref.mounted) state = state.copyWith(reduceTransparency: value);

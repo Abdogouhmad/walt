@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-import 'package:walt/core/design/motion.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/motion.dart';
 import 'package:walt/core/widgets/pill_switcher.dart';
 import 'package:walt/features/reports/widgets/category_breakdown.dart';
 import 'package:walt/features/reports/widgets/category_donut.dart';

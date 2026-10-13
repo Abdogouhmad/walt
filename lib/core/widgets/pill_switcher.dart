@@ -70,7 +70,7 @@ class PillSwitcher<T> extends StatelessWidget {
                   // Spring easing on an explicit tween: the pill overshoots
                   // slightly as it settles on the new option.
                   duration: AppMotion.medium,
-                  curve: AppSpring.curve(AppSpring.spatial),
+                  curve: AppSpring.spatialCurve,
                   left: segmentWidth * safeIndex,
                   top: 0,
                   bottom: 0,

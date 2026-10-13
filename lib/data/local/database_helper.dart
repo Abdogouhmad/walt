@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -85,7 +85,32 @@ class DatabaseHelper {
       )
     ''');
 
+    await _createIndexes(db);
     debugPrint('✅ Database tables created successfully.');
+  }
+
+  /// Indexes for the columns every query filters or sorts on.
+  ///
+  /// Without these, SQLite scans the whole `transactions` table and sorts into
+  /// a temporary B-tree on every list/report load — the Activity screen, the
+  /// home recap and the budget progress all order by `date DESC`. Created with
+  /// `IF NOT EXISTS` so it is safe to run from both `onCreate` and `onUpgrade`.
+  Future<void> _createIndexes(Database db) async {
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_tx_date ON transactions(date DESC)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_tx_category '
+      'ON transactions(category_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_tx_account '
+      'ON transactions(account_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_budget_category '
+      'ON budgets(category_id)',
+    );
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -93,10 +118,8 @@ class DatabaseHelper {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE accounts ADD COLUMN profile_pic TEXT');
     }
-  }
-
-  Future<void> close() async {
-    final db = await instance.database;
-    await db.close();
+    if (oldVersion < 3) {
+      await _createIndexes(db);
+    }
   }
 }

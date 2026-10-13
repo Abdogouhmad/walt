@@ -269,11 +269,7 @@ class _ActionButton extends StatelessWidget {
         ? const AlwaysStoppedAnimation<double>(1)
         : CurvedAnimation(
             parent: controller,
-            curve: Interval(
-              begin,
-              end,
-              curve: AppSpring.curve(AppSpring.spatial),
-            ),
+            curve: Interval(begin, end, curve: AppSpring.spatialCurve),
             reverseCurve: Interval(0, end, curve: Curves.easeIn),
           );
 

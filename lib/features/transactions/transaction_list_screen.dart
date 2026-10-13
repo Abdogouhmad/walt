@@ -49,18 +49,22 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen> {
 
     final categoryById = {for (final c in categories) c.id: c};
 
+    // Normalise the search term once instead of per transaction.
+    final q = query.trim().toLowerCase();
+    final hasQuery = q.isNotEmpty;
+
     final filtered = <String, List<WaltTransaction>>{};
     txMap.forEach((day, transactions) {
       final kept = transactions.where((tx) {
         if (type != 'all' && tx.type.toLowerCase() != type) return false;
         if (categoryId != null && tx.categoryId != categoryId) return false;
 
-        if (query.trim().isNotEmpty) {
+        if (hasQuery) {
           final category = categoryById[tx.categoryId];
           final haystack =
               '${tx.merchant ?? ''} ${tx.note ?? ''} ${category?.name ?? ''}'
                   .toLowerCase();
-          if (!haystack.contains(query.trim().toLowerCase())) return false;
+          if (!haystack.contains(q)) return false;
         }
         return true;
       }).toList();

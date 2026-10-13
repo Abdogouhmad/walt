@@ -241,7 +241,7 @@ class _DayColumn extends StatelessWidget {
     final duration = AppSpring.isDisabled(context)
         ? Duration.zero
         : AppMotion.long;
-    final curve = AppSpring.curve(AppSpring.spatial);
+    final curve = AppSpring.spatialCurve;
 
     // Dot diameter scales with the day's share of the week's spending. A day
     // with no spend still renders a visible minimum dot so the row never looks

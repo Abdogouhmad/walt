@@ -104,20 +104,3 @@ class StatusBadge extends StatelessWidget {
         ),
       };
 }
-
-/// A live/idle dot indicator — used for update status, on/offline states, etc.
-class LiveDot extends StatelessWidget {
-  final Color color;
-  final double size;
-
-  const LiveDot({super.key, required this.color, this.size = 10});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-    );
-  }
-}

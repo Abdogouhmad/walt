@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:walt/data/services/pdf_export_service.dart';
 
+/// Shared month-abbreviation formatter — built once, not per grid cell.
+final _monthAbbrFormat = DateFormat('MMM');
+
 class ExportPdfButton extends ConsumerWidget {
   const ExportPdfButton({super.key});
 
@@ -58,7 +61,7 @@ class ExportPdfButton extends ConsumerWidget {
                           final month = index + 1;
                           final date = DateTime(selectedYear, month);
                           final isFuture = date.isAfter(now);
-                          final monthName = DateFormat('MMM').format(date);
+                          final monthName = _monthAbbrFormat.format(date);
 
                           return TextButton(
                             onPressed: isFuture

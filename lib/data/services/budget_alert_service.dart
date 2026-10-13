@@ -107,16 +107,6 @@ class BudgetAlertService {
     return sent;
   }
 
-  /// Test/debug helper: forgets every recorded alert.
-  Future<void> reset() async {
-    final box = _hive.settingsBox;
-    final keys = box.keys
-        .whereType<String>()
-        .where((k) => k.startsWith(storagePrefix))
-        .toList();
-    await box.deleteAll(keys);
-  }
-
   Future<Set<String>> _firedKeys() async {
     await _hive.ensureSettingsOpen();
     return _hive.settingsBox.keys

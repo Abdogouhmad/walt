@@ -14,6 +14,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-10-13
+
+### Changed
+
+- **Faster, leaner app.** This release is a performance and cleanup pass with no
+  new features.
+
+### Performance
+
+- **Database indexes** on the columns every list and report filters or sorts on
+  (`transactions.date`, `transactions.category_id`, `transactions.account_id`,
+  `budgets.category_id`). Large histories no longer force SQLite to scan the
+  whole table and build a temporary sort tree on each load.
+- **Report aggregation is now linear.** The bucket lookup derives a
+  transaction's position arithmetically instead of scanning every bucket, so
+  reports no longer cost *transactions × buckets*.
+- **Startup does less waiting.** `Appinfo`, the SQLite connection and Hive are
+  now opened in parallel, so the first frame waits on the slowest of the three
+  rather than on their sum.
+- **Less work per frame and per rebuild.** Cached the money formatter, memoised
+  the spring settle-time scan (was recomputed every frame), and hoisted
+  `DateFormat` construction out of list builders and the transaction-grouping
+  loop.
+
+### Fixed
+
+- **Budgets/reports dropped the last day of every month.** The August range, for
+  example, ended at midnight on the 31st, so anything recorded *during* the 31st
+  was missing from reports and PDF/CSV exports. The range is now half-open.
+
+### Removed
+
+- **Dead Google Pay notification-listener service** and its
+  `BIND_NOTIFICATION_LISTENER_SERVICE` permission — the feature's package was
+  never a dependency, so the service could never start.
+- **Unused Android permissions** — `RECEIVE_BOOT_COMPLETED`, `WAKE_LOCK`,
+  `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_SPECIAL_USE` (none were used by
+  the app or its plugins).
+- A long list of unreferenced code — unused controller methods, DAO helpers,
+  colour/icon mappings, the report palette, and a compatibility shim — plus the
+  stale `feat.md`, `polish.md` and `WALT_M3_EXPRESSIVE.md` planning documents and
+  the unused `assets/icon/walt_icon.svg` design source.
+
 ## [1.0.3] - 2026-10-13
 
 ### Added

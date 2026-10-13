@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/motion.dart';
 import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/motion.dart';
 
 /// The app's single sheet component: always a **bottom sheet** (Walt is
 /// Android-only, so there is deliberately no desktop dialog variant — spec

@@ -45,20 +45,6 @@ abstract final class WaltChrome {
     double extra = 24,
   }) => navExtent + systemBottom(context) + extra;
 
-  /// Padding for a screen's scrollable body: [AppSpacing]-based sides, chrome
-  /// clearance at the bottom.
-  static EdgeInsets screenPadding(
-    BuildContext context, {
-    double horizontal = 16,
-    double top = 0,
-    double extraBottom = 0,
-  }) => EdgeInsets.fromLTRB(
-    horizontal,
-    top,
-    horizontal,
-    scrollBottomPadding(context, extra: extraBottom),
-  );
-
   /// Centres and width-caps [child] on large screens so phone-first layouts do
   /// not stretch across a foldable or tablet.
   static Widget constrain(Widget child) => Center(

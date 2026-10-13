@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:walt/core/design/motion.dart';
 import 'package:walt/core/design/radius.dart';
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/theme/motion.dart';
 import 'package:walt/shared/state_views.dart';
 import 'package:walt/shared/text_ui.dart';
 

@@ -12,13 +12,6 @@ extension ReportPeriodX on ReportPeriod {
     ReportPeriod.month => 'Month',
     ReportPeriod.year => 'Year',
   };
-
-  /// How many buckets the spending chart shows for this period.
-  int get bucketCount => switch (this) {
-    ReportPeriod.week => 7,
-    ReportPeriod.month => 31,
-    ReportPeriod.year => 12,
-  };
 }
 
 /// An inclusive, half-open date range anchored on a calendar period.
@@ -210,14 +203,8 @@ class ReportAggregation {
   /// The dominant expense category, or null when nothing was spent.
   final CategorySlice? biggestCategory;
 
-  bool get hasData => totalExpense > 0 || totalIncome > 0;
   bool get hasExpense => totalExpense > 0;
   double get net => totalIncome - totalExpense;
-
-  /// Saving rate in percent, clamped to `0..100` territory is *not* applied —
-  /// overspending legitimately produces a negative rate.
-  double get savingRate =>
-      totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
 }
 
 /// Builds the buckets for [range] for the given [period], all zeroed.
@@ -260,18 +247,23 @@ String _monthInitial(int month) => const [
 ][month - 1];
 
 /// Index of the bucket a [date] belongs to, or `-1` when it falls outside.
+///
+/// Derived arithmetically rather than by scanning: the buckets are laid out
+/// contiguously from `range.start` (one per day for weeks/months, one per month
+/// for years), so the position follows from the calendar directly. This keeps
+/// aggregation linear in the number of transactions instead of
+/// transactions × buckets.
 int bucketIndexFor(
   ReportRange range,
   List<PeriodBucket> buckets,
   DateTime date,
 ) {
-  for (var i = 0; i < buckets.length; i++) {
-    final b = buckets[i].start;
-    final isLast = i == buckets.length - 1;
-    final next = isLast ? range.endExclusive : buckets[i + 1].start;
-    if (!date.isBefore(b) && date.isBefore(next)) return i;
-  }
-  return -1;
+  final day = dateOnly(date);
+  final index = switch (range.period) {
+    ReportPeriod.week || ReportPeriod.month => daysBetween(range.start, day),
+    ReportPeriod.year => day.month - 1,
+  };
+  return (index >= 0 && index < buckets.length) ? index : -1;
 }
 
 /// Pure aggregation of [transactions] over [range].
@@ -409,9 +401,5 @@ List<double> spendingByWeekday({
   }
   return totals;
 }
-
-/// Index (Monday == 0) of the weekday of [date].
-int weekdayIndex(DateTime date) =>
-    DateTime(date.year, date.month, date.day).weekday - 1;
 
 bool _isExpense(String type) => type.toLowerCase() == 'expense';

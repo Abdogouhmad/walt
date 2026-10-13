@@ -125,14 +125,6 @@ class WaltColors extends ThemeExtension<WaltColors> {
         .toColor();
   }
 
-  /// Foreground tone for a transaction [type] (`'income'` / `'expense'`).
-  Color forTransactionType(String type) =>
-      type.toLowerCase() == 'income' ? income : expense;
-
-  /// Low-emphasis fill matching [forTransactionType].
-  Color containerForTransactionType(String type) =>
-      type.toLowerCase() == 'income' ? incomeContainer : expenseContainer;
-
   @override
   WaltColors copyWith({
     Color? income,

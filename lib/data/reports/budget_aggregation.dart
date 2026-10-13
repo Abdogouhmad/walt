@@ -91,9 +91,6 @@ class BudgetWindow {
 enum BudgetAlert { approaching, exceeded }
 
 extension BudgetAlertX on BudgetAlert {
-  /// Fractions of the limit that must be reached to trigger this alert.
-  double get threshold => this == BudgetAlert.approaching ? 0.8 : 1.0;
-
   String get title => switch (this) {
     BudgetAlert.approaching => 'Approaching limit',
     BudgetAlert.exceeded => 'Budget exceeded',

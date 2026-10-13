@@ -226,20 +226,4 @@ class HiveService {
     if (val is int) return val != 0;
     return defaultValue;
   }
-
-  // ====================== UTILITY ======================
-
-  Future<void> clearAll() async {
-    if (!_settingsBox.isOpen) {
-      _settingsBox = await Hive.openBox(_settingsBoxName);
-    }
-    await _settingsBox.clear();
-
-    final categoryBox = await _getCategoriesBox();
-    await categoryBox.clear();
-
-    debugPrint('🗑️ Hive boxes cleared');
-  }
-
-  Future<void> close() async => Hive.close();
 }

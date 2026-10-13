@@ -108,10 +108,6 @@ class AuthNotifier extends Notifier<AuthState> {
       return false;
     }
   }
-
-  void logout() {
-    state = AuthState();
-  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {

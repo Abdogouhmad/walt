@@ -131,5 +131,4 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 /// Route paths reachable from a notification tap.
-const String kBudgetsRoute = '/budgets';
 const String kAboutRoute = '/settings/about';

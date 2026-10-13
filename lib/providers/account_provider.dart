@@ -30,10 +30,5 @@ class AccountNotifier extends Notifier<AsyncValue<List<WaltAccount>>> {
     }
   }
 
-  Future<void> addAccount(WaltAccount account) async {
-    await _dao.insertAccount(account);
-    await loadAccounts();
-  }
-
   Future<void> refresh() => loadAccounts();
 }

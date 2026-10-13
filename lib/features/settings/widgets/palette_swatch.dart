@@ -71,7 +71,7 @@ class PaletteSwatch extends StatelessWidget {
                 duration: AppSpring.isDisabled(context)
                     ? Duration.zero
                     : AppMotion.medium,
-                curve: AppSpring.curve(AppSpring.spatial),
+                curve: AppSpring.spatialCurve,
                 child: AnimatedContainer(
                   duration: AppSpring.isDisabled(context)
                       ? Duration.zero

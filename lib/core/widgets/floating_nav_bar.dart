@@ -128,7 +128,7 @@ class _NavItem extends StatelessWidget {
     final reduceMotion = AppSpring.isDisabled(context);
 
     final springDuration = reduceMotion ? Duration.zero : AppMotion.long;
-    final spatial = AppSpring.curve(AppSpring.spatial);
+    final spatial = AppSpring.spatialCurve;
 
     final foreground = isSelected
         ? scheme.onSecondaryContainer

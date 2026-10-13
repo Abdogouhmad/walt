@@ -16,6 +16,9 @@ import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/profile_app_bar_action.dart';
 import 'package:walt/shared/state_views.dart';
 
+/// Shared month-name formatter — built once, not on every header rebuild.
+final _monthNameFormat = DateFormat('MMMM');
+
 class BudgetsScreen extends ConsumerWidget {
   const BudgetsScreen({super.key});
 
@@ -26,7 +29,7 @@ class BudgetsScreen extends ConsumerWidget {
     final summary = ref.watch(budgetSummaryProvider);
     final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
-    final thisMonth = DateFormat('MMMM').format(DateTime.now());
+    final thisMonth = _monthNameFormat.format(DateTime.now());
 
     return Scaffold(
       backgroundColor: Colors.transparent,

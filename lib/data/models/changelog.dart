@@ -40,23 +40,6 @@ String firstChangelogLine(String notes) {
   return '';
 }
 
-/// The version heading of a changelog slice, e.g. `## 0.7.0 — Soft updates`
-/// yields `0.7.0`. Returns null when there is no heading at all.
-String? changelogVersionTitle(String notes) {
-  for (final raw in notes.split('\n')) {
-    final line = raw.trim();
-    final match = _headingRe.firstMatch(line);
-    if (match == null) continue;
-    final rest = line.substring(match.end).trim();
-    if (rest.isEmpty) continue;
-    // `0.7.0`, `v0.7.0`, `## [0.7.0] - 2024-01-01`
-    final semver = RegExp(r'v?\d+\.\d+(\.\d+)?').firstMatch(rest);
-    if (semver != null) return semver.group(0)!.replaceFirst('v', '');
-    return rest.split(RegExp(r'\s+[—–-]\s+')).first;
-  }
-  return null;
-}
-
 /// Short, user-facing date for the About / banner surfaces.
 String formatReleaseDate(DateTime? date) {
   if (date == null) return '';

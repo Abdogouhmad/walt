@@ -78,10 +78,14 @@ Future<void> _initializeApp() async {
     databaseFactory = databaseFactoryFfi;
   }
 
-  await Appinfo.init();
-  await DatabaseHelper.instance.database;
-
-  await HiveService.init();
+  // Appinfo, the SQLite connection and Hive touch different resources, so they
+  // are opened together: the first frame then waits on the slowest of the three
+  // rather than on their sum.
+  await Future.wait([
+    Appinfo.init(),
+    DatabaseHelper.instance.database,
+    HiveService.init(),
+  ]);
 
   // Notifications are non-critical: never block startup on them. Permission is
   // *not* requested here — it is asked in context, when the user creates their
