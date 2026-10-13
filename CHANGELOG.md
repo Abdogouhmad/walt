@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-10-13
+
 ### Added
 
 - **Continuous integration** — `.github/workflows/ci.yml` now runs
@@ -35,6 +37,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **README** now reflects the current app (Material 3, SQLite + Hive, nine
   palettes, OTA updates) instead of the removed Material You / dynamic-colour
   and AI features.
+
+### Fixed
+
+- **New-update notifications never reached Android 13+ users** — the
+  `POST_NOTIFICATIONS` runtime permission was only ever requested while turning
+  budget alerts on or creating the first budget, so a user who never used
+  budgets had every "new version available" ping discarded by the OS and had to
+  open Settings → Update to discover a release. Walt now asks for the permission
+  at the moment it has an update to announce, and only records a release as
+  announced once the notification is actually delivered — a declined prompt no
+  longer hides that version forever.
 
 ### Removed
 

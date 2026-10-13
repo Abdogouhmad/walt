@@ -184,10 +184,24 @@ class NotificationService {
     );
   }
 
-  Future<void> showUpdateNotification({
+  /// Posts the "new version available" notification.
+  ///
+  /// Returns `true` once the notification has been handed to the OS, and
+  /// `false` when it could not be delivered because notifications are not
+  /// permitted. Callers use that to decide whether the release has really been
+  /// announced: recording a version after a declined prompt would retire that
+  /// update silently, so the user would never be told about it even after they
+  /// later allow notifications.
+  Future<bool> showUpdateNotification({
     required String latestVersion,
     required String changelogSummary,
   }) async {
+    // Android 13+ discards notifications until POST_NOTIFICATIONS is granted,
+    // and Walt only ever asked for it from the budget-alert flow — so an update
+    // ping for a user who never touched budgets vanished without a trace. Ask
+    // here instead: the one moment there is a concrete release to announce.
+    if (!await _ensureNotificationsAllowed()) return false;
+
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           updateChannelId,
@@ -213,6 +227,21 @@ class NotificationService {
       notificationDetails: platformDetails,
       payload: kUpdatePayload,
     );
+    return true;
+  }
+
+  /// Whether the OS will actually deliver a notification, requesting the
+  /// Android runtime permission when it is still missing.
+  ///
+  /// Best-effort and idempotent: returns `true` straight away on platforms that
+  /// have no notification permission (Linux) or when it is already granted, and
+  /// otherwise the outcome of the prompt. A declined prompt resolves to `false`
+  /// rather than throwing — a notification is never worth failing an operation
+  /// over.
+  Future<bool> _ensureNotificationsAllowed() async {
+    if (defaultTargetPlatform != TargetPlatform.android) return true;
+    if (await hasPermission()) return true;
+    return requestPermissions();
   }
 
   /// Trims trailing ".00" noise: `120.50` -> `120.5`, `200.00` -> `200`.
