@@ -200,7 +200,12 @@ class UpdateNotifier extends Notifier<UpdateState> {
   /// Shown once per release: fires the local notification the first time this
   /// device discovers [manifest]'s update. The in-app banner always shows the
   /// update; the notification is the passive nudge for when the user isn't
-  /// looking at Settings. Respects the user's "Update notifications" toggle.
+  /// looking at Settings.
+  ///
+  /// The version is only recorded as notified once the ping has actually been
+  /// handed to the OS. Recording it after a declined notification prompt would
+  /// silently retire the release and the user would never hear about it, even
+  /// after they later allow notifications.
   Future<void> _notifyIfNew(
     UpdateManifest? manifest,
     UpdateCheckResult outcome,
@@ -215,14 +220,16 @@ class UpdateNotifier extends Notifier<UpdateState> {
     }
 
     try {
-      await NotificationService().showUpdateNotification(
+      final posted = await NotificationService().showUpdateNotification(
         latestVersion: manifest.latestVersionName,
         changelogSummary: firstChangelogLine(manifest.releaseNotes),
       );
-      await hive.saveSetting(
-        kLastUpdateNotifiedKey,
-        manifest.latestVersionName,
-      );
+      if (posted) {
+        await hive.saveSetting(
+          kLastUpdateNotifiedKey,
+          manifest.latestVersionName,
+        );
+      }
     } catch (_) {
       // Notifications are best-effort — never fail the update flow on them.
     }
