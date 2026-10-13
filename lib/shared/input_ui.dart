@@ -16,6 +16,16 @@ class InputUI extends StatelessWidget {
   final bool isRequired;
   final Function(String)? onchange;
 
+  /// Optional focus + keyboard-action wiring so a form can chain fields
+  /// (Next → next field, Done → submit) and drive its own focus order.
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
+
+  /// Message shown when the field is empty and [isRequired] is true.
+  /// Falls back to [textError] (then 'Field required') when not provided.
+  final String? requiredMessage;
+
   const InputUI({
     super.key,
     required this.controller,
@@ -27,6 +37,10 @@ class InputUI extends StatelessWidget {
     this.icon,
     this.onchange,
     this.isRequired = true,
+    this.focusNode,
+    this.textInputAction,
+    this.onFieldSubmitted,
+    this.requiredMessage,
   });
 
   @override
@@ -38,6 +52,8 @@ class InputUI extends StatelessWidget {
 
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
+      textInputAction: textInputAction,
       keyboardType: keyboardType,
       inputFormatters: isNumeric
           ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))]
@@ -49,10 +65,13 @@ class InputUI extends StatelessWidget {
         prefixIcon: icon != null ? Icon(icon) : const Icon(Icons.attach_money),
       ),
       onChanged: onchange,
+      onFieldSubmitted: onFieldSubmitted,
       validator: (value) {
         // 1. Basic empty check
         if (value == null || value.trim().isEmpty) {
-          return isRequired ? (textError ?? 'Field required') : null;
+          return isRequired
+              ? (requiredMessage ?? textError ?? 'Field required')
+              : null;
         }
         // 2. Numeric validation
         if (isNumeric) {

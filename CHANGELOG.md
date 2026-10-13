@@ -42,6 +42,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `assets/icon/wallet.png` were declared but never referenced; they are no
   longer shipped.
 
+## [1.0.2] - 2026-10-13
+
+### Changed
+
+- **The add-transaction form now walks itself with the keyboard** — the Amount
+  field shows **Next**, which moves into Merchant and then Note, and the last
+  field shows **Done**, which saves the transaction. Pressing Next on an empty
+  field no longer skips it: the field keeps focus and shows its "Required"
+  error, so a transaction can never be saved with a missing amount or merchant.
+- **The category is validated like a field** — saving without picking a chip now
+  shows a red "Select a category" message under the chips, and scrolls them into
+  view, instead of silently doing nothing.
+
 ## [1.0.1] - 2026-10-12
 
 ### Fixed
