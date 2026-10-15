@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:walt/data/local/budget_dao.dart';
 import 'package:walt/data/models/walt_budget.dart';
 import 'package:walt/data/models/walt_category.dart';
+import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/data/reports/budget_aggregation.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
@@ -76,6 +77,16 @@ final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {
 
   final byId = {for (final c in categories) c.id: c};
 
+  // Bucket expenses by category once. A budget only ever consumes its own
+  // category, so handing each one just that slice turns what used to be a full
+  // scan of the history per budget — O(budgets × transactions) — into a single
+  // pass, O(transactions).
+  final expensesByCategory = <int, List<WaltTransaction>>{};
+  for (final t in transactions) {
+    if (t.type.toLowerCase() != 'expense') continue;
+    (expensesByCategory[t.categoryId] ??= []).add(t);
+  }
+
   return budgets.map((budget) {
     final category =
         byId[budget.categoryId] ??
@@ -91,7 +102,7 @@ final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {
       category: category,
       calculation: calculateBudget(
         budget: budget,
-        transactions: transactions,
+        transactions: expensesByCategory[budget.categoryId] ?? const [],
         now: now,
       ),
     );

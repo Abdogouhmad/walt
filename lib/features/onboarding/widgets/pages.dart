@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:walt/core/widgets/walt_logo.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/bottons.dart';
 import 'package:walt/shared/input_ui.dart';
@@ -23,12 +24,12 @@ class WelcomeStep extends StatelessWidget {
         children: [
           const Spacer(),
           // start
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/icon/walt_icon.png', height: 100),
-              const SizedBox(width: 12),
-              const Text(
+              WaltLogo(size: 100, semanticLabel: null),
+              SizedBox(width: 12),
+              Text(
                 'Walt',
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),

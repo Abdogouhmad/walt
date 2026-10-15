@@ -73,6 +73,10 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen> {
     });
 
     final isEmpty = filtered.isEmpty;
+    // Materialise the day keys once. `filtered` is a LinkedHashMap, whose
+    // `keys.elementAt(i)` walks from the head — calling it per row made the
+    // list O(days²). Indexing a list is O(1).
+    final dayKeys = filtered.keys.toList(growable: false);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -115,15 +119,15 @@ class _TransactionListScreenState extends ConsumerState<TransactionListScreen> {
             )
           else
             SliverList.builder(
-              itemCount: filtered.keys.length + 1,
+              itemCount: dayKeys.length + 1,
               itemBuilder: (context, index) {
-                if (index == filtered.keys.length) {
+                if (index == dayKeys.length) {
                   return SizedBox(
                     height: WaltChrome.scrollBottomPadding(context),
                   );
                 }
 
-                final day = filtered.keys.elementAt(index);
+                final day = dayKeys[index];
                 final transactions = filtered[day]!;
 
                 return WaltChrome.constrain(

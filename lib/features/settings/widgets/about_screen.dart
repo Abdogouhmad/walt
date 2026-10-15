@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:walt/core/design/spacing.dart';
+import 'package:walt/core/widgets/walt_logo.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/ota_update_screen.dart';
 import 'package:walt/features/settings/widgets/socialmedia.dart';
@@ -57,7 +58,7 @@ class AboutScreen extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(Icons.mosque_rounded, size: 30),
+                  const WaltLogo(size: 32, semanticLabel: null),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +101,12 @@ class AboutScreen extends ConsumerWidget {
                       CircleAvatar(
                         radius: 30,
                         backgroundColor: colors.primaryContainer,
-                        backgroundImage: const AssetImage('assets/cat.jpeg'),
+                        // Decode at the drawn size (radius 30 → 60 dp) instead
+                        // of the full 736×612 source (~1.8 MB decoded).
+                        backgroundImage: const ResizeImage(
+                          AssetImage('assets/cat.jpeg'),
+                          width: 120,
+                        ),
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Expanded(

@@ -14,6 +14,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-10-15
+
+### Changed
+
+- **The About dialog now matches the app's frosted chrome.** It was a flat
+  opaque card while the floating nav pill is blurred; it now uses the same
+  `BlurSurface`, and follows the theme — turning off "Reduce transparency"
+  (Appearance) drops it back to the plain opaque surface.
+
+### Fixed
+
+- **About showed a mosque.** The About dialog and the About screen drew a
+  mosque glyph — a leftover from the app's scaffolding — instead of Walt's own
+  mark. Both now show the app icon, through one shared `WaltLogo` widget so the
+  branding cannot drift apart again.
+
+### Performance
+
+- **Images decode at the size they are drawn.** The app icon and the developer
+  avatar were decoded at full resolution — a 1024×1024 icon is ~4 MB once
+  decoded — and then scaled down on screen. Both now decode at their display
+  size, keeping the image cache small.
+- **The Activity feed is linear again.** Day groups were looked up with
+  `keys.elementAt(index)`, which walks the map from its head, so a long history
+  cost *days²*. The keys are now materialised once and indexed.
+- **Budgets stop re-scanning the whole history once per budget.** Each budget
+  walked every transaction to find its own category (*budgets × transactions*);
+  expenses are now grouped by category a single time.
+- **Home's recent list looks categories up in a map** instead of scanning the
+  whole category list for every row.
+
 ## [1.0.4] - 2026-10-13
 
 ### Changed

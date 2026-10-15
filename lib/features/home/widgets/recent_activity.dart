@@ -37,6 +37,9 @@ class RecentActivity extends ConsumerWidget {
       data: (categories) {
         if (categories.isEmpty) return _empty(context, selectedDay != null);
 
+        // Index the categories once instead of scanning the list for every row.
+        final categoryById = {for (final c in categories) c.id: c};
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -57,7 +60,7 @@ class RecentActivity extends ConsumerWidget {
                     child: _tile(
                       context,
                       transactions[i],
-                      categories,
+                      categoryById,
                       currency,
                     ),
                   ),
@@ -86,13 +89,11 @@ class RecentActivity extends ConsumerWidget {
   Widget _tile(
     BuildContext context,
     WaltTransaction transaction,
-    List<WaltCategory> categories,
+    Map<int, WaltCategory> categoryById,
     String currency,
   ) {
-    final category = categories.firstWhere(
-      (c) => c.id == transaction.categoryId,
-      orElse: () => categories.first,
-    );
+    final category =
+        categoryById[transaction.categoryId] ?? categoryById.values.first;
     final isIncome = transaction.type.toLowerCase() == 'income';
 
     return GroupedListTile(

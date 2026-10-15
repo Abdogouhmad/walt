@@ -11,9 +11,9 @@ import 'package:walt/providers/settings_provider.dart';
 /// rainbow edges — just a blurred, lightly tinted slab with a single hairline
 /// border and at most one soft shadow.
 ///
-/// Applies to a small, deliberate set of surfaces (the floating nav, optional
-/// sheet handles and the FAB scrim). Cards stay flat: blurring every surface
-/// is both expensive and visually noisy.
+/// Applies to a small, deliberate set of surfaces (the floating nav, the About
+/// dialog, optional sheet handles and the FAB scrim). Cards stay flat:
+/// blurring every surface is both expensive and visually noisy.
 class BlurSurface extends ConsumerWidget {
   const BlurSurface({
     super.key,
