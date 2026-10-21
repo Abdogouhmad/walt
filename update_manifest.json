@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "1.0.5",
-  "latestVersionCode": 10005,
+  "latestVersionName": "1.0.6",
+  "latestVersionCode": 10006,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.5/walt-v1.0.5-universal.apk",
-  "sha256": "d33f580f9f70f579da9255a08f472f6b3d498cadfae7f78d0267ed476506e42f",
-  "releaseNotes": "## [1.0.5] - 2026-10-15\n\n### Changed\n\n- **The About dialog now matches the app's frosted chrome.** It was a flat\n  opaque card while the floating nav pill is blurred; it now uses the same\n  `BlurSurface`, and follows the theme — turning off \"Reduce transparency\"\n  (Appearance) drops it back to the plain opaque surface.\n\n### Fixed\n\n- **About showed a mosque.** The About dialog and the About screen drew a\n  mosque glyph — a leftover from the app's scaffolding — instead of Walt's own\n  mark. Both now show the app icon, through one shared `WaltLogo` widget so the\n  branding cannot drift apart again.\n\n### Performance\n\n- **Images decode at the size they are drawn.** The app icon and the developer\n  avatar were decoded at full resolution — a 1024×1024 icon is ~4 MB once\n  decoded — and then scaled down on screen. Both now decode at their display\n  size, keeping the image cache small.\n- **The Activity feed is linear again.** Day groups were looked up with\n  `keys.elementAt(index)`, which walks the map from its head, so a long history\n  cost *days²*. The keys are now materialised once and indexed.\n- **Budgets stop re-scanning the whole history once per budget.** Each budget\n  walked every transaction to find its own category (*budgets × transactions*);\n  expenses are now grouped by category a single time.\n- **Home's recent list looks categories up in a map** instead of scanning the\n  whole category list for every row.",
-  "publishedAt": "2026-10-15T00:40:29.987178+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.6/walt-v1.0.6-universal.apk",
+  "sha256": "4ef8c2a2dced7ce9f942c55599e10d076785558c3c39dbd0adee2e86c6df7249",
+  "releaseNotes": "## [1.0.6] - 2026-10-21\n\n### Added\n\n- **Tapping a transaction shows everything about it.** A row in the Activity\n  list — or in Home's \"Recent\" section — now opens a sheet with the whole\n  picture: the amount and which way it went, the category, the date and time,\n  the account, and the note, which the list rows never had room for.\n\n### Performance\n\n- **Dragging the colour picker no longer piles up themes.** Every pointer\n  move produced a distinct custom seed, and each one was kept forever as a\n  live colour scheme and a live theme. The caches are now bounded, so the\n  oldest entries are dropped instead of accumulating for the life of the app.",
+  "publishedAt": "2026-10-21T22:09:30.270753+00:00"
 }
