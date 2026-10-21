@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:walt/core/theme/color_math.dart';
 import 'package:walt/core/theme/theme_settings.dart';
 import 'package:walt/core/theme/walt_palette.dart';
+import 'package:walt/core/utils/bounded_memo.dart';
 
 /// Generation of [ColorScheme]s from a seed.
 ///
@@ -56,20 +57,34 @@ abstract final class AppColorSchemes {
     return fromSeedColor(palette.seed, brightness);
   });
 
-  /// One scheme per distinct input, forever.
+  /// One scheme per distinct input, up to a cap.
   ///
   /// Keyed by a record rather than a combined `hashCode` so two different inputs
-  /// cannot collide into one cached scheme — the cache is permanent, so a
-  /// collision would be a wrong colour for the rest of the process.
+  /// cannot collide into one cached scheme — a collision would be a wrong
+  /// colour for the rest of the process.
+  ///
+  /// Bounded, because the key space is no longer finite: a custom seed is
+  /// free-form, and dragging the colour picker produces one distinct seed per
+  /// pointer move. Without a cap, every one of those kept a live `ColorScheme`
+  /// (and, one layer up, a live `ThemeData`) for the life of the process.
   static ColorScheme _memo(
     Color seed,
     Brightness brightness,
     bool amoled,
     ColorScheme Function() build,
-  ) => _cache.putIfAbsent((seed, brightness, amoled), build);
+  ) => _cache.getOrPut((seed, brightness, amoled), build);
 
-  static final Map<(Color, Brightness, bool), ColorScheme> _cache =
-      <(Color, Brightness, bool), ColorScheme>{};
+  /// How many schemes are kept.
+  ///
+  /// The built-in working set is nine palettes × two brightnesses plus the
+  /// AMOLED variants — a couple of dozen entries — so this leaves room for the
+  /// custom seeds a colour-picker drag produces without letting the cache grow
+  /// without end. Evicted schemes are rebuilt on demand; a full HCT solve is
+  /// cheap next to the memory a leaked one costs.
+  static const int _cacheCapacity = 64;
+
+  static final BoundedMemo<(Color, Brightness, bool), ColorScheme> _cache =
+      BoundedMemo<(Color, Brightness, bool), ColorScheme>(_cacheCapacity);
 
   /// The scheme for an arbitrary seed.
   static ColorScheme fromSeedColor(Color seedColor, Brightness brightness) =>

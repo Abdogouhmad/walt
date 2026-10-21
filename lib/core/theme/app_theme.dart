@@ -9,6 +9,7 @@ import 'package:walt/core/theme/theme_settings.dart';
 import 'package:walt/core/theme/walt_chart_colors.dart';
 import 'package:walt/core/theme/walt_colors.dart';
 import 'package:walt/core/theme/walt_palette.dart';
+import 'package:walt/core/utils/bounded_memo.dart';
 
 export 'package:walt/core/theme/shapes.dart' show AppShape;
 export 'package:walt/core/theme/walt_palette.dart' show WaltPalette;
@@ -393,19 +394,25 @@ class AppTheme {
 /// theme, every component theme, both extensions) per rebuild, for a result that
 /// cannot have changed.
 ///
-/// The cache is bounded by construction rather than by eviction: the key is the
-/// scheme, and the schemes come from a fixed palette list times two brightnesses
-/// times a single AMOLED flag, so it holds at most a few dozen entries and never
-/// evicts anything.
+/// Bounded by eviction rather than by construction: the key is the scheme, and
+/// a scheme can come from a *free-form* custom seed — the colour picker
+/// produces one distinct seed per pointer move, and each of them used to leave
+/// a full `ThemeData` behind for the life of the process.
 ThemeData buildTheme(ThemeSettings settings, Brightness brightness) {
   final colorScheme = AppColorSchemes.of(settings, brightness);
-  return _themeCache.putIfAbsent(
+  return _themeCache.getOrPut(
     colorScheme,
     () => AppTheme._baseTheme(colorScheme),
   );
 }
 
-final Map<ColorScheme, ThemeData> _themeCache = <ColorScheme, ThemeData>{};
+/// How many themes are kept. Sized like the scheme cache below it, and for the
+/// same reason: the built-in palettes need a couple of dozen entries, and the
+/// rest is headroom for the custom seeds a drag produces.
+const int _themeCacheCapacity = 64;
+
+final BoundedMemo<ColorScheme, ThemeData> _themeCache =
+    BoundedMemo<ColorScheme, ThemeData>(_themeCacheCapacity);
 
 /// The system-bar treatment for [colorScheme].
 ///
