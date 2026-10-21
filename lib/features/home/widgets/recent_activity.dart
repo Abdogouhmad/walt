@@ -10,6 +10,7 @@ import 'package:walt/core/widgets/section_header.dart';
 import 'package:walt/core/widgets/staggered_entry.dart';
 import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/data/models/walt_transaction.dart';
+import 'package:walt/features/transactions/widgets/transaction_detail_sheet.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
@@ -19,6 +20,10 @@ import 'package:walt/shared/state_views.dart';
 ///
 /// The list follows the week recap: with a day selected in the recap, this
 /// shows only that day's transactions. At most five items.
+///
+/// A row opens that transaction's details rather than the Activity tab: the
+/// tab shows a *list*, and sending someone who tapped one row to a list of
+/// fifty threw away the row they were asking about.
 class RecentActivity extends ConsumerWidget {
   const RecentActivity({super.key});
 
@@ -97,7 +102,7 @@ class RecentActivity extends ConsumerWidget {
     final isIncome = transaction.type.toLowerCase() == 'income';
 
     return GroupedListTile(
-      onTap: () => context.go('/transactions'),
+      onTap: () => showTransactionDetailSheet(context, transaction),
       leading: CategoryAvatar(icon: category.icon, color: category.color),
       title: Text(transaction.merchant ?? 'Unknown'),
       subtitle: Text(category.name),

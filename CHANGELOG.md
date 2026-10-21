@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Tapping a transaction shows everything about it.** A row in the Activity
+  list — or in Home's "Recent" section — now opens a sheet with the whole
+  picture: the amount and which way it went, the category, the date and time,
+  the account, and the note, which the list rows never had room for.
+
+### Performance
+
+- **Dragging the colour picker no longer piles up themes.** Every pointer
+  move produced a distinct custom seed, and each one was kept forever as a
+  live colour scheme and a live theme. The caches are now bounded, so the
+  oldest entries are dropped instead of accumulating for the life of the app.
+
 ## [1.0.5] - 2026-10-15
 
 ### Changed
