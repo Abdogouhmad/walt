@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:walt/core/theme/text_theme.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 void main() {
   group('AppTextTheme', () {

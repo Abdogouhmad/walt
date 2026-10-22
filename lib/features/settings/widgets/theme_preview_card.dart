@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/theme/app_theme.dart';
-import 'package:walt/core/theme/theme_settings.dart';
-import 'package:walt/core/theme/walt_colors.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/pill_switcher.dart';
-import 'package:walt/core/widgets/thick_progress.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// A miniature of the real screens, rendered in the palette the user is
 /// choosing.

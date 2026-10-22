@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/core/theme/theme_settings.dart';
-import 'package:walt/core/theme/walt_palette.dart';
 import 'package:walt/data/local/hive_service.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Owns the user's appearance choices and the `ThemeData` they imply.
 ///

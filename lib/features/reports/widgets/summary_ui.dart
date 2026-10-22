@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/pill_switcher.dart';
-import 'package:walt/core/widgets/wavy_progress.dart';
 import 'package:walt/data/reports/report_aggregation.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/state_views.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Reports hero: the total for the selected period, plus the Week/Month/Year
 /// switcher and the period navigator that walks backwards through history.

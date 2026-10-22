@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:walt/core/theme/app_theme.dart';
 import 'package:walt/data/reports/report_aggregation.dart';
 import 'package:walt/features/reports/widgets/category_donut.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class _StubSettings extends SettingsNotifier {
   @override

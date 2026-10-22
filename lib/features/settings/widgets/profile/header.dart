@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:walt/core/design/spacing.dart';
 import 'package:walt/data/services/image_store.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Avatar + name block at the top of Settings. Tapping the avatar picks a new
 /// profile picture, which is copied into the app's documents directory and

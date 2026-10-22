@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/radius.dart';
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/utils/category_icon.dart';
 import 'package:walt/data/models/walt_budget.dart';
-import 'package:walt/data/services/notification_preferences.dart';
+import 'package:walt/features/budgets/widgets/budget_alert_slider.dart';
+import 'package:walt/features/budgets/widgets/budget_category_picker.dart';
+import 'package:walt/features/budgets/widgets/budget_form_header.dart';
+import 'package:walt/features/budgets/widgets/budget_save.dart';
+import 'package:walt/features/budgets/widgets/budget_section_label.dart';
 import 'package:walt/providers/budget_provider.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/bottons.dart';
-import 'package:walt/shared/input_ui.dart';
-import 'package:walt/shared/status_badge.dart';
-import 'package:walt/shared/text_ui.dart';
-import 'package:walt/shared/ui_modal.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Opens the create-budget form in the shared bottom sheet.
 ///
@@ -62,82 +59,24 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
   }
 
   Future<void> saveBudget() async {
-    // `currentState` is null whenever no `Form` is currently mounted with this
-    // key. That used to throw "Null check operator used on a null value" on
-    // every single save, because the key was never attached to a `Form` at all.
-    // The `Form` now exists (see `build`), but the fallback keeps a save from
-    // ever taking the app down if the sheet is torn down mid-tap — the checks
-    // below still guard the data.
-    final form = _formKey.currentState;
-    if (form != null && !form.validate()) {
-      return;
-    }
+    final saved = await BudgetSaver(
+      context: context,
+      ref: ref,
+      formKey: _formKey,
+      amountController: _amountController,
+      selectedCategoryId: selectedCategoryId,
+      alertThreshold: alertThreshold,
+      budgetToEdit: widget.budgetToEdit,
+    ).save();
 
-    if (selectedCategoryId == null) {
-      // Previously a silent `return`, so tapping Create with nothing selected
-      // looked like the button was broken.
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
-      return;
-    }
+    if (!saved || !mounted) return;
+    Navigator.pop(context);
+  }
 
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid amount')),
-      );
-      return;
-    }
-
-    final budgetNotifier = ref.read(budgetProvider.notifier);
-    final existingBudgets = ref.read(budgetProvider).value ?? [];
-
-    if (widget.budgetToEdit == null) {
-      final alreadyExists = existingBudgets.any(
-        (b) => b.categoryId == selectedCategoryId,
-      );
-
-      if (alreadyExists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('A budget for this category already exists.'),
-          ),
-        );
-        return;
-      }
-
-      await budgetNotifier.addBudget(
-        WaltBudget(
-          id: 0,
-          categoryId: selectedCategoryId!,
-          amount: amount,
-          period: 'Monthly',
-          alertAt: alertThreshold,
-          createdAt: DateTime.now(),
-        ),
-      );
-
-      // A budget is the whole reason alerts exist, so this is the one place
-      // where asking for notification permission has real context. Only on the
-      // very first budget, and only if the OS prompt has not been dismissed
-      // before.
-      if (existingBudgets.isEmpty) {
-        await requestNotificationPermission();
-        // Re-evaluate straight away: a budget created already over its limit
-        // should say so now, not after the next unrelated change.
-        await evaluateBudgetAlertsNow(ref);
-      }
-    } else {
-      await budgetNotifier.updateBudget(
-        widget.budgetToEdit!.copyWith(
-          categoryId: selectedCategoryId!,
-          amount: amount,
-          alertAt: alertThreshold,
-        ),
-      );
-    }
-
+  Future<void> _deleteBudget() async {
+    await ref
+        .read(budgetProvider.notifier)
+        .deleteBudget(widget.budgetToEdit!.id);
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -162,49 +101,10 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
         physics: const BouncingScrollPhysics(),
         padding: waltModalPadding(context),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    UiText(
-                      text: isEditing ? 'Edit Budget' : 'New Budget',
-                      type: UiTextType.titleLarge,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    UiText(
-                      text: isEditing
-                          ? 'Adjust your spending limits'
-                          : 'Set bounds to save smarter',
-                      type: UiTextType.bodySmall,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isEditing)
-                IconButton.filledTonal(
-                  onPressed: () {
-                    ref
-                        .read(budgetProvider.notifier)
-                        .deleteBudget(widget.budgetToEdit!.id);
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.delete_outline),
-                  color: Theme.of(context).colorScheme.error,
-                ),
-            ],
-          ),
+          BudgetFormHeader(isEditing: isEditing, onDelete: _deleteBudget),
           const SizedBox(height: AppSpacing.xl),
 
-          const _SectionLabel('MONTHLY LIMIT'),
+          const BudgetSectionLabel('MONTHLY LIMIT'),
           const SizedBox(height: AppSpacing.md),
           InputUI(
             labelText: 'Amount',
@@ -215,108 +115,19 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
           ),
           const SizedBox(height: AppSpacing.xl),
 
-          const _SectionLabel('SELECT CATEGORY'),
+          const BudgetSectionLabel('SELECT CATEGORY'),
           const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: categories.map((category) {
-              final selected = selectedCategoryId == category.id;
-              final categoryColor = Color(
-                int.parse(category.color.replaceAll('#', '0xFF')),
-              );
-
-              return GestureDetector(
-                onTap: isEditing
-                    ? null
-                    : () => setState(() => selectedCategoryId = category.id),
-                child: Opacity(
-                  opacity: isEditing && !selected ? 0.5 : 1.0,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? categoryColor.withValues(alpha: 0.14)
-                          : Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.field),
-                      border: Border.all(
-                        color: selected
-                            ? categoryColor
-                            : Theme.of(
-                                context,
-                              ).colorScheme.outline.withValues(alpha: 0.16),
-                        width: selected ? 1.5 : 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          CategoryIcons.getIcon(category.icon),
-                          size: AppSpacing.sm,
-                          color: selected
-                              ? categoryColor
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        UiText(
-                          text: category.name,
-                          type: UiTextType.bodySmall,
-                          style: TextStyle(
-                            color: selected
-                                ? categoryColor
-                                : Theme.of(context).colorScheme.primary,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
+          BudgetCategoryPicker(
+            categories: categories,
+            selectedCategoryId: selectedCategoryId,
+            isEditing: isEditing,
+            onSelected: (id) => setState(() => selectedCategoryId = id),
           ),
           const SizedBox(height: AppSpacing.xl),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const _SectionLabel('ALERT THRESHOLD'),
-              StatusBadge(
-                label: '${(alertThreshold * 100).toInt()}% spent',
-                variant: StatusBadgeVariant.accent,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 6,
-              activeTrackColor: Theme.of(context).colorScheme.primary,
-              inactiveTrackColor: Theme.of(
-                context,
-              ).colorScheme.outline.withValues(alpha: 0.16),
-              thumbColor: Theme.of(context).colorScheme.primary,
-              overlayColor: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.12),
-              valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            ),
-            child: Slider(
-              value: alertThreshold,
-              min: .5,
-              max: 1,
-              divisions: 10,
-              onChanged: (v) => setState(() => alertThreshold = v),
-            ),
+          BudgetAlertSlider(
+            threshold: alertThreshold,
+            onChanged: (v) => setState(() => alertThreshold = v),
           ),
           const SizedBox(height: AppSpacing.lg),
 
@@ -328,26 +139,6 @@ class _BudgetSheetState extends ConsumerState<BudgetSheet> {
             type: ButtonType.primary,
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Small uppercase section heading used by the budget form.
-class _SectionLabel extends StatelessWidget {
-  final String text;
-
-  const _SectionLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return UiText(
-      text: text,
-      type: UiTextType.labelSmall,
-      style: TextStyle(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 1.2,
       ),
     );
   }

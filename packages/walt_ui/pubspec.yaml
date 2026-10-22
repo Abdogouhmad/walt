@@ -1,0 +1,20 @@
+name: walt_ui
+description: "Shared Material 3 design system for Walt — tokens, theme and components."
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ^3.11.4
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^3.3.1
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

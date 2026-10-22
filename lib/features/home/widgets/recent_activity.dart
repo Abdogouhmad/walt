@@ -2,19 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/category_icon.dart';
-import 'package:walt/core/widgets/grouped_list.dart';
-import 'package:walt/core/widgets/section_header.dart';
-import 'package:walt/core/widgets/staggered_entry.dart';
 import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/features/transactions/widgets/transaction_detail_sheet.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
-import 'package:walt/shared/state_views.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Home's "Recent" section: the latest few transactions as one grouped list.
 ///

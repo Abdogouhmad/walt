@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/theme/walt_chart_colors.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/category_icon.dart';
-import 'package:walt/core/widgets/grouped_list.dart';
-import 'package:walt/core/widgets/section_header.dart';
-import 'package:walt/core/widgets/thick_progress.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/state_views.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// The category legend beneath the chart: one grouped row per category with
 /// icon, name, amount, share percentage and a thin rounded progress bar.

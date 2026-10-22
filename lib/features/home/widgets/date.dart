@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/theme/shapes.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Tappable field that opens the date picker inside the add-transaction sheet.
 class DateWidget extends StatelessWidget {
@@ -28,7 +27,7 @@ class DateWidget extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           border: Border.all(color: cs.outlineVariant),
-          borderRadius: BorderRadius.circular(AppShape.large),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: Row(
           children: [

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/spacing.dart';
 import 'package:walt/data/models/changelog.dart';
 import 'package:walt/features/settings/widgets/markdown_notes.dart';
 import 'package:walt/providers/update_provider.dart';
-import 'package:walt/shared/bottons.dart';
-import 'package:walt/shared/status_badge.dart';
-import 'package:walt/shared/ui_modal.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Non-modal "an update exists" surface. The user is never blocked: the sheet
 /// always offers "Later" and dismissing it is a normal, expected outcome.

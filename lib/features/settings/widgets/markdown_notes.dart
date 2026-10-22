@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
-import 'package:walt/core/design/radius.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Renders a `CHANGELOG.md` slice as real Markdown.
 ///

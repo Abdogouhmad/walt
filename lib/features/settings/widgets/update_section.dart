@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/widgets/grouped_list.dart';
-import 'package:walt/data/services/update_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/ota_update_screen.dart';
 import 'package:walt/features/settings/widgets/update_prompt_sheet.dart';
 import 'package:walt/providers/update_provider.dart';
-import 'package:walt/shared/status_badge.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Settings entry point for the whole OTA surface (spec §3.5): the tile shows
 /// the current version, the outcome of the last check and, when an update is

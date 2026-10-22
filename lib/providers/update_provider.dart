@@ -10,146 +10,19 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ota_update/ota_update.dart';
 
-import 'package:walt/data/local/hive_service.dart';
 import 'package:walt/data/models/changelog.dart';
 import 'package:walt/data/models/update_manifest.dart';
 import 'package:walt/data/services/notification_service.dart';
 import 'package:walt/data/services/update_service.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'update_check_provider.dart';
+import 'update_events.dart';
+import 'update_state.dart';
 
-final hiveServiceProvider = Provider<HiveService>(
-  (ref) => HiveService.instance,
-);
-
-final updateServiceProvider = Provider<UpdateService>(
-  (ref) => const UpdateService(),
-);
-
-/// Hive keys for the update settings.
-const String kLastUpdateCheckKey = 'last_update_check_ms';
-const String kLastUpdateCheckResultKey = 'last_update_check_result';
-const String kLastUpdateNotifiedKey = 'last_update_notified_version';
-
-/// Timestamp of the last update check, for the "last checked" label.
-/// `null` when never checked.
-final lastUpdateCheckProvider =
-    NotifierProvider<LastUpdateCheckNotifier, DateTime?>(
-      LastUpdateCheckNotifier.new,
-    );
-
-class LastUpdateCheckNotifier extends Notifier<DateTime?> {
-  @override
-  DateTime? build() {
-    final hive = ref.watch(hiveServiceProvider);
-    final ms = hive.getSetting(kLastUpdateCheckKey);
-    return ms is int ? DateTime.fromMillisecondsSinceEpoch(ms) : null;
-  }
-
-  Future<void> markChecked(UpdateCheckResult result) async {
-    final now = DateTime.now();
-    state = now;
-    final hive = ref.read(hiveServiceProvider);
-    await hive.saveSetting(kLastUpdateCheckKey, now.millisecondsSinceEpoch);
-    await ref.read(lastUpdateCheckResultProvider.notifier).markResult(result);
-  }
-}
-
-/// Outcome of the most recent update check as persisted across launches.
-/// `null` means the app has never completed a check.
-final lastUpdateCheckResultProvider =
-    NotifierProvider<LastUpdateCheckResultNotifier, UpdateCheckResult?>(
-      LastUpdateCheckResultNotifier.new,
-    );
-
-class LastUpdateCheckResultNotifier extends Notifier<UpdateCheckResult?> {
-  @override
-  UpdateCheckResult? build() {
-    final hive = ref.watch(hiveServiceProvider);
-    final name = hive.getSetting(kLastUpdateCheckResultKey);
-    if (name is! String) return null;
-    return UpdateCheckResult.values.asNameMap()[name];
-  }
-
-  Future<void> markResult(UpdateCheckResult result) async {
-    state = result;
-    await ref
-        .read(hiveServiceProvider)
-        .saveSetting(kLastUpdateCheckResultKey, result.name);
-  }
-}
-
-enum UpdateStatus {
-  idle,
-  checking,
-  available,
-  downloading,
-  readyToInstall,
-  error,
-}
-
-/// Failure kinds surfaced while [UpdateStatus.error]. The provider stores a
-/// code (never a user-facing string — the UI maps it to copy).
-enum UpdateErrorCode {
-  /// The manifest points at an empty/invalid APK URL.
-  noBuild,
-
-  /// The download itself failed (network / transport).
-  downloadFailed,
-
-  /// The downloaded APK failed SHA-256 verification against the manifest.
-  integrity,
-
-  /// The system package installer rejected the APK.
-  install,
-}
-
-/// The update state surfaced to the UI.
-class UpdateState {
-  final UpdateStatus status;
-  final UpdateManifest? manifest;
-  final UpdateCheckResult? checkResult;
-  final double? progress;
-  final UpdateErrorCode? error;
-  final String? errorDetail;
-
-  const UpdateState({
-    this.status = UpdateStatus.idle,
-    this.manifest,
-    this.checkResult,
-    this.progress,
-    this.error,
-    this.errorDetail,
-  });
-
-  /// An update exists. Optional by construction — there is no mandatory state.
-  bool get hasUpdate => checkResult == UpdateCheckResult.updateAvailable;
-
-  UpdateState copyWith({
-    UpdateStatus? status,
-    UpdateManifest? manifest,
-    UpdateCheckResult? checkResult,
-    double? progress,
-    UpdateErrorCode? error,
-    String? errorDetail,
-    bool clearError = false,
-    bool clearProgress = false,
-    bool clearManifest = false,
-    bool clearCheckResult = false,
-  }) {
-    return UpdateState(
-      status: status ?? this.status,
-      manifest: clearManifest ? null : manifest ?? this.manifest,
-      checkResult: clearCheckResult ? null : checkResult ?? this.checkResult,
-      // `progress` is nullable, so a plain `progress: null` would fall through
-      // to `this.progress` and silently keep a stale bar. Clearing needs its
-      // own flag.
-      progress: clearProgress ? null : progress ?? this.progress,
-      error: clearError ? null : error ?? this.error,
-      errorDetail: clearError ? null : errorDetail ?? this.errorDetail,
-    );
-  }
-}
+export 'update_check_provider.dart';
+export 'update_events.dart';
+export 'update_state.dart';
 
 /// The single OTA update notifier driving the whole flow.
 final updateProvider = NotifierProvider<UpdateNotifier, UpdateState>(
@@ -267,66 +140,7 @@ class UpdateNotifier extends Notifier<UpdateState> {
     state = state.copyWith(status: UpdateStatus.downloading, progress: 0);
 
     await for (final event in stream) {
-      switch (event.status) {
-        case OtaStatus.DOWNLOADING:
-          final progress = double.tryParse(event.value ?? '') ?? 0;
-          state = state.copyWith(progress: (progress / 100).clamp(0, 1));
-        case OtaStatus.INSTALLING:
-          state = state.copyWith(
-            status: UpdateStatus.readyToInstall,
-            progress: 1,
-          );
-        case OtaStatus.INSTALLATION_DONE:
-          state = state.copyWith(
-            status: UpdateStatus.idle,
-            clearManifest: true,
-            clearCheckResult: true,
-            clearProgress: true,
-          );
-        case OtaStatus.ALREADY_RUNNING_ERROR:
-          state = state.copyWith(
-            status: UpdateStatus.error,
-            error: UpdateErrorCode.downloadFailed,
-            errorDetail: 'An update is already in progress.',
-            clearProgress: true,
-          );
-        case OtaStatus.PERMISSION_NOT_GRANTED_ERROR:
-          state = state.copyWith(
-            status: UpdateStatus.error,
-            error: UpdateErrorCode.install,
-            errorDetail: 'Permission to install apps was denied.',
-            clearProgress: true,
-          );
-        case OtaStatus.CHECKSUM_ERROR:
-          state = state.copyWith(
-            status: UpdateStatus.error,
-            error: UpdateErrorCode.integrity,
-            errorDetail: event.value,
-            clearProgress: true,
-          );
-        case OtaStatus.INSTALLATION_ERROR:
-          state = state.copyWith(
-            status: UpdateStatus.error,
-            error: UpdateErrorCode.install,
-            errorDetail: event.value,
-            clearProgress: true,
-          );
-        case OtaStatus.DOWNLOAD_ERROR:
-        case OtaStatus.INTERNAL_ERROR:
-          state = state.copyWith(
-            status: UpdateStatus.error,
-            error: UpdateErrorCode.downloadFailed,
-            errorDetail: event.value,
-            clearProgress: true,
-          );
-        case OtaStatus.CANCELED:
-          // A cancelled download leaves a partial bar behind; drop it so the
-          // next attempt starts from a clean state.
-          state = state.copyWith(
-            status: UpdateStatus.available,
-            clearProgress: true,
-          );
-      }
+      state = applyOtaEvent(state, event);
     }
   }
 }

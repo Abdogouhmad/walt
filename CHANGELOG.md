@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-10-22
+
+### Changed
+
+- **Bottom nav is now docked.** The floating pill is gone — it's now a full-width bar stuck to the bottom edge with icons and labels, scrolls behind it nicely, and stays out of the way of sheets.
+
+### Added
+
+- **Haptics and animations toggles.** You can now turn haptics and animations on or off from Settings → Appearance. Buttons, nav and menus feel snappier with consistent feedback.
+
 ## [1.0.6] - 2026-10-21
 
 ### Added

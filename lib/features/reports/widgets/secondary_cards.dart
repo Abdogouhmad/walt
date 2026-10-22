@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/category_icon.dart';
-import 'package:walt/core/widgets/pill_switcher.dart';
-import 'package:walt/core/widgets/wavy_progress.dart';
 import 'package:walt/data/reports/report_aggregation.dart';
+import 'package:walt/features/reports/widgets/metric_tile.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// The report's totals row: total spent, average per day and the biggest
 /// category. Three quiet tiles sharing one builder.
@@ -33,7 +31,7 @@ class SecondaryReportCardUi extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: _MetricTile(
+                child: MetricTile(
                   icon: Icons.account_balance_wallet_outlined,
                   label: 'Total spent',
                   footnote: range.label(),
@@ -42,7 +40,7 @@ class SecondaryReportCardUi extends ConsumerWidget {
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: _MetricTile(
+                child: MetricTile(
                   icon: Icons.calendar_today_rounded,
                   label: 'Average / day',
                   footnote: range.period.label,
@@ -107,7 +105,7 @@ class SecondaryReportCardUi extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: _MetricTile(
+            child: MetricTile(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Total spent',
               footnote: '',
@@ -116,7 +114,7 @@ class SecondaryReportCardUi extends ConsumerWidget {
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
-            child: _MetricTile(
+            child: MetricTile(
               icon: Icons.calendar_today_rounded,
               label: 'Average / day',
               footnote: '',
@@ -147,69 +145,5 @@ class SecondaryReportCardUi extends ConsumerWidget {
   static String _short(double value) {
     if (value == value.roundToDouble()) return value.toStringAsFixed(0);
     return value.toStringAsFixed(1);
-  }
-}
-
-class _MetricTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String footnote;
-  final String? value;
-
-  const _MetricTile({
-    required this.icon,
-    required this.label,
-    required this.footnote,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 22, color: scheme.primary),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          if (value == null)
-            const SizedBox(
-              width: 72,
-              height: 24,
-              child: WavyProgressIndicator(height: 6),
-            )
-          else
-            Text(
-              value!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleLarge,
-            ),
-          if (footnote.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              footnote,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: scheme.outline,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 }

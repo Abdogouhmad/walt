@@ -3,14 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/category_icon.dart';
-import 'package:walt/core/widgets/grouped_list.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/features/transactions/widgets/transaction_detail_sheet.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Shared time formatter — `DateFormat('HH:mm')` per row per rebuild is
 /// wasteful on a long list.

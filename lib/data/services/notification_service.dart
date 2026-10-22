@@ -1,40 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:walt/core/utils/money.dart';
+
 import 'package:walt/data/reports/budget_aggregation.dart';
+import 'package:walt/data/services/notification_destination.dart';
+import 'package:walt/data/services/notification_message.dart';
+import 'package:walt/data/services/notification_permissions.dart';
+import 'package:walt/data/services/notification_platform_details.dart';
 
-/// Where a notification tap should take the user.
-sealed class NotificationDestination {
-  const NotificationDestination();
-}
-
-class BudgetAlertDestination extends NotificationDestination {
-  const BudgetAlertDestination(this.budgetId);
-  final int budgetId;
-}
-
-class UpdateDestination extends NotificationDestination {
-  const UpdateDestination();
-}
-
-/// Payload string carried by a budget alert. Kept as a string on the platform
-/// side, so parsing lives here next to the routing.
-const String kBudgetPayloadPrefix = 'budget:';
-const String kUpdatePayload = 'app_update';
-
-/// Translates a notification payload into a [NotificationDestination].
-/// Returns null for anything unrecognised so a stale notification can never
-/// navigate somewhere unexpected.
-NotificationDestination? parseNotificationPayload(String? payload) {
-  if (payload == null || payload.isEmpty) return null;
-  if (payload == kUpdatePayload) return const UpdateDestination();
-  if (payload.startsWith(kBudgetPayloadPrefix)) {
-    final id = int.tryParse(payload.substring(kBudgetPayloadPrefix.length));
-    if (id == null) return null;
-    return BudgetAlertDestination(id);
-  }
-  return null;
-}
+export 'notification_destination.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -48,11 +21,17 @@ class NotificationService {
   static const int updateNotificationId = 0x7A17;
 
   /// Channel ids. Kept as constants so tests and the Settings copy agree.
-  static const String budgetChannelId = 'budget_alerts';
-  static const String updateChannelId = 'app_updates';
+  static const String budgetChannelId = kBudgetChannelId;
+  static const String updateChannelId = kUpdateChannelId;
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  /// The Android notification permission, wrapped in its own helper so the
+  /// best-effort error handling around it does not crowd this class.
+  late final NotificationPermissions permissions = NotificationPermissions(
+    _notificationsPlugin,
+  );
 
   /// Invoked when the user taps a notification while the app is in the
   /// foreground or background.
@@ -63,20 +42,8 @@ class NotificationService {
   NotificationDestination? launchDestination;
 
   Future<void> init() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/launcher_icon');
-
-    const LinuxInitializationSettings initializationSettingsLinux =
-        LinuxInitializationSettings(defaultActionName: 'Open notification');
-
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          linux: initializationSettingsLinux,
-        );
-
     await _notificationsPlugin.initialize(
-      settings: initializationSettings,
+      settings: notificationInitializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         _handle(response.payload);
       },
@@ -111,35 +78,10 @@ class NotificationService {
   /// Asks for POST_NOTIFICATIONS. Returns true when the user has granted it,
   /// false when denied — callers treat denial as "skip quietly", never as an
   /// error.
-  Future<bool> requestPermissions() async {
-    try {
-      final android = _notificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-      if (android == null) return false;
-      final granted = await android.requestNotificationsPermission();
-      return granted ?? false;
-    } catch (e) {
-      debugPrint('NotificationService: permission request failed — $e');
-      return false;
-    }
-  }
+  Future<bool> requestPermissions() => permissions.request();
 
   /// Whether notifications are currently allowed, without prompting.
-  Future<bool> hasPermission() async {
-    try {
-      final android = _notificationsPlugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
-      final granted = await android?.areNotificationsEnabled();
-      return granted ?? false;
-    } catch (e) {
-      debugPrint('NotificationService: permission query failed — $e');
-      return false;
-    }
-  }
+  Future<bool> hasPermission() => permissions.hasPermission();
 
   Future<void> showBudgetAlert({
     required int id,
@@ -149,36 +91,17 @@ class NotificationService {
     String currency = '',
     BudgetAlert alert = BudgetAlert.exceeded,
   }) async {
-    final cur = currency.trim().isEmpty ? '' : ' $currency';
-    final spentLabel = '${_trim(spent)}$cur';
-    final limitLabel = '${_trim(limit)}$cur';
-
-    final title = alert.title;
-    final body = alert == BudgetAlert.exceeded
-        ? '$categoryName: $spentLabel spent of $limitLabel.'
-        : '$categoryName: $spentLabel of $limitLabel spent.';
-
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          budgetChannelId,
-          'Budget Alerts',
-          channelDescription: 'Notifications for budget limits and warnings',
-          importance: Importance.high,
-          priority: Priority.high,
-        );
-
-    const LinuxNotificationDetails linuxDetails = LinuxNotificationDetails();
-
-    const NotificationDetails platformDetails = NotificationDetails(
-      android: androidDetails,
-      linux: linuxDetails,
-    );
-
     await _notificationsPlugin.show(
       id: id,
-      title: title,
-      body: body,
-      notificationDetails: platformDetails,
+      title: alert.title,
+      body: budgetAlertBody(
+        categoryName: categoryName,
+        limit: limit,
+        spent: spent,
+        currency: currency,
+        exceeded: alert == BudgetAlert.exceeded,
+      ),
+      notificationDetails: budgetAlertNotificationDetails,
       // Tapping opens the Budget screen.
       payload: '$kBudgetPayloadPrefix$id',
     );
@@ -200,23 +123,7 @@ class NotificationService {
     // and Walt only ever asked for it from the budget-alert flow — so an update
     // ping for a user who never touched budgets vanished without a trace. Ask
     // here instead: the one moment there is a concrete release to announce.
-    if (!await _ensureNotificationsAllowed()) return false;
-
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-          updateChannelId,
-          'App Updates',
-          channelDescription: 'Notifications for new app updates and releases',
-          importance: Importance.defaultImportance,
-          priority: Priority.defaultPriority,
-        );
-
-    const LinuxNotificationDetails linuxDetails = LinuxNotificationDetails();
-
-    const NotificationDetails platformDetails = NotificationDetails(
-      android: androidDetails,
-      linux: linuxDetails,
-    );
+    if (!await permissions.ensureAllowed()) return false;
 
     await _notificationsPlugin.show(
       id: updateNotificationId,
@@ -224,32 +131,9 @@ class NotificationService {
           ? 'New Update Available!'
           : changelogSummary.trim(),
       title: 'Walt $latestVersion is available',
-      notificationDetails: platformDetails,
+      notificationDetails: updateNotificationDetails,
       payload: kUpdatePayload,
     );
     return true;
-  }
-
-  /// Whether the OS will actually deliver a notification, requesting the
-  /// Android runtime permission when it is still missing.
-  ///
-  /// Best-effort and idempotent: returns `true` straight away on platforms that
-  /// have no notification permission (Linux) or when it is already granted, and
-  /// otherwise the outcome of the prompt. A declined prompt resolves to `false`
-  /// rather than throwing — a notification is never worth failing an operation
-  /// over.
-  Future<bool> _ensureNotificationsAllowed() async {
-    if (defaultTargetPlatform != TargetPlatform.android) return true;
-    if (await hasPermission()) return true;
-    return requestPermissions();
-  }
-
-  /// Trims trailing ".00" noise: `120.50` -> `120.5`, `200.00` -> `200`.
-  /// Whole amounts read better without cents; fractional ones keep them, but
-  /// both go through the shared formatter so a notification and the screen it
-  /// opens never disagree about how a number is written.
-  static String _trim(double value) {
-    final fractionDigits = value == value.roundToDouble() ? 0 : 2;
-    return MoneyFormat.digits(value, fractionDigits: fractionDigits);
   }
 }

@@ -2,11 +2,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/theme/walt_chart_colors.dart';
-import 'package:walt/core/widgets/category_icon.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/state_views.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Spending split by category as a donut with the period total in the middle.
 /// The per-category list lives in the breakdown section below.

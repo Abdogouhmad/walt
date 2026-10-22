@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/blur_surface.dart';
 import 'package:walt/core/widgets/walt_logo.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/socialmedia.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// The About information, presented as a frosted dialog.
 ///

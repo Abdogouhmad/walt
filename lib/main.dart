@@ -1,24 +1,15 @@
-import 'dart:io' show Platform;
-
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// sqflite FFI support for Desktop
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:walt/data/services/notification_router.dart';
-import 'package:walt/data/services/notification_service.dart';
-import 'package:walt/features/settings/services/appinfo.dart';
-import 'package:walt/features/settings/widgets/soft_update_bootstrap.dart';
 
+import 'package:walt/features/settings/widgets/soft_update_bootstrap.dart';
+import 'package:walt/providers/settings_provider.dart';
+import 'package:walt/providers/theme_provider.dart';
+import 'package:walt/shared/system_bars.dart';
+import 'package:walt_ui/walt_ui.dart';
+
+import 'app_bootstrap.dart';
 import 'app_router.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/theme_settings.dart';
-// Your local files
-import 'data/local/database_helper.dart';
-import 'data/local/hive_service.dart';
-// Providers
-import 'providers/theme_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,14 +32,9 @@ Future<void> main() async {
     ),
   );
 
-  await _initializeApp();
+  await initializeApp();
 
-  // Read the stored appearance *before* the first frame.
-  //
-  // A `Notifier` would rebuild it synchronously anyway, but doing it here means
-  // the decision is already made when the widget tree is built, so the app can
-  // never paint a frame in the wrong palette on the way to the right one.
-  final theme = _readThemeSettings();
+  final theme = readThemeSettings();
 
   runApp(
     ProviderScope(
@@ -56,49 +42,20 @@ Future<void> main() async {
         themeControllerProvider.overrideWith(
           () => ThemeController()..bootstrap = theme,
         ),
+        // The design system owns the "reduce transparency" switch; the app
+        // supplies the user's stored choice. Watching keeps the frosted
+        // surfaces in step with the setting when it is toggled at runtime.
+        reduceTransparencyProvider.overrideWith(
+          (ref) =>
+              ref.watch(settingsProvider.select((s) => s.reduceTransparency)),
+        ),
+        hapticsEnabledProvider.overrideWith(
+          (ref) => ref.watch(settingsProvider.select((s) => s.hapticsEnabled)),
+        ),
       ],
       child: const MyApp(),
     ),
   );
-}
-
-ThemeSettings _readThemeSettings() {
-  try {
-    return ThemeSettings.fromMap(HiveService.instance.readThemeSettings());
-  } catch (e) {
-    debugPrint('Could not read theme settings, using defaults: $e');
-    return ThemeSettings.defaults;
-  }
-}
-
-Future<void> _initializeApp() async {
-  // SQLite Initialization for Desktop
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
-  // Appinfo, the SQLite connection and Hive touch different resources, so they
-  // are opened together: the first frame then waits on the slowest of the three
-  // rather than on their sum.
-  await Future.wait([
-    Appinfo.init(),
-    DatabaseHelper.instance.database,
-    HiveService.init(),
-  ]);
-
-  // Notifications are non-critical: never block startup on them. Permission is
-  // *not* requested here — it is asked in context, when the user creates their
-  // first budget or turns an alert toggle on, so the OS prompt has context.
-  try {
-    final notifications = NotificationService();
-    await notifications.init();
-    // Must happen after init(), which is what populates `launchDestination`
-    // for a notification that cold-started the app.
-    wireNotificationRouting(notifications);
-  } catch (e) {
-    debugPrint('Notifications unavailable: $e');
-  }
 }
 
 // Change MyApp from StatelessWidget to ConsumerWidget
@@ -109,6 +66,9 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final settings = ref.watch(themeControllerProvider);
+
+    final appSettings = ref.watch(settingsProvider);
+    final animationsEnabled = appSettings.animationsEnabled;
 
     return MaterialApp.router(
       title: 'Walt',
@@ -121,35 +81,23 @@ class MyApp extends ConsumerWidget {
 
       // A palette swap is a whole-app recolour. Cross-fading it reads as
       // deliberate; snapping to it reads as a glitch.
-      themeAnimationDuration: kThemeAnimationDuration,
+      themeAnimationDuration: animationsEnabled
+          ? kThemeAnimationDuration
+          : Duration.zero,
       themeAnimationCurve: waltThemeAnimationCurve,
 
       routerConfig: router,
       // Non-blocking background update check. Never takes over the app.
-      builder: (context, child) => _SystemBars(
-        child: SoftUpdateBootstrap(child: child ?? const SizedBox.shrink()),
-      ),
-    );
-  }
-}
-
-/// Keeps the system bars' icon brightness in step with the effective theme.
-///
-/// The bars themselves stay transparent — the app draws edge to edge — so the
-/// only thing that has to track the palette is whether the icons should be light
-/// or dark. Driven from the resolved `ColorScheme` inside the app rather than
-/// from the raw `ThemeMode`, so "system in dark mode" is handled by the same
-/// code path as an explicit dark selection.
-class _SystemBars extends StatelessWidget {
-  const _SystemBars({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: systemOverlayStyle(Theme.of(context).colorScheme),
-      child: child,
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        final updatedMedia = animationsEnabled
+            ? media
+            : media.copyWith(disableAnimations: true);
+        final content = SystemBars(
+          child: SoftUpdateBootstrap(child: child ?? const SizedBox.shrink()),
+        );
+        return MediaQuery(data: updatedMedia, child: content);
+      },
     );
   }
 }

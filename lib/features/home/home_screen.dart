@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/theme/text_theme.dart';
-import 'package:walt/core/widgets/walt_chrome.dart';
 import 'package:walt/features/home/widgets/balance_hero.dart';
 import 'package:walt/features/home/widgets/recent_activity.dart';
 import 'package:walt/features/home/widgets/weekly_spending_chart.dart';
 import 'package:walt/shared/profile_app_bar_action.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,7 +16,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       // The shell already sets `extendBody` so content scrolls under the
-      // floating nav; repeating it here keeps Home correct in isolation.
+      // docked nav; repeating it here keeps Home correct in isolation.
       extendBody: true,
       body: CustomScrollView(
         slivers: [
