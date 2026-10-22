@@ -1,10 +1,10 @@
 {
-  "latestVersionName": "1.0.6",
-  "latestVersionCode": 10006,
+  "latestVersionName": "1.0.9",
+  "latestVersionCode": 10009,
   "minSupportedVersionCode": 41,
   "mandatory": false,
-  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.6/walt-v1.0.6-universal.apk",
-  "sha256": "4ef8c2a2dced7ce9f942c55599e10d076785558c3c39dbd0adee2e86c6df7249",
-  "releaseNotes": "## [1.0.6] - 2026-10-21\n\n### Added\n\n- **Tapping a transaction shows everything about it.** A row in the Activity\n  list — or in Home's \"Recent\" section — now opens a sheet with the whole\n  picture: the amount and which way it went, the category, the date and time,\n  the account, and the note, which the list rows never had room for.\n\n### Performance\n\n- **Dragging the colour picker no longer piles up themes.** Every pointer\n  move produced a distinct custom seed, and each one was kept forever as a\n  live colour scheme and a live theme. The caches are now bounded, so the\n  oldest entries are dropped instead of accumulating for the life of the app.",
-  "publishedAt": "2026-10-21T22:09:30.270753+00:00"
+  "apkUrl": "https://github.com/Abdogouhmad/walt/releases/download/v1.0.9/walt-v1.0.9-universal.apk",
+  "sha256": "eeb26036fb021b792b5982357dc03cca1c110f9a53dfb41fea89fe2dcd31cd47",
+  "releaseNotes": "## [1.0.9] - 2026-10-22\n\n### Fixed\n\n- **Bottom nav and FAB no longer overlap.** The add button now sits correctly above the docked bottom navigation bar instead of being covered by it.",
+  "publishedAt": "2026-10-22T21:20:25.961034+00:00"
 }
