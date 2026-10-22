@@ -50,7 +50,7 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
   bool _open = false;
 
   void _expand() {
-    if (widget.actions.isEmpty) return;
+    if (_open || widget.actions.isEmpty) return;
     if (widget.actions.length == 1) {
       Haptics.light();
       widget.actions.single.onPressed();
@@ -62,9 +62,33 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
   }
 
   void _collapse() {
+    if (!_open) return;
     Haptics.selection();
     setState(() => _open = false);
     _controller.reverse();
+  }
+
+  /// The FAB is a toggle: once the close glyph is showing, tapping it again
+  /// must put the actions away instead of re-expanding the same menu.
+  void _toggle() {
+    if (_open) {
+      _collapse();
+    } else {
+      _expand();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ExpressiveFabMenu oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // The shell hides the FAB while a sheet is open or the chrome is scrolled
+    // away. Collapse in the same frame so the action stack cannot reappear
+    // still expanded when the FAB comes back.
+    if (!widget.visible && _open) {
+      _open = false;
+      _controller.value = 0;
+    }
   }
 
   @override
@@ -98,27 +122,31 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
       child: Stack(
         children: [
           // ── Scrim — always mounted (so its opacity can animate out), but it
-          // only intercepts pointers while the menu is open. ────────────────
+          // only intercepts pointers while the menu is open and visible. ─────
           Positioned.fill(
             child: FabScrim(
               opacity: scrimOpacity,
-              active: _open,
+              active: _open && widget.visible,
               color: scheme.scrim,
               onTap: _collapse,
             ),
           ),
 
           // ── Actions, nearest-to-FAB first ────────────────────────────────
-          for (var i = 0; i < widget.actions.length; i++)
-            FabActionButton(
-              action: widget.actions[i],
-              controller: _controller,
-              index: i,
-              right: WaltChrome.horizontalMargin,
-              bottom: bottom + _fabSize + 12 + i * 60.0,
-              reduceMotion: reduceMotion,
-              onDismiss: _collapse,
-            ),
+          // They follow the FAB's visibility, so a hidden menu can never leave
+          // its actions floating over a sheet.
+          if (widget.visible)
+            for (var i = 0; i < widget.actions.length; i++)
+              FabActionButton(
+                action: widget.actions[i],
+                controller: _controller,
+                index: i,
+                right: WaltChrome.horizontalMargin,
+                bottom: bottom + _fabSize + 12 + i * 60.0,
+                reduceMotion: reduceMotion,
+                active: _open,
+                onDismiss: _collapse,
+              ),
 
           // ── The FAB ──────────────────────────────────────────────────────
           FabMenuButton(
@@ -133,7 +161,7 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
             bottom: bottom,
             right: WaltChrome.horizontalMargin,
             reduceMotion: reduceMotion,
-            onTap: _expand,
+            onTap: _toggle,
           ),
         ],
       ),

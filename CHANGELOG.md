@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.10] - 2026-10-22
+
+### Fixed
+
+- **The add button can close its own menu again.** Tapping the FAB a second
+  time — while it shows the close icon — now puts the Add expense and Add
+  income actions away. This also fixes the actions staying on screen when
+  animations are turned off, and the menu now resets when you switch tabs or
+  when a sheet takes over the screen, so it can no longer reappear stuck open.
+
 ## [1.0.9] - 2026-10-22
 
 ### Fixed

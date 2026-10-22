@@ -15,6 +15,10 @@ class FabActionButton extends StatelessWidget {
   final double right;
   final double bottom;
   final bool reduceMotion;
+
+  /// Whether the action can be tapped. False while the menu is collapsed (or
+  /// collapsing), so the invisible stack never steals taps from the screen.
+  final bool active;
   final VoidCallback onDismiss;
 
   const FabActionButton({
@@ -26,6 +30,7 @@ class FabActionButton extends StatelessWidget {
     required this.bottom,
     required this.reduceMotion,
     required this.onDismiss,
+    this.active = true,
   });
 
   @override
@@ -35,7 +40,7 @@ class FabActionButton extends StatelessWidget {
     final end = (begin + 0.55).clamp(0.0, 1.0);
 
     final animation = reduceMotion
-        ? const AlwaysStoppedAnimation<double>(1)
+        ? AlwaysStoppedAnimation<double>(active ? 1 : 0)
         : CurvedAnimation(
             parent: controller,
             curve: Interval(begin, end, curve: AppSpring.spatialCurve),
@@ -53,14 +58,26 @@ class FabActionButton extends StatelessWidget {
         animation: animation,
         builder: (context, child) {
           final t = animation.value.clamp(0.0, 1.2);
-          return Opacity(
-            opacity: t.clamp(0.0, 1.0),
-            child: Transform.translate(
-              offset: Offset(0, (1 - t) * 24),
-              child: Transform.scale(
-                scale: 0.85 + 0.15 * t,
-                alignment: AlignmentDirectional.bottomEnd,
-                child: child,
+
+          // Fully collapsed: drop the action from the tree entirely. An
+          // Opacity of 0 still hit-tests and still exposes semantics, which
+          // would leave an invisible "Add income" over the screen.
+          if (t <= 0) return const SizedBox.shrink();
+
+          return ExcludeSemantics(
+            excluding: !active,
+            child: IgnorePointer(
+              ignoring: !active,
+              child: Opacity(
+                opacity: t.clamp(0.0, 1.0),
+                child: Transform.translate(
+                  offset: Offset(0, (1 - t) * 24),
+                  child: Transform.scale(
+                    scale: 0.85 + 0.15 * t,
+                    alignment: AlignmentDirectional.bottomEnd,
+                    child: child,
+                  ),
+                ),
               ),
             ),
           );

@@ -120,6 +120,9 @@ class _MainShellState extends ConsumerState<MainShell> {
             child: ValueListenableBuilder<bool>(
               valueListenable: _chromeVisible,
               builder: (context, visible, _) => ExpressiveFabMenu(
+                // A new route starts with a closed menu: an expanded action
+                // stack must never follow the user between tabs.
+                key: ValueKey(location),
                 visible: visible && !sheetOpen,
                 actions: shellActionsFor(location, context),
               ),
