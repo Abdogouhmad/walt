@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-10-22
+
+### Fixed
+
+- **Bottom nav and FAB no longer overlap.** The add button now sits correctly above the docked bottom navigation bar instead of being covered by it.
+
 ## [1.0.8] - 2026-10-22
 
 ### Changed

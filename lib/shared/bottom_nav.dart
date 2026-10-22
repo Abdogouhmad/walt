@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,10 +13,10 @@ import 'package:walt_ui/walt_ui.dart';
 /// The app shell that owns Walt's docked chrome: a full-width navigation bar
 /// and the expressive FAB menu.
 ///
-/// The bar lives in the scaffold's `bottomNavigationBar` slot with `extendBody`
-/// on, so content scrolls behind its frosted surface. A modal sheet raised on
-/// the root navigator covers the bottom edge, so the shell slides the chrome
-/// out of the way while a sheet is open.
+/// The bar is docked edge-to-edge at the bottom while the shell keeps
+/// `extendBody` on, so content scrolls behind its frosted surface. A modal
+/// sheet raised on the root navigator covers the bottom edge, so the shell
+/// slides the chrome out of the way while a sheet is open.
 class MainShell extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -100,6 +99,22 @@ class _MainShellState extends ConsumerState<MainShell> {
         children: [
           Positioned.fill(child: widget.child),
 
+          // Docked navigation bar, edge to edge at the bottom.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _chromeVisible,
+              builder: (context, visible, _) => WaltNavBar(
+                selectedIndex: _selectedIndex(location),
+                onDestinationSelected: _onDestinationSelected,
+                visible: visible && !sheetOpen,
+                destinations: shellDestinations,
+              ),
+            ),
+          ),
+
           // Expressive FAB menu, route-dependent.
           Positioned.fill(
             child: ValueListenableBuilder<bool>(
@@ -111,15 +126,6 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: ValueListenableBuilder<bool>(
-        valueListenable: _chromeVisible,
-        builder: (context, visible, _) => WaltNavBar(
-          selectedIndex: _selectedIndex(location),
-          onDestinationSelected: _onDestinationSelected,
-          visible: visible && !sheetOpen,
-          destinations: shellDestinations,
-        ),
       ),
     );
   }
