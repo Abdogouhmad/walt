@@ -77,6 +77,16 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (ref.mounted) state = state.copyWith(reduceTransparency: value);
   }
 
+  Future<void> setHapticsEnabled(bool value) async {
+    await _hive.saveSetting('hapticsEnabled', value);
+    if (ref.mounted) state = state.copyWith(hapticsEnabled: value);
+  }
+
+  Future<void> setAnimationsEnabled(bool value) async {
+    await _hive.saveSetting('animationsEnabled', value);
+    if (ref.mounted) state = state.copyWith(animationsEnabled: value);
+  }
+
   Future<void> completeOnboarding() async {
     await _hive.setOnboardingCompleted(true);
     if (ref.mounted) {

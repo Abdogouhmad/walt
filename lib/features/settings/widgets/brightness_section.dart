@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:walt/features/settings/widgets/settings_leading.dart';
 import 'package:walt_ui/walt_ui.dart';
 
@@ -52,7 +51,7 @@ class BrightnessSection extends StatelessWidget {
                 showSelectedIcon: false,
                 onSelectionChanged: (selection) {
                   if (selection.isEmpty) return;
-                  HapticFeedback.selectionClick();
+                  Haptics.selection();
                   onModeChanged(selection.first);
                 },
               ),

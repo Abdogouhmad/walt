@@ -23,6 +23,12 @@ class SettingsState {
   /// Renders the floating nav opaque instead of frosted. Default off.
   final bool reduceTransparency;
 
+  /// Enable haptic feedback throughout the app. Default on.
+  final bool hapticsEnabled;
+
+  /// Enable animations and transitions throughout the app. Default on.
+  final bool animationsEnabled;
+
   SettingsState({
     this.currency = 'MAD',
     this.userName = 'User',
@@ -34,6 +40,8 @@ class SettingsState {
     this.budgetAlertsEnabled = true,
     this.updateNotificationsEnabled = true,
     this.reduceTransparency = false,
+    this.hapticsEnabled = true,
+    this.animationsEnabled = true,
   });
 
   SettingsState copyWith({
@@ -47,6 +55,8 @@ class SettingsState {
     bool? budgetAlertsEnabled,
     bool? updateNotificationsEnabled,
     bool? reduceTransparency,
+    bool? hapticsEnabled,
+    bool? animationsEnabled,
   }) {
     return SettingsState(
       currency: currency ?? this.currency,
@@ -61,6 +71,8 @@ class SettingsState {
       updateNotificationsEnabled:
           updateNotificationsEnabled ?? this.updateNotificationsEnabled,
       reduceTransparency: reduceTransparency ?? this.reduceTransparency,
+      hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
+      animationsEnabled: animationsEnabled ?? this.animationsEnabled,
     );
   }
 }

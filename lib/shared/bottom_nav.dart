@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollDirection;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,12 +11,13 @@ import 'package:walt/shared/shell_budget_alerts.dart';
 import 'package:walt/shared/shell_destinations.dart';
 import 'package:walt_ui/walt_ui.dart';
 
-/// The app shell that owns Walt's floating chrome: a detached pill navigation
-/// bar and the expressive FAB menu.
+/// The app shell that owns Walt's docked chrome: a full-width navigation bar
+/// and the expressive FAB menu.
 ///
-/// Screens contribute their own `SliverAppBar` and scroll view; this shell only
-/// overlays the chrome and hides the pill while the user scrolls down so more
-/// content is visible.
+/// The bar lives in the scaffold's `bottomNavigationBar` slot with `extendBody`
+/// on, so content scrolls behind its frosted surface. A modal sheet raised on
+/// the root navigator covers the bottom edge, so the shell slides the chrome
+/// out of the way while a sheet is open.
 class MainShell extends ConsumerStatefulWidget {
   final Widget child;
 
@@ -27,7 +28,7 @@ class MainShell extends ConsumerStatefulWidget {
 }
 
 class _MainShellState extends ConsumerState<MainShell> {
-  /// The tabs the nav pill switches between.
+  /// The tabs the nav bar switches between.
   static const List<String> _routes = [
     '/',
     '/transactions',
@@ -35,7 +36,7 @@ class _MainShellState extends ConsumerState<MainShell> {
     '/reports',
   ];
 
-  /// Whether the floating chrome is revealed. Flipped by scroll direction.
+  /// Whether the docked chrome is revealed.
   final ValueNotifier<bool> _chromeVisible = ValueNotifier(true);
 
   final BudgetAlertService _alerts = BudgetAlertService();
@@ -59,27 +60,14 @@ class _MainShellState extends ConsumerState<MainShell> {
     context.go(_routes[index]);
   }
 
-  bool _handleScroll(UserScrollNotification notification) {
-    switch (notification.direction) {
-      case ScrollDirection.reverse:
-        // Scrolling down — get the pill out of the way.
-        if (_chromeVisible.value) _chromeVisible.value = false;
-      case ScrollDirection.forward:
-        if (!_chromeVisible.value) _chromeVisible.value = true;
-      case ScrollDirection.idle:
-        break;
-    }
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
 
     // A modal sheet is pushed on the root navigator, so it paints over this
-    // shell: the nav pill and the FAB would sit dimmed behind the modal
-    // barrier and half-covered by the sheet. While a sheet is open the chrome
-    // steps aside entirely, so the two never overlap.
+    // shell. The docked bar sits flush with the bottom edge and is covered by
+    // a bottom sheet, but the shell still slides its chrome aside while a
+    // sheet is open to avoid any overlap.
     final sheetOpen = ref.watch(modalSheetOpenProvider);
 
     // `fireImmediately` is what makes budgets that are already over the limit
@@ -105,33 +93,12 @@ class _MainShellState extends ConsumerState<MainShell> {
     });
 
     return Scaffold(
-      // Content draws behind the floating pill; screens add bottom padding via
-      // `WaltChrome.scrollBottomPadding`.
+      // Content scrolls behind the docked frosted nav; screens add bottom
+      // padding via `WaltChrome.scrollBottomPadding`.
       extendBody: true,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: NotificationListener<UserScrollNotification>(
-              onNotification: _handleScroll,
-              child: widget.child,
-            ),
-          ),
-
-          // Floating pill navigation.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: ValueListenableBuilder<bool>(
-              valueListenable: _chromeVisible,
-              builder: (context, visible, _) => FloatingNavBar(
-                selectedIndex: _selectedIndex(location),
-                onDestinationSelected: _onDestinationSelected,
-                visible: visible && !sheetOpen,
-                destinations: shellDestinations,
-              ),
-            ),
-          ),
+          Positioned.fill(child: widget.child),
 
           // Expressive FAB menu, route-dependent.
           Positioned.fill(
@@ -144,6 +111,15 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: ValueListenableBuilder<bool>(
+        valueListenable: _chromeVisible,
+        builder: (context, visible, _) => WaltNavBar(
+          selectedIndex: _selectedIndex(location),
+          onDestinationSelected: _onDestinationSelected,
+          visible: visible && !sheetOpen,
+          destinations: shellDestinations,
+        ),
       ),
     );
   }

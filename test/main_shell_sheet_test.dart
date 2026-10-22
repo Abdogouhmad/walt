@@ -60,7 +60,7 @@ GoRouter _router() => GoRouter(
 );
 
 bool _navVisible(WidgetTester tester) =>
-    tester.widget<FloatingNavBar>(find.byType(FloatingNavBar)).visible;
+    tester.widget<WaltNavBar>(find.byType(WaltNavBar)).visible;
 
 bool _fabVisible(WidgetTester tester) =>
     tester.widget<ExpressiveFabMenu>(find.byType(ExpressiveFabMenu)).visible;

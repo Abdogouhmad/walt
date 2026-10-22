@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:walt/features/settings/widgets/brightness_section.dart';
 import 'package:walt/features/settings/widgets/custom_color_sheet.dart';
+import 'package:walt/features/settings/widgets/feedback_section.dart';
 import 'package:walt/features/settings/widgets/palette_grid.dart';
 import 'package:walt/features/settings/widgets/surface_section.dart';
 import 'package:walt/features/settings/widgets/theme_preview_card.dart';
@@ -71,11 +71,11 @@ class AppearanceScreen extends ConsumerWidget {
                       isCustom: settings.isCustom,
                       brightness: brightness,
                       onSelect: (palette) {
-                        HapticFeedback.selectionClick();
+                        Haptics.selection();
                         controller.setPalette(palette);
                       },
                       onSelectCustom: () {
-                        HapticFeedback.selectionClick();
+                        Haptics.selection();
                         showCustomColorSheet(context);
                       },
                     ),
@@ -87,6 +87,9 @@ class AppearanceScreen extends ConsumerWidget {
                           .read(settingsProvider.notifier)
                           .setReduceTransparency,
                     ),
+
+                    // ── Feedback ────────────────────────────────────────────
+                    const FeedbackSection(),
 
                     SizedBox(height: WaltChrome.scrollBottomPadding(context)),
                   ],

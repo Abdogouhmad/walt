@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../layout/walt_chrome.dart';
 import '../tokens/motion.dart';
+import '../utils/haptics.dart';
 import 'fab_action.dart';
 import 'fab_action_button.dart';
 import 'fab_menu_button.dart';
@@ -52,17 +52,17 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
   void _expand() {
     if (widget.actions.isEmpty) return;
     if (widget.actions.length == 1) {
-      HapticFeedback.lightImpact();
+      Haptics.light();
       widget.actions.single.onPressed();
       return;
     }
-    HapticFeedback.lightImpact();
+    Haptics.light();
     setState(() => _open = true);
     _controller.forward();
   }
 
   void _collapse() {
-    HapticFeedback.selectionClick();
+    Haptics.selection();
     setState(() => _open = false);
     _controller.reverse();
   }
@@ -79,8 +79,8 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
     final reduceMotion = AppSpring.isDisabled(context);
 
     final bottom =
-        WaltChrome.navBottomOffset(context) +
         WaltChrome.navHeight +
+        WaltChrome.systemBottom(context) +
         WaltChrome.fabGap +
         widget.extraBottomGap;
 

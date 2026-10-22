@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:walt/features/home/widgets/text_measurement.dart';
@@ -47,7 +46,7 @@ class WeeklySpendingChart extends ConsumerWidget {
     final weekTotal = amounts.fold<double>(0, (a, b) => a + b);
 
     void select(DateTime day) {
-      HapticFeedback.selectionClick();
+      Haptics.selection();
       final notifier = ref.read(selectedDayProvider.notifier);
       // Tapping a day filters Recent activity to that day. Tapping the day
       // that is already showing clears the filter — including today, which is

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// The icon of a single [FloatingNavBar] destination.
+/// The icon of a single [WaltNavBar] destination.
 ///
 /// Swaps between the outlined and the filled glyph with a scale-and-fade
 /// transition, and carries the optional count badge.
-class FloatingNavIcon extends StatelessWidget {
+class WaltNavIcon extends StatelessWidget {
   final IconData icon;
   final IconData selectedIcon;
   final bool isSelected;
@@ -13,7 +13,7 @@ class FloatingNavIcon extends StatelessWidget {
   final Curve spring;
   final int badgeCount;
 
-  const FloatingNavIcon({
+  const WaltNavIcon({
     super.key,
     required this.icon,
     required this.selectedIcon,
@@ -37,7 +37,7 @@ class FloatingNavIcon extends StatelessWidget {
       child: Icon(
         isSelected ? selectedIcon : icon,
         key: ValueKey<bool>(isSelected),
-        size: 24,
+        size: 22,
         color: color,
       ),
     );

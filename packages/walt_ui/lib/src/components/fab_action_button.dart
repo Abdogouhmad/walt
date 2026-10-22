@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../tokens/motion.dart';
+import '../utils/haptics.dart';
 import 'fab_action.dart';
 
 /// One labelled action in the expanded FAB menu.
@@ -76,7 +76,7 @@ class FabActionButton extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
-                HapticFeedback.lightImpact();
+                Haptics.light();
                 onDismiss();
                 action.onPressed();
               },

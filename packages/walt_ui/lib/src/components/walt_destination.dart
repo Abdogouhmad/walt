@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// One destination in [FloatingNavBar].
+/// One destination in [WaltNavBar].
 @immutable
 class WaltDestination {
   /// Outlined icon, shown when the destination is not selected.

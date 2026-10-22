@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../tokens/motion.dart';
 import '../tokens/radius.dart';
+import '../utils/haptics.dart';
 import './pill_option.dart';
 
 /// Animated `Week | Month | Year`-style selector.
@@ -95,7 +95,7 @@ class PillSwitcher<T> extends StatelessWidget {
                           selected: i == index,
                           onTap: () {
                             if (options[i] == value) return;
-                            HapticFeedback.selectionClick();
+                            Haptics.selection();
                             onChanged(options[i]);
                           },
                         ),

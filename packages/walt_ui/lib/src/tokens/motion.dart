@@ -87,11 +87,10 @@ abstract final class AppSpring {
     );
   }
 
-  /// Whether the user has asked the platform to suppress animations.
+  /// Whether animations are disabled.
   ///
-  /// Honouring this is a hard accessibility requirement: every spring and
-  /// timed animation in the app should collapse to an instant state change
-  /// when it returns `false`.
+  /// Honours the platform's accessibility setting and the app's "Animations"
+  /// toggle (via [MediaQuery] — callers override [MediaQuery.disableAnimations]).
   static bool isDisabled(BuildContext context) =>
       MediaQuery.maybeDisableAnimationsOf(context) ?? false;
 }

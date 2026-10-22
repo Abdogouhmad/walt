@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       // The shell already sets `extendBody` so content scrolls under the
-      // floating nav; repeating it here keeps Home correct in isolation.
+      // docked nav; repeating it here keeps Home correct in isolation.
       extendBody: true,
       body: CustomScrollView(
         slivers: [

@@ -57,7 +57,7 @@ Finder findSelectionPill() => find
 /// destination order — including the transparent unselected ones, so a
 /// collapsed width is readable without comparing two separate pumps.
 Finder findPills() => find.descendant(
-  of: find.byType(FloatingNavBar),
+  of: find.byType(WaltNavBar),
   matching: find.byWidgetPredicate(
     (w) =>
         w is Container &&

@@ -36,6 +36,11 @@ SettingsState loadSettingsState(HiveService hive) {
       'reduceTransparency',
       defaultValue: false,
     );
+    final hapticsEnabled = hive.getFlag('hapticsEnabled', defaultValue: true);
+    final animationsEnabled = hive.getFlag(
+      'animationsEnabled',
+      defaultValue: true,
+    );
 
     return SettingsState(
       currency: currency,
@@ -48,6 +53,8 @@ SettingsState loadSettingsState(HiveService hive) {
       budgetAlertsEnabled: budgetAlertsEnabled,
       updateNotificationsEnabled: updateNotificationsEnabled,
       reduceTransparency: reduceTransparency,
+      hapticsEnabled: hapticsEnabled,
+      animationsEnabled: animationsEnabled,
     );
   } catch (e) {
     debugPrint('Could not read settings, using defaults: $e');

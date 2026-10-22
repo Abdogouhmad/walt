@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/radius.dart';
+import '../utils/haptics.dart';
 import 'app_button_spec.dart';
 
 /// The filled variants of [AppButton]: a solid action and its outlined twin.
@@ -12,8 +13,14 @@ class AppButtonFilled {
 
   /// The primary action: a solid surface with the label on top of it.
   static Widget primary(AppButtonSpec spec) {
+    final onPressed = spec.onPressed;
     return ElevatedButton(
-      onPressed: spec.onPressed,
+      onPressed: onPressed == null
+          ? null
+          : () {
+              Haptics.light();
+              onPressed();
+            },
       style: ElevatedButton.styleFrom(
         backgroundColor: spec.fill,
         foregroundColor: spec.onFill,
@@ -31,8 +38,14 @@ class AppButtonFilled {
 
   /// The secondary action: an outline instead of a fill.
   static Widget secondary(AppButtonSpec spec) {
+    final onPressed = spec.onPressed;
     return OutlinedButton(
-      onPressed: spec.onPressed,
+      onPressed: onPressed == null
+          ? null
+          : () {
+              Haptics.light();
+              onPressed();
+            },
       style: OutlinedButton.styleFrom(
         foregroundColor: spec.accent,
         shape: RoundedRectangleBorder(

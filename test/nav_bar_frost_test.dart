@@ -25,7 +25,7 @@ void main() {
     }) async {
       await tester.pumpWidget(
         navHost(
-          FloatingNavBar(
+          WaltNavBar(
             destinations: destinations,
             selectedIndex: 0,
             onDestinationSelected: (_) {},
@@ -47,9 +47,8 @@ void main() {
     ) async {
       await pumpNav(tester);
 
-      // The frosted look is a ratio of tint to show-through. At the shared
-      // light-mode fill of 0.82 only a fifth of the blur survived and the bar
-      // read as a flat slab, so this pins the thinner tint that fixes it.
+      // The docked bar uses a translucent surfaceContainer tint so the blur
+      // actually reads through busy content.
       final tint = tester
           .widgetList<DecoratedBox>(find.byType(DecoratedBox))
           .map((d) => d.decoration)

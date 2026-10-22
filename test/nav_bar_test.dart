@@ -5,7 +5,7 @@ import 'package:walt_ui/walt_ui.dart';
 import 'support/nav_harness.dart';
 
 void main() {
-  testWidgets('floating nav exposes selection semantics and reports taps', (
+  testWidgets('docked nav exposes selection semantics and reports taps', (
     tester,
   ) async {
     final handle = tester.ensureSemantics();
@@ -13,7 +13,7 @@ void main() {
 
     await tester.pumpWidget(
       navHost(
-        FloatingNavBar(
+        WaltNavBar(
           destinations: const [
             WaltDestination(
               icon: Icons.home_outlined,
@@ -34,27 +34,13 @@ void main() {
     await tester.pumpAndSettle();
 
     // Every destination is announced, and only the selected one reveals its
-    // label inside the pill.
+    // pill.
     expect(find.bySemanticsLabel('Home'), findsOneWidget);
     expect(find.bySemanticsLabel('Activity'), findsOneWidget);
     expect(tester.getSemantics(find.bySemanticsLabel('Home')).label, 'Home');
     expect(
       tester.getSemantics(find.bySemanticsLabel('Activity')).label,
       'Activity',
-    );
-    expect(find.text('Home'), findsOneWidget);
-    expect(
-      tester
-          .widget<AnimatedOpacity>(
-            find
-                .ancestor(
-                  of: find.text('Activity'),
-                  matching: find.byType(AnimatedOpacity),
-                )
-                .first,
-          )
-          .opacity,
-      0,
     );
 
     await tester.tap(find.bySemanticsLabel('Activity'));

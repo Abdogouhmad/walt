@@ -49,6 +49,9 @@ Future<void> main() async {
           (ref) =>
               ref.watch(settingsProvider.select((s) => s.reduceTransparency)),
         ),
+        hapticsEnabledProvider.overrideWith(
+          (ref) => ref.watch(settingsProvider.select((s) => s.hapticsEnabled)),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -64,6 +67,9 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final settings = ref.watch(themeControllerProvider);
 
+    final appSettings = ref.watch(settingsProvider);
+    final animationsEnabled = appSettings.animationsEnabled;
+
     return MaterialApp.router(
       title: 'Walt',
       debugShowCheckedModeBanner: false,
@@ -75,14 +81,23 @@ class MyApp extends ConsumerWidget {
 
       // A palette swap is a whole-app recolour. Cross-fading it reads as
       // deliberate; snapping to it reads as a glitch.
-      themeAnimationDuration: kThemeAnimationDuration,
+      themeAnimationDuration: animationsEnabled
+          ? kThemeAnimationDuration
+          : Duration.zero,
       themeAnimationCurve: waltThemeAnimationCurve,
 
       routerConfig: router,
       // Non-blocking background update check. Never takes over the app.
-      builder: (context, child) => SystemBars(
-        child: SoftUpdateBootstrap(child: child ?? const SizedBox.shrink()),
-      ),
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        final updatedMedia = animationsEnabled
+            ? media
+            : media.copyWith(disableAnimations: true);
+        final content = SystemBars(
+          child: SoftUpdateBootstrap(child: child ?? const SizedBox.shrink()),
+        );
+        return MediaQuery(data: updatedMedia, child: content);
+      },
     );
   }
 }
