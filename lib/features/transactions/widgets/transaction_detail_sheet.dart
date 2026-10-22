@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:walt/core/design/radius.dart';
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/theme/walt_colors.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/category_icon.dart';
-import 'package:walt/core/widgets/grouped_list.dart';
 import 'package:walt/data/models/walt_transaction.dart';
+import 'package:walt/features/transactions/widgets/transaction_detail_header.dart';
+import 'package:walt/features/transactions/widgets/transaction_detail_row.dart';
+import 'package:walt/features/transactions/widgets/transaction_note_block.dart';
 import 'package:walt/providers/account_provider.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/ui_modal.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Formatters built once: a detail sheet is opened per tap, and
 /// `DateFormat` construction does a locale lookup every time it is called.
@@ -54,8 +51,6 @@ class TransactionDetailSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final semantic = WaltColors.of(context);
     final currency = ref.watch(settingsProvider.select((s) => s.currency));
     final isIncome = transaction.type.toLowerCase() == 'income';
@@ -80,42 +75,7 @@ class TransactionDetailSheet extends ConsumerWidget {
       padding: waltModalPadding(context),
       children: [
         // ── Who it was ──────────────────────────────────────────────────────
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CategoryAvatar(
-              icon: category?.icon ?? 'category',
-              color: category?.color,
-              size: 48,
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    merchant == null || merchant.isEmpty
-                        ? 'Unknown Merchant'
-                        : merchant,
-                    style: theme.textTheme.titleLarge,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    category?.name ?? 'Uncategorised',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        TransactionDetailHeader(merchant: merchant, category: category),
         const SizedBox(height: AppSpacing.lg),
 
         // ── How much, and which way ─────────────────────────────────────────
@@ -132,7 +92,7 @@ class TransactionDetailSheet extends ConsumerWidget {
         // ── When, and where it came from ────────────────────────────────────
         GroupedList(
           children: [
-            _DetailRow(
+            TransactionDetailRow(
               icon: isIncome
                   ? Icons.south_west_rounded
                   : Icons.north_east_rounded,
@@ -140,18 +100,18 @@ class TransactionDetailSheet extends ConsumerWidget {
               value: isIncome ? 'Income' : 'Expense',
               valueColor: isIncome ? semantic.income : semantic.expense,
             ),
-            _DetailRow(
+            TransactionDetailRow(
               icon: Icons.event_rounded,
               label: 'Date',
               value: _dateFormat.format(transaction.date),
             ),
-            _DetailRow(
+            TransactionDetailRow(
               icon: Icons.schedule_rounded,
               label: 'Time',
               value: _timeFormat.format(transaction.date),
             ),
             if (account != null)
-              _DetailRow(
+              TransactionDetailRow(
                 icon: Icons.account_balance_wallet_rounded,
                 label: 'Account',
                 value: account.name,
@@ -165,115 +125,9 @@ class TransactionDetailSheet extends ConsumerWidget {
         // the one piece of free text the user actually wrote.
         if (note.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          _NoteBlock(note: note),
+          TransactionNoteBlock(note: note),
         ],
       ],
-    );
-  }
-}
-
-/// One label/value row inside the details group.
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  /// Overrides the value colour — used to tint the income/expense direction.
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: scheme.onSurfaceVariant),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: valueColor,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The note, in a block of its own.
-class _NoteBlock extends StatelessWidget {
-  const _NoteBlock({required this.note});
-
-  final String note;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.notes_rounded,
-                size: 16,
-                color: scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                'Note',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          // Selectable: a note is the one field a user is likely to want to
-          // copy out of the app — a reference number, an address, a name.
-          SelectableText(
-            note,
-            style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
-          ),
-        ],
-      ),
     );
   }
 }

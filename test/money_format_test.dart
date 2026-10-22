@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:walt/core/utils/money.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 void main() {
   group('MoneyFormat.digits', () {

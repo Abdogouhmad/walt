@@ -14,6 +14,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-10-22
+
+### Fixed
+
+- **The transaction details sheet no longer collides with the floating nav.**
+  Opening a transaction's details pushed a sheet over the bottom of the
+  screen, but the nav pill and the add button stayed put underneath it —
+  dimmed behind the sheet's backdrop and half-covered by it, so both were
+  unreadable and the sheet's own lower edge had nowhere to go. The app shell
+  now steps its floating chrome out of the way while a sheet is open and
+  brings it straight back once the sheet is dismissed.
+
+### Changed
+
+- **The design system now lives in its own package.** Walt's shared tokens,
+  theme and reusable widgets moved out of the app into `packages/walt_ui`,
+  resolved from disk as a Dart workspace. The app now talks to a single
+  import surface, and the pieces that were previously buried in `lib/` are
+  reusable — and testable — on their own.
+
 ## [1.0.6] - 2026-10-21
 
 ### Added

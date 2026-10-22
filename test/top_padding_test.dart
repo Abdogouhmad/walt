@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:walt/core/theme/app_theme.dart';
 import 'package:walt/data/local/hive_service.dart';
 import 'package:walt/features/budgets/budgets_screen.dart';
 import 'package:walt/features/home/home_screen.dart';
@@ -15,6 +14,7 @@ import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/settings_screen.dart';
 import 'package:walt/features/transactions/transaction_list_screen.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class _StubSettings extends SettingsNotifier {
   @override

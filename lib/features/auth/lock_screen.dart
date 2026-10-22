@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:walt/providers/auth_provider.dart';
-import 'package:walt/shared/bottons.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class LockScreen extends ConsumerStatefulWidget {
   const LockScreen({super.key});

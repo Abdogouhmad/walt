@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/design/radius.dart';
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/theme/walt_colors.dart';
-import 'package:walt/core/widgets/amount_text.dart';
-import 'package:walt/core/widgets/category_icon.dart';
-import 'package:walt/core/widgets/thick_progress.dart';
 import 'package:walt/providers/budget_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// One budget row: category, remaining balance, a thick progress bar and the
 /// spent-vs-total footer (spec §4).

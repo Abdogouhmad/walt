@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/core/theme/walt_colors.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Expense/Income segmented control at the top of the add-transaction form
 /// (spec §4).

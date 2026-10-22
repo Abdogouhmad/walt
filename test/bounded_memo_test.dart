@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:walt/core/theme/color_schemes.dart';
-import 'package:walt/core/theme/theme_settings.dart';
-import 'package:walt/core/utils/bounded_memo.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 void main() {
   group('BoundedMemo', () {

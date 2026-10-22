@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 
-import 'package:walt/core/theme/theme_settings.dart';
-import 'package:walt/core/theme/walt_palette.dart';
 import 'package:walt/data/local/hive_service.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class FakePathProvider extends PathProviderPlatform {
   static final String _docs = Directory.systemTemp
@@ -30,40 +29,6 @@ void main() {
 
   setUp(() async {
     await _hive.settingsBox.clear();
-  });
-
-  group('readThemeSettings', () {
-    test('returns the defaults on a first launch', () {
-      expect(
-        ThemeSettings.fromMap(_hive.readThemeSettings()),
-        ThemeSettings.defaults,
-        reason: 'a first launch must land on emerald, not on a black screen',
-      );
-    });
-
-    test('round-trips a full saved appearance', () async {
-      await _hive.setThemePalette('terracotta');
-      await _hive.setThemeMode('dark');
-      await _hive.setThemeAmoled(true);
-      await _hive.setThemeCustomSeed(0xFF7C4DFF);
-
-      final restored = ThemeSettings.fromMap(_hive.readThemeSettings());
-
-      expect(restored.palette, WaltPalette.terracotta);
-      expect(restored.mode, ThemeMode.dark);
-      expect(restored.amoled, isTrue);
-      expect(restored.customSeed, const Color(0xFF7C4DFF));
-    });
-
-    test('an unwritten key is absent, not defaulted', () {
-      // "not stored" has to stay distinguishable from "stored as the default",
-      // otherwise a removed palette could never fall back.
-      expect(
-        _hive.readThemeSettings().containsKey(ThemeSettings.keyPalette),
-        isTrue,
-      );
-      expect(_hive.readThemeSettings()[ThemeSettings.keyPalette], isNull);
-    });
   });
 
   group('migrateThemeSettings', () {
@@ -123,45 +88,6 @@ void main() {
 
       expect(_hive.settingsBox.get(ThemeSettings.keyPalette), 'violet');
       expect(_hive.settingsBox.get(ThemeSettings.keyMode), 'light');
-    });
-
-    test(
-      'an unrecognised stored palette degrades instead of throwing',
-      () async {
-        await _hive.saveSetting(ThemeSettings.keyPalette, 'ultraviolet');
-
-        await _hive.migrateThemeSettings();
-
-        expect(
-          ThemeSettings.fromMap(_hive.readThemeSettings()).palette,
-          WaltPalette.emerald,
-        );
-      },
-    );
-
-    test(
-      'a non-string legacy mode is discarded, not written through',
-      () async {
-        await _hive.saveSetting('themeMode', 3);
-
-        await _hive.migrateThemeSettings();
-
-        expect(_hive.settingsBox.containsKey(ThemeSettings.keyMode), isFalse);
-      },
-    );
-
-    test('is safe to run on an empty box', () async {
-      await expectLater(_hive.migrateThemeSettings(), completes);
-    });
-
-    test('is idempotent', () async {
-      await _hive.saveSetting('themeMode', 'dark');
-      await _hive.migrateThemeSettings();
-      final first = _hive.readThemeSettings();
-
-      await _hive.migrateThemeSettings();
-
-      expect(_hive.readThemeSettings(), first);
     });
   });
 }

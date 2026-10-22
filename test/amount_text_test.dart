@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:walt/core/theme/app_theme.dart';
-import 'package:walt/core/widgets/amount_text.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Pumps [AmountText] and returns the `TextStyle` its digits actually render
 /// with.

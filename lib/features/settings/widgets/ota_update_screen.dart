@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:walt/core/design/radius.dart';
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/data/services/update_service.dart';
-import 'package:walt/features/settings/services/appinfo.dart';
-import 'package:walt/features/settings/widgets/markdown_notes.dart';
 import 'package:walt/providers/update_provider.dart';
-import 'package:walt/shared/bottons.dart';
-import 'package:walt/shared/state_views.dart';
-import 'package:walt/shared/status_badge.dart';
-import 'package:walt/shared/text_ui.dart';
+import 'package:walt_ui/walt_ui.dart';
+
+import 'ota/ota_actions.dart';
+import 'ota/ota_changelog_card.dart';
+import 'ota/ota_error_message.dart';
+import 'ota/ota_progress_cards.dart';
+import 'ota/ota_status_header.dart';
+import 'ota/ota_version_card.dart';
 
 /// Full-page OTA update center, reachable from the settings "Update" entry.
 ///
@@ -66,34 +65,34 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _StatusHeader(state: state),
+              OtaStatusHeader(state: state),
               const SizedBox(height: AppSpacing.xl),
               if (state.status == UpdateStatus.checking) ...[
-                const _CheckingCard(),
+                const LoadingStateView(label: 'Looking for newer versions…'),
               ] else ...[
                 if (state.status == UpdateStatus.error ||
                     state.checkResult == UpdateCheckResult.checkFailed) ...[
                   InlineErrorView(
-                    message: _errorMessage(context, state),
+                    message: otaErrorMessage(state),
                     onRetry: () => notifier.checkForUpdates(),
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
-                _VersionCard(state: state),
+                OtaVersionCard(state: state),
                 if (state.hasUpdate &&
                     (state.manifest?.releaseNotes ?? '').isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.md),
-                  _ChangelogCard(notes: state.manifest?.releaseNotes ?? ''),
+                  OtaChangelogCard(notes: state.manifest?.releaseNotes ?? ''),
                 ],
                 const SizedBox(height: AppSpacing.xl),
                 switch (state.status) {
-                  UpdateStatus.downloading => _DownloadCard(
+                  UpdateStatus.downloading => OtaDownloadCard(
                     progress: state.progress ?? 0,
                   ),
-                  UpdateStatus.readyToInstall => _ReadyCard(
+                  UpdateStatus.readyToInstall => OtaReadyCard(
                     onChangePressed: () => notifier.downloadAndInstall(),
                   ),
-                  _ => _Actions(
+                  _ => OtaActions(
                     canUpdate:
                         state.hasUpdate &&
                         state.status != UpdateStatus.downloading &&
@@ -107,451 +106,6 @@ class _OtaUpdateScreenState extends ConsumerState<OtaUpdateScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  static String _errorMessage(BuildContext context, UpdateState state) {
-    final detail = state.errorDetail;
-    return switch (state.error) {
-      UpdateErrorCode.noBuild => 'This release has no APK to install.',
-      UpdateErrorCode.downloadFailed =>
-        'Could not download the update.${detail != null ? ' $detail' : ''}',
-      UpdateErrorCode.integrity =>
-        'Checksum mismatch — the update was refused for your safety.',
-      UpdateErrorCode.install =>
-        'Android would not install the update.${detail != null ? ' $detail' : ''}',
-      null => switch (state.checkResult) {
-        UpdateCheckResult.checkFailed => 'Could not reach the update server.',
-        _ => 'Something went wrong.',
-      },
-    };
-  }
-}
-
-/// Hero banner: concentric circles with a status icon + pill.
-class _StatusHeader extends StatelessWidget {
-  final UpdateState state;
-
-  const _StatusHeader({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final failed =
-        state.status == UpdateStatus.error ||
-        state.checkResult == UpdateCheckResult.checkFailed;
-    final update =
-        state.hasUpdate && state.status != UpdateStatus.error && !failed;
-    final checking = state.status == UpdateStatus.checking;
-
-    final accent = failed
-        ? colorScheme.error
-        : checking
-        ? colorScheme.secondaryContainer
-        : update
-        ? colorScheme.primaryContainer
-        : colorScheme.secondaryContainer;
-    final accentFg = failed
-        ? colorScheme.onError
-        : checking
-        ? colorScheme.onSecondaryContainer
-        : update
-        ? colorScheme.onPrimaryContainer
-        : colorScheme.onSecondaryContainer;
-
-    final pill = checking
-        ? const StatusBadge(
-            label: 'Checking…',
-            variant: StatusBadgeVariant.accent,
-            icon: Icons.sync_rounded,
-          )
-        : failed
-        ? const StatusBadge(
-            label: 'Check failed',
-            variant: StatusBadgeVariant.error,
-            icon: Icons.error_outline_rounded,
-          )
-        : update
-        ? const StatusBadge(
-            label: 'New update available',
-            variant: StatusBadgeVariant.accent,
-            icon: Icons.system_update_alt_rounded,
-          )
-        : const StatusBadge(
-            label: 'You are up to date',
-            variant: StatusBadgeVariant.success,
-            icon: Icons.check_circle_outline_rounded,
-          );
-
-    return Column(
-      children: [
-        SizedBox(
-          width: 124,
-          height: 124,
-          child: Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 104,
-                  height: 104,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.4),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                Container(
-                  width: 84,
-                  height: 84,
-                  decoration: BoxDecoration(
-                    color: accent,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    checking
-                        ? Icons.sync_rounded
-                        : failed
-                        ? Icons.error_outline_rounded
-                        : update
-                        ? Icons.system_update_alt_rounded
-                        : Icons.check_circle_outline_rounded,
-                    size: 42,
-                    color: accentFg,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        pill,
-      ],
-    );
-  }
-}
-
-/// Loading card shown while the initial check is in flight.
-class _CheckingCard extends StatelessWidget {
-  const _CheckingCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return const LoadingStateView(label: 'Looking for newer versions…');
-  }
-}
-
-/// Current vs latest version card.
-class _VersionCard extends ConsumerWidget {
-  final UpdateState state;
-
-  const _VersionCard({required this.state});
-
-  static String _formatChecked(DateTime? last) {
-    if (last == null) return 'Never';
-    final now = DateTime.now();
-    final diff = now.difference(last);
-    if (diff.inSeconds < 60) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
-    if (diff.inHours < 24) return '${diff.inHours} h ago';
-    final local = last.toLocal();
-    String two(int v) => v.toString().padLeft(2, '0');
-    return '${two(local.day)}/${two(local.month)}/${local.year} '
-        '${two(local.hour)}:${two(local.minute)}';
-  }
-
-  static String _resultLabel(UpdateCheckResult? result) {
-    return switch (result) {
-      UpdateCheckResult.upToDate => 'Up to date',
-      UpdateCheckResult.updateAvailable => 'Update available',
-      UpdateCheckResult.checkFailed => 'Check failed',
-      null => 'Never checked',
-    };
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final current = Appinfo.version;
-    final latest = state.manifest?.latestVersionName;
-    final lastChecked = ref.watch(lastUpdateCheckProvider);
-    final lastResult = ref.watch(lastUpdateCheckResultProvider);
-
-    return _Card(
-      title: 'Version details',
-      icon: Icons.smartphone_rounded,
-      children: [
-        _InfoRow(
-          icon: Icons.layers_rounded,
-          label: 'Current version',
-          value: 'v$current',
-        ),
-        _divider(context),
-        _InfoRow(
-          icon: Icons.new_releases_outlined,
-          label: 'Latest version',
-          value: latest == null ? 'Unknown' : 'v$latest',
-          highlight: state.hasUpdate,
-        ),
-        _divider(context),
-        const _InfoRow(
-          icon: Icons.insert_drive_file_outlined,
-          label: 'Install type',
-          value: 'Universal APK',
-        ),
-        _divider(context),
-        _InfoRow(
-          icon: Icons.schedule_rounded,
-          label: 'Last checked',
-          value: _formatChecked(lastChecked),
-        ),
-        _divider(context),
-        _InfoRow(
-          icon: Icons.rule_rounded,
-          label: 'Last result',
-          value: _resultLabel(ref.watch(lastUpdateCheckResultProvider)),
-          highlight: lastResult == UpdateCheckResult.checkFailed,
-        ),
-      ],
-    );
-  }
-}
-
-Widget _divider(BuildContext context) => Divider(
-  height: 1,
-  color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.6),
-);
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final bool highlight;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.highlight = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      child: Row(
-        children: [
-          Icon(icon, size: 24, color: colorScheme.onSurfaceVariant),
-          const SizedBox(width: AppSpacing.md),
-          UiText(
-            text: label,
-            type: UiTextType.bodyMedium,
-            style: TextStyle(color: colorScheme.onSurfaceVariant),
-          ),
-          const Spacer(),
-          UiText(
-            text: value,
-            type: UiTextType.bodyMedium,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: highlight ? colorScheme.primary : colorScheme.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// "What's new" card rendering the CHANGELOG section shipped in the manifest
-/// as real Markdown (spec §7.4).
-class _ChangelogCard extends StatelessWidget {
-  final String notes;
-
-  const _ChangelogCard({required this.notes});
-
-  @override
-  Widget build(BuildContext context) {
-    return _Card(
-      title: 'What\'s new',
-      icon: Icons.new_releases_outlined,
-      children: [Flexible(child: MarkdownNotes(notes: notes))],
-    );
-  }
-}
-
-/// Download progress with a determinate linear bar + percentage.
-class _DownloadCard extends StatelessWidget {
-  final double progress;
-
-  const _DownloadCard({required this.progress});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final percent = ((progress * 100).clamp(0, 100)).toStringAsFixed(0);
-
-    return _Card(
-      title: 'Downloading update',
-      icon: Icons.download_rounded,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            UiText(
-              text: 'Downloading…',
-              type: UiTextType.bodyMedium,
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
-            ),
-            UiText(
-              text: '$percent%',
-              type: UiTextType.titleSmall,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: colorScheme.primary,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.md),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          child: LinearProgressIndicator(
-            value: progress.clamp(0, 1),
-            minHeight: 10,
-            backgroundColor: colorScheme.surfaceContainerHighest,
-            color: colorScheme.primary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Ready-to-install success state with the handoff CTA.
-class _ReadyCard extends StatelessWidget {
-  final VoidCallback onChangePressed;
-
-  const _ReadyCard({required this.onChangePressed});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Icon(Icons.check_circle_rounded, color: colorScheme.primary, size: 64),
-        const SizedBox(height: AppSpacing.md),
-        UiText(
-          text: 'The update is verified and ready to install.',
-          type: UiTextType.bodyMedium,
-          style: TextStyle(color: colorScheme.onSurfaceVariant),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppButton(
-          label: 'Install now',
-          icon: Icons.download_done_rounded,
-          type: ButtonType.textIcon,
-          isFullWidth: true,
-          size: ButtonSize.large,
-          onPressed: onChangePressed,
-        ),
-      ],
-    );
-  }
-}
-
-/// Primary action buttons: a dominant "Update now" when a release is pending,
-/// or an outlined re-check button.
-class _Actions extends StatelessWidget {
-  final bool canUpdate;
-  final bool failed;
-  final VoidCallback onCheck;
-  final VoidCallback onDownload;
-
-  const _Actions({
-    required this.canUpdate,
-    required this.failed,
-    required this.onCheck,
-    required this.onDownload,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (canUpdate) {
-      return AppButton(
-        label: 'Update now',
-        icon: Icons.download_rounded,
-        type: ButtonType.textIcon,
-        isFullWidth: true,
-        size: ButtonSize.large,
-        onPressed: onDownload,
-      );
-    }
-
-    return Center(
-      child: AppButton(
-        label: failed ? 'Try again' : 'Check for updates',
-        type: ButtonType.secondary,
-        foregroundColor: Theme.of(context).colorScheme.primary,
-        size: ButtonSize.medium,
-        onPressed: onCheck,
-      ),
-    );
-  }
-}
-
-/// Shared outlined card shell for the info/changelog sections.
-class _Card extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final List<Widget> children;
-
-  const _Card({
-    required this.title,
-    required this.icon,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.surface),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(AppRadius.field),
-                ),
-                child: Icon(
-                  icon,
-                  size: 24,
-                  color: colorScheme.onSecondaryContainer,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              UiText(
-                text: title,
-                type: UiTextType.titleMedium,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          ...children,
-        ],
       ),
     );
   }

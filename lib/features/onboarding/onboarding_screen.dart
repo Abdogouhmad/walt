@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:walt/features/onboarding/widgets/pages.dart';
 import 'package:walt/providers/settings_provider.dart';
-import 'package:walt/shared/bottons.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});

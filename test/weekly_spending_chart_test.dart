@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:walt/core/theme/app_theme.dart';
 import 'package:walt/features/home/widgets/weekly_spending_chart.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// A day column reserves room for the selected day's amount label, the pill,
 /// the gap, and the letter. Getting that arithmetic wrong does not crash or

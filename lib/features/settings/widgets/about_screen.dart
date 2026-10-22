@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/walt_logo.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
+import 'package:walt/features/settings/widgets/about_app_info_card.dart';
+import 'package:walt/features/settings/widgets/about_developer_card.dart';
 import 'package:walt/features/settings/widgets/ota_update_screen.dart';
-import 'package:walt/features/settings/widgets/socialmedia.dart';
 import 'package:walt/features/settings/widgets/update_banner.dart';
-import 'package:walt/shared/m3e_card.dart';
-import 'package:walt/shared/text_ui.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 class AboutScreen extends ConsumerWidget {
   const AboutScreen({super.key});
@@ -51,109 +49,12 @@ class AboutScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.lg),
 
           /// App info card
-          M3Ecard(
-            variant: M3ECardVariant.outlined,
-            data: AppCardData(
-              colorCard: colors.surface,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const WaltLogo(size: 32, semanticLabel: null),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        UiText(
-                          text: Appinfo.appname,
-                          type: UiTextType.titleLarge,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        UiText(
-                          text: 'v${Appinfo.version}',
-                          type: UiTextType.labelMedium,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const AboutAppInfoCard(),
 
           const SizedBox(height: AppSpacing.md),
 
           /// Developer card
-          M3Ecard(
-            variant: M3ECardVariant.outlined,
-            data: AppCardData(
-              colorCard: colors.surface,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: colors.primaryContainer,
-                        // Decode at the drawn size (radius 30 → 60 dp) instead
-                        // of the full 736×612 source (~1.8 MB decoded).
-                        backgroundImage: const ResizeImage(
-                          AssetImage('assets/cat.jpeg'),
-                          width: 120,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const UiText(
-                              text: 'Abdogouhmad',
-                              type: UiTextType.titleLarge,
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            UiText(
-                              text: 'Developer',
-                              type: UiTextType.bodySmall,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                color: colors.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            const Row(
-                              children: [
-                                SocialBubble(
-                                  icon: Icons.code,
-                                  url: 'https://github.com/Abdogouhmad',
-                                ),
-                                SizedBox(width: AppSpacing.sm),
-                                SocialBubble(
-                                  icon: Icons.message,
-                                  url: 'mailto:gouhmad@hotmail.com',
-                                ),
-                                SizedBox(width: AppSpacing.sm),
-                                SocialBubble(
-                                  icon: Icons.web_asset_rounded,
-                                  url: 'https://agouhmad.vercel.app/',
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const AboutDeveloperCard(),
 
           const SizedBox(height: AppSpacing.md),
         ],

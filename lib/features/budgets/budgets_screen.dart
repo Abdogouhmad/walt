@@ -4,17 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import 'package:walt/core/design/spacing.dart';
-import 'package:walt/core/widgets/grouped_list.dart';
-import 'package:walt/core/widgets/section_header.dart';
-import 'package:walt/core/widgets/walt_chrome.dart';
 import 'package:walt/features/budgets/widgets/budget_card.dart';
+import 'package:walt/features/budgets/widgets/budget_delete_action.dart';
+import 'package:walt/features/budgets/widgets/budget_delete_background.dart';
 import 'package:walt/features/budgets/widgets/budget_sheet.dart';
 import 'package:walt/features/budgets/widgets/sumcard.dart';
 import 'package:walt/providers/budget_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/shared/profile_app_bar_action.dart';
-import 'package:walt/shared/state_views.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// Shared month-name formatter — built once, not on every header rebuild.
 final _monthNameFormat = DateFormat('MMMM');
@@ -104,9 +102,12 @@ class BudgetsScreen extends ConsumerWidget {
                               Dismissible(
                                 key: Key('budget_${progress.budget.id}'),
                                 direction: DismissDirection.endToStart,
-                                onDismissed: (_) =>
-                                    _handleDelete(context, ref, progress),
-                                background: _deleteBackground(context),
+                                onDismissed: (_) => deleteBudgetWithUndo(
+                                  context,
+                                  ref,
+                                  progress,
+                                ),
+                                background: const BudgetDeleteBackground(),
                                 child: BudgetCard(
                                   progress: progress,
                                   currency: currency,
@@ -129,37 +130,6 @@ class BudgetsScreen extends ConsumerWidget {
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _deleteBackground(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      color: scheme.error,
-      alignment: Alignment.centerRight,
-      padding: const EdgeInsets.only(right: AppSpacing.lg),
-      child: Icon(Icons.delete_outline_rounded, color: scheme.onError),
-    );
-  }
-
-  void _handleDelete(
-    BuildContext context,
-    WidgetRef ref,
-    BudgetProgress progress,
-  ) {
-    ref.read(budgetProvider.notifier).deleteBudget(progress.budget.id);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Budget for ${progress.category.name} deleted'),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(AppSpacing.md),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () {
-            ref.read(budgetProvider.notifier).addBudget(progress.budget);
-          },
         ),
       ),
     );

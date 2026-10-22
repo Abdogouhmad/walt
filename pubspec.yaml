@@ -16,10 +16,15 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.6
+version: 1.0.7
 
 environment:
   sdk: ^3.11.4
+
+# Dart workspace: the shared design system lives in `packages/walt_ui` and is
+# resolved from disk, not from pub.dev.
+workspace:
+  - packages/walt_ui
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -55,6 +60,10 @@ dependencies:
   http: ^1.6.0
   ota_update: ^7.1.0
   flutter_markdown_plus: ^1.0.12
+
+  # Walt's shared design system (tokens, theme, reusable components).
+  walt_ui:
+    path: packages/walt_ui
 
 dev_dependencies:
   flutter_test:

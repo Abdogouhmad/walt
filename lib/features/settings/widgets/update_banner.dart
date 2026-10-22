@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/core/design/radius.dart';
-import 'package:walt/core/design/spacing.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/providers/update_provider.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// A quiet, dismissible card telling the user a newer build exists.
 ///

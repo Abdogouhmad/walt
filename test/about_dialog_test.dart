@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:walt/core/theme/app_theme.dart';
-import 'package:walt/core/widgets/blur_surface.dart';
 import 'package:walt/features/settings/services/appinfo.dart';
 import 'package:walt/features/settings/widgets/about_info_dialog.dart';
+import 'package:walt_ui/walt_ui.dart';
 
 /// The dialog frosts through the shared [BlurSurface], which consults the
 /// reduce-transparency setting. Override it so the test never touches Hive.
