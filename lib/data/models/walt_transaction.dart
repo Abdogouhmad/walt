@@ -12,6 +12,14 @@ sealed class WaltTransaction with _$WaltTransaction {
     required int categoryId,
     required DateTime date,
     int? accountId,
+
+    /// The budget this expense was explicitly booked against.
+    ///
+    /// Null keeps the legacy behaviour: any budget whose categories include
+    /// [categoryId] consumes it. A non-null value makes the expense count for
+    /// that one budget only, so overlapping budgets no longer double-count a
+    /// transaction the user deliberately assigned.
+    int? budgetId,
     String? note,
     String? merchant,
     DateTime? createdAt,

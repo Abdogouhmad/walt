@@ -16,7 +16,13 @@ T _$identity<T>(T value) => value;
 mixin _$WaltTransaction {
 
  int get id; double get amount; String get type;// 'income' or 'expense'
- int get categoryId; DateTime get date; int? get accountId; String? get note; String? get merchant; DateTime? get createdAt;
+ int get categoryId; DateTime get date; int? get accountId;/// The budget this expense was explicitly booked against.
+///
+/// Null keeps the legacy behaviour: any budget whose categories include
+/// [categoryId] consumes it. A non-null value makes the expense count for
+/// that one budget only, so overlapping budgets no longer double-count a
+/// transaction the user deliberately assigned.
+ int? get budgetId; String? get note; String? get merchant; DateTime? get createdAt;
 /// Create a copy of WaltTransaction
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +35,16 @@ $WaltTransactionCopyWith<WaltTransaction> get copyWith => _$WaltTransactionCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WaltTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.note, note) || other.note == note)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WaltTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.budgetId, budgetId) || other.budgetId == budgetId)&&(identical(other.note, note) || other.note == note)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,amount,type,categoryId,date,accountId,note,merchant,createdAt);
+int get hashCode => Object.hash(runtimeType,id,amount,type,categoryId,date,accountId,budgetId,note,merchant,createdAt);
 
 @override
 String toString() {
-  return 'WaltTransaction(id: $id, amount: $amount, type: $type, categoryId: $categoryId, date: $date, accountId: $accountId, note: $note, merchant: $merchant, createdAt: $createdAt)';
+  return 'WaltTransaction(id: $id, amount: $amount, type: $type, categoryId: $categoryId, date: $date, accountId: $accountId, budgetId: $budgetId, note: $note, merchant: $merchant, createdAt: $createdAt)';
 }
 
 
@@ -49,7 +55,7 @@ abstract mixin class $WaltTransactionCopyWith<$Res>  {
   factory $WaltTransactionCopyWith(WaltTransaction value, $Res Function(WaltTransaction) _then) = _$WaltTransactionCopyWithImpl;
 @useResult
 $Res call({
- int id, double amount, String type, int categoryId, DateTime date, int? accountId, String? note, String? merchant, DateTime? createdAt
+ int id, double amount, String type, int categoryId, DateTime date, int? accountId, int? budgetId, String? note, String? merchant, DateTime? createdAt
 });
 
 
@@ -66,7 +72,7 @@ class _$WaltTransactionCopyWithImpl<$Res>
 
 /// Create a copy of WaltTransaction
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? amount = null,Object? type = null,Object? categoryId = null,Object? date = null,Object? accountId = freezed,Object? note = freezed,Object? merchant = freezed,Object? createdAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? amount = null,Object? type = null,Object? categoryId = null,Object? date = null,Object? accountId = freezed,Object? budgetId = freezed,Object? note = freezed,Object? merchant = freezed,Object? createdAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
@@ -74,6 +80,7 @@ as double,type: null == type ? _self.type : type // ignore: cast_nullable_to_non
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,accountId: freezed == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
+as int?,budgetId: freezed == budgetId ? _self.budgetId : budgetId // ignore: cast_nullable_to_non_nullable
 as int?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,merchant: freezed == merchant ? _self.merchant : merchant // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable
@@ -159,10 +166,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  double amount,  String type,  int categoryId,  DateTime date,  int? accountId,  String? note,  String? merchant,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  double amount,  String type,  int categoryId,  DateTime date,  int? accountId,  int? budgetId,  String? note,  String? merchant,  DateTime? createdAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WaltTransaction() when $default != null:
-return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_that.accountId,_that.note,_that.merchant,_that.createdAt);case _:
+return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_that.accountId,_that.budgetId,_that.note,_that.merchant,_that.createdAt);case _:
   return orElse();
 
 }
@@ -180,10 +187,10 @@ return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  double amount,  String type,  int categoryId,  DateTime date,  int? accountId,  String? note,  String? merchant,  DateTime? createdAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  double amount,  String type,  int categoryId,  DateTime date,  int? accountId,  int? budgetId,  String? note,  String? merchant,  DateTime? createdAt)  $default,) {final _that = this;
 switch (_that) {
 case _WaltTransaction():
-return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_that.accountId,_that.note,_that.merchant,_that.createdAt);}
+return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_that.accountId,_that.budgetId,_that.note,_that.merchant,_that.createdAt);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -197,10 +204,10 @@ return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  double amount,  String type,  int categoryId,  DateTime date,  int? accountId,  String? note,  String? merchant,  DateTime? createdAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  double amount,  String type,  int categoryId,  DateTime date,  int? accountId,  int? budgetId,  String? note,  String? merchant,  DateTime? createdAt)?  $default,) {final _that = this;
 switch (_that) {
 case _WaltTransaction() when $default != null:
-return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_that.accountId,_that.note,_that.merchant,_that.createdAt);case _:
+return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_that.accountId,_that.budgetId,_that.note,_that.merchant,_that.createdAt);case _:
   return null;
 
 }
@@ -212,7 +219,7 @@ return $default(_that.id,_that.amount,_that.type,_that.categoryId,_that.date,_th
 @JsonSerializable()
 
 class _WaltTransaction implements WaltTransaction {
-  const _WaltTransaction({required this.id, required this.amount, required this.type, required this.categoryId, required this.date, this.accountId, this.note, this.merchant, this.createdAt});
+  const _WaltTransaction({required this.id, required this.amount, required this.type, required this.categoryId, required this.date, this.accountId, this.budgetId, this.note, this.merchant, this.createdAt});
   factory _WaltTransaction.fromJson(Map<String, dynamic> json) => _$WaltTransactionFromJson(json);
 
 @override final  int id;
@@ -222,6 +229,13 @@ class _WaltTransaction implements WaltTransaction {
 @override final  int categoryId;
 @override final  DateTime date;
 @override final  int? accountId;
+/// The budget this expense was explicitly booked against.
+///
+/// Null keeps the legacy behaviour: any budget whose categories include
+/// [categoryId] consumes it. A non-null value makes the expense count for
+/// that one budget only, so overlapping budgets no longer double-count a
+/// transaction the user deliberately assigned.
+@override final  int? budgetId;
 @override final  String? note;
 @override final  String? merchant;
 @override final  DateTime? createdAt;
@@ -239,16 +253,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WaltTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.note, note) || other.note == note)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WaltTransaction&&(identical(other.id, id) || other.id == id)&&(identical(other.amount, amount) || other.amount == amount)&&(identical(other.type, type) || other.type == type)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.date, date) || other.date == date)&&(identical(other.accountId, accountId) || other.accountId == accountId)&&(identical(other.budgetId, budgetId) || other.budgetId == budgetId)&&(identical(other.note, note) || other.note == note)&&(identical(other.merchant, merchant) || other.merchant == merchant)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,amount,type,categoryId,date,accountId,note,merchant,createdAt);
+int get hashCode => Object.hash(runtimeType,id,amount,type,categoryId,date,accountId,budgetId,note,merchant,createdAt);
 
 @override
 String toString() {
-  return 'WaltTransaction(id: $id, amount: $amount, type: $type, categoryId: $categoryId, date: $date, accountId: $accountId, note: $note, merchant: $merchant, createdAt: $createdAt)';
+  return 'WaltTransaction(id: $id, amount: $amount, type: $type, categoryId: $categoryId, date: $date, accountId: $accountId, budgetId: $budgetId, note: $note, merchant: $merchant, createdAt: $createdAt)';
 }
 
 
@@ -259,7 +273,7 @@ abstract mixin class _$WaltTransactionCopyWith<$Res> implements $WaltTransaction
   factory _$WaltTransactionCopyWith(_WaltTransaction value, $Res Function(_WaltTransaction) _then) = __$WaltTransactionCopyWithImpl;
 @override @useResult
 $Res call({
- int id, double amount, String type, int categoryId, DateTime date, int? accountId, String? note, String? merchant, DateTime? createdAt
+ int id, double amount, String type, int categoryId, DateTime date, int? accountId, int? budgetId, String? note, String? merchant, DateTime? createdAt
 });
 
 
@@ -276,7 +290,7 @@ class __$WaltTransactionCopyWithImpl<$Res>
 
 /// Create a copy of WaltTransaction
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? amount = null,Object? type = null,Object? categoryId = null,Object? date = null,Object? accountId = freezed,Object? note = freezed,Object? merchant = freezed,Object? createdAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? amount = null,Object? type = null,Object? categoryId = null,Object? date = null,Object? accountId = freezed,Object? budgetId = freezed,Object? note = freezed,Object? merchant = freezed,Object? createdAt = freezed,}) {
   return _then(_WaltTransaction(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,amount: null == amount ? _self.amount : amount // ignore: cast_nullable_to_non_nullable
@@ -284,6 +298,7 @@ as double,type: null == type ? _self.type : type // ignore: cast_nullable_to_non
 as String,categoryId: null == categoryId ? _self.categoryId : categoryId // ignore: cast_nullable_to_non_nullable
 as int,date: null == date ? _self.date : date // ignore: cast_nullable_to_non_nullable
 as DateTime,accountId: freezed == accountId ? _self.accountId : accountId // ignore: cast_nullable_to_non_nullable
+as int?,budgetId: freezed == budgetId ? _self.budgetId : budgetId // ignore: cast_nullable_to_non_nullable
 as int?,note: freezed == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
 as String?,merchant: freezed == merchant ? _self.merchant : merchant // ignore: cast_nullable_to_non_nullable
 as String?,createdAt: freezed == createdAt ? _self.createdAt : createdAt // ignore: cast_nullable_to_non_nullable

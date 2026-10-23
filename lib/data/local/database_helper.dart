@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -61,6 +61,7 @@ class DatabaseHelper {
         type TEXT NOT NULL,
         category_id INTEGER NOT NULL,
         account_id INTEGER,
+        budget_id INTEGER,
         note TEXT,
         merchant TEXT,
         date INTEGER NOT NULL,
@@ -126,6 +127,9 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_tx_account '
       'ON transactions(account_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_tx_budget ON transactions(budget_id)',
     );
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_budget_category '
@@ -230,6 +234,18 @@ class DatabaseHelper {
         'ON budget_period_snapshots(budget_id, start_ms)',
       );
       await _createIndexes(db);
+    }
+    if (oldVersion < 7) {
+      // Transactions can now be booked against one specific budget. Existing
+      // rows stay NULL, which preserves the old category-based attribution.
+      try {
+        await db.execute(
+          'ALTER TABLE transactions ADD COLUMN budget_id INTEGER',
+        );
+      } catch (_) {}
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_tx_budget ON transactions(budget_id)',
+      );
     }
   }
 }

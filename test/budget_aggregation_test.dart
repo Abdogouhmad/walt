@@ -41,6 +41,70 @@ void main() {
       expect(result.remaining, 125);
     });
 
+    test('an explicit budget link beats shared-category matching', () {
+      final groceries = testBudget(id: 1, categoryId: 7);
+      final eatingOut = testBudget(id: 2, categoryId: 7);
+      final linked = testExpense(
+        id: 1,
+        amount: 50,
+        date: DateTime(2026, 3, 5),
+        budgetId: eatingOut.id,
+      );
+
+      expect(
+        calculateBudget(
+          budget: groceries,
+          transactions: [linked],
+          now: now,
+        ).spent,
+        0,
+      );
+      expect(
+        calculateBudget(
+          budget: eatingOut,
+          transactions: [linked],
+          now: now,
+        ).spent,
+        50,
+      );
+    });
+
+    test('unlinked expenses still count for every matching budget', () {
+      final groceries = testBudget(id: 1, categoryId: 7);
+      final eatingOut = testBudget(id: 2, categoryId: 7);
+      final unlinked = testExpense(
+        id: 1,
+        amount: 40,
+        date: DateTime(2026, 3, 5),
+      );
+
+      for (final budget in [groceries, eatingOut]) {
+        expect(
+          calculateBudget(
+            budget: budget,
+            transactions: [unlinked],
+            now: now,
+          ).spent,
+          40,
+        );
+      }
+    });
+
+    test('a link to a missing budget counts nowhere', () {
+      final budget = testBudget(id: 1, categoryId: 7);
+      final stale = testExpense(
+        id: 1,
+        amount: 30,
+        date: DateTime(2026, 3, 5),
+        budgetId: 99,
+      );
+
+      expect(
+        calculateBudget(budget: budget, transactions: [stale], now: now).spent,
+        0,
+      );
+    });
+
     test('a zero limit reports 0 percent instead of dividing by zero', () {
       final result = calculateBudget(
         budget: testBudget(amount: 0),

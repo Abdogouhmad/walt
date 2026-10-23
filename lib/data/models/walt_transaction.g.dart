@@ -14,6 +14,7 @@ _WaltTransaction _$WaltTransactionFromJson(Map<String, dynamic> json) =>
       categoryId: (json['categoryId'] as num).toInt(),
       date: DateTime.parse(json['date'] as String),
       accountId: (json['accountId'] as num?)?.toInt(),
+      budgetId: (json['budgetId'] as num?)?.toInt(),
       note: json['note'] as String?,
       merchant: json['merchant'] as String?,
       createdAt: json['createdAt'] == null
@@ -29,6 +30,7 @@ Map<String, dynamic> _$WaltTransactionToJson(_WaltTransaction instance) =>
       'categoryId': instance.categoryId,
       'date': instance.date.toIso8601String(),
       'accountId': instance.accountId,
+      'budgetId': instance.budgetId,
       'note': instance.note,
       'merchant': instance.merchant,
       'createdAt': instance.createdAt?.toIso8601String(),

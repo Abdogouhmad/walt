@@ -81,13 +81,28 @@ class BudgetCalculation {
   }
 }
 
+/// Whether [transaction] belongs to [budget]'s consumption.
+///
+/// An explicit [WaltTransaction.budgetId] wins: the expense belongs to exactly
+/// that budget, even when several budgets share its category. Without a link,
+/// the legacy rule applies — any budget whose categories include the
+/// transaction's category consumes it.
+bool transactionCountsForBudget(
+  WaltTransaction transaction,
+  WaltBudget budget,
+) {
+  if (transaction.type.toLowerCase() != 'expense') return false;
+  final budgetId = transaction.budgetId;
+  if (budgetId != null) return budgetId == budget.id;
+  return budget.effectiveCategoryIds.contains(transaction.categoryId);
+}
+
 /// Computes [budget]'s consumption over its current window from [transactions].
 ///
-/// Only expenses in one of the budget's categories and inside the window count.
-/// A transaction shared by two selected categories is still counted once,
-/// because the category check is a membership test rather than an iteration.
-/// Income, transactions from other categories and transactions from previous
-/// periods are all ignored — that is the rollover behaviour.
+/// Only expenses that belong to the budget (see [transactionCountsForBudget])
+/// and fall inside the window count. Income, transactions from other
+/// categories and transactions from previous periods are all ignored — that is
+/// the rollover behaviour.
 BudgetCalculation calculateBudget({
   required WaltBudget budget,
   required List<WaltTransaction> transactions,
@@ -99,12 +114,9 @@ BudgetCalculation calculateBudget({
     reference,
   );
 
-  final categoryIds = budget.effectiveCategoryIds.toSet();
-
   var spent = 0.0;
   for (final t in transactions) {
-    if (t.type.toLowerCase() != 'expense') continue;
-    if (!categoryIds.contains(t.categoryId)) continue;
+    if (!transactionCountsForBudget(t, budget)) continue;
     if (!window.contains(t.date)) continue;
     spent += t.amount;
   }
@@ -124,11 +136,9 @@ double spendingInWindow({
   required List<WaltTransaction> transactions,
   required BudgetWindow window,
 }) {
-  final categoryIds = budget.effectiveCategoryIds.toSet();
   var spent = 0.0;
   for (final t in transactions) {
-    if (t.type.toLowerCase() != 'expense') continue;
-    if (!categoryIds.contains(t.categoryId)) continue;
+    if (!transactionCountsForBudget(t, budget)) continue;
     if (!window.contains(t.date)) continue;
     spent += t.amount;
   }

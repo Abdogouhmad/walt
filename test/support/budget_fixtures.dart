@@ -23,10 +23,12 @@ WaltTransaction testExpense({
   required DateTime date,
   int categoryId = 7,
   String type = 'expense',
+  int? budgetId,
 }) => WaltTransaction(
   id: id,
   amount: amount,
   type: type,
   categoryId: categoryId,
+  budgetId: budgetId,
   date: date,
 );

@@ -200,14 +200,21 @@ final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {
 
   final byId = {for (final c in categories) c.id: c};
 
-  // Bucket expenses by category once. A budget only ever consumes its own
-  // categories, so handing each one just that slice turns what used to be a full
-  // scan of the history per budget — O(budgets × transactions) — into a single
-  // pass, O(transactions).
-  final expensesByCategory = <int, List<WaltTransaction>>{};
+  // Bucket expenses once. A transaction explicitly booked against a budget
+  // belongs only to that budget; everything else keeps the legacy
+  // category-based attribution. Handing each budget just its slice turns what
+  // used to be a full scan of the history per budget — O(budgets ×
+  // transactions) — into a single pass, O(transactions).
+  final linkedByBudget = <int, List<WaltTransaction>>{};
+  final unassignedByCategory = <int, List<WaltTransaction>>{};
   for (final t in transactions) {
     if (t.type.toLowerCase() != 'expense') continue;
-    (expensesByCategory[t.categoryId] ??= []).add(t);
+    final budgetId = t.budgetId;
+    if (budgetId != null) {
+      (linkedByBudget[budgetId] ??= []).add(t);
+    } else {
+      (unassignedByCategory[t.categoryId] ??= []).add(t);
+    }
   }
 
   return budgets.map((budget) {
@@ -217,7 +224,8 @@ final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {
         if (byId[id] != null) byId[id]!,
     ];
     final relevant = <WaltTransaction>[
-      for (final id in ids) ...?expensesByCategory[id],
+      ...?linkedByBudget[budget.id],
+      for (final id in ids) ...?unassignedByCategory[id],
     ];
 
     return BudgetProgress(
@@ -292,10 +300,9 @@ final budgetHistoryProvider = FutureProvider.autoDispose
 
       // Stop at the period containing the earliest matching transaction, but
       // always show the current one and at least a handful of empty periods.
-      final matching = transactions.where((t) {
-        if (t.type.toLowerCase() != 'expense') return false;
-        return budget.effectiveCategoryIds.contains(t.categoryId);
-      });
+      final matching = transactions.where(
+        (t) => transactionCountsForBudget(t, budget),
+      );
       DateTime? earliest;
       for (final t in matching) {
         if (earliest == null || t.date.isBefore(earliest)) earliest = t.date;
