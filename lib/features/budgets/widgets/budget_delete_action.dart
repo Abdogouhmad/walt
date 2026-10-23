@@ -17,7 +17,7 @@ void deleteBudgetWithUndo(
   ref.read(budgetProvider.notifier).deleteBudget(progress.budget.id);
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('Budget for ${progress.category.name} deleted'),
+      content: Text('“${progress.displayName}” deleted'),
       behavior: SnackBarBehavior.floating,
       margin: const EdgeInsets.all(AppSpacing.md),
       action: SnackBarAction(

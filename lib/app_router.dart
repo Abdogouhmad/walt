@@ -6,6 +6,7 @@ import 'package:walt/features/settings/widgets/about_screen.dart';
 import 'package:walt/shared/bottom_nav.dart';
 
 import 'features/auth/lock_screen.dart';
+import 'features/budgets/budget_history_screen.dart';
 import 'features/budgets/budgets_screen.dart';
 import 'features/home/home_screen.dart';
 // Screens
@@ -104,6 +105,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const ReportsScreen(),
           ),
         ],
+      ),
+
+      // Budget history is pushed above the shell: it is a detail view reached
+      // from a card, not a fifth destination, and it gets a back arrow without
+      // covering the nav bar with a nested Navigator.
+      GoRoute(
+        path: '/budgets/:id/history',
+        parentNavigatorKey: rootNavigatorKey,
+        pageBuilder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) {
+            return const MaterialPage(child: BudgetsScreen());
+          }
+          return MaterialPage(child: BudgetHistoryScreen(budgetId: id));
+        },
       ),
 
       // Settings is *not* a tab. It lives on the root navigator so the profile
