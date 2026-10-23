@@ -340,6 +340,8 @@ class BudgetCard extends StatelessWidget {
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           'Daily allowance: $currency ${progress.dailyAllowance.toStringAsFixed(0)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: scheme.onSurfaceVariant,
                           ),
