@@ -15,6 +15,15 @@ _WaltBudget _$WaltBudgetFromJson(Map<String, dynamic> json) => _WaltBudget(
   createdAt: json['createdAt'] == null
       ? null
       : DateTime.parse(json['createdAt'] as String),
+  name: json['name'] as String? ?? '',
+  categoryIds:
+      (json['categoryIds'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList() ??
+      const <int>[],
+  isPinned: json['isPinned'] as bool? ?? false,
+  pinOrder: (json['pinOrder'] as num?)?.toInt() ?? 0,
+  accentColor: json['accentColor'] as String?,
 );
 
 Map<String, dynamic> _$WaltBudgetToJson(_WaltBudget instance) =>
@@ -25,4 +34,9 @@ Map<String, dynamic> _$WaltBudgetToJson(_WaltBudget instance) =>
       'period': instance.period,
       'alertAt': instance.alertAt,
       'createdAt': instance.createdAt?.toIso8601String(),
+      'name': instance.name,
+      'categoryIds': instance.categoryIds,
+      'isPinned': instance.isPinned,
+      'pinOrder': instance.pinOrder,
+      'accentColor': instance.accentColor,
     };

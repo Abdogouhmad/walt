@@ -93,7 +93,9 @@ List<CategorySlice> buildCategorySlices({
     return CategorySlice(
       categoryId: e.key,
       name: cat?.name ?? 'Unknown',
-      color: cat?.color ?? '#CCCCCC',
+      // Empty means "no stored accent"; the chart derives one from the active
+      // palette instead of inventing a grey.
+      color: cat?.color ?? '',
       icon: cat?.icon ?? 'category',
       amount: e.value,
       percent: safeTotal > 0 ? e.value / safeTotal : 0,

@@ -88,6 +88,18 @@ class TransactionDao {
     return await db.delete('transactions', where: 'id = ?', whereArgs: [id]);
   }
 
+  /// How many transactions reference [categoryId]. Deleting a category that is
+  /// still in use would orphan those rows, so the category deletion policy
+  /// consults this first.
+  Future<int> countForCategory(int categoryId) async {
+    final db = await _dbHelper.database;
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) AS c FROM transactions WHERE category_id = ?',
+      [categoryId],
+    );
+    return (result.first['c'] as num?)?.toInt() ?? 0;
+  }
+
   Future<void> updateAllAmounts(double rate) async {
     final db = await _dbHelper.database;
     await db.rawUpdate('UPDATE transactions SET amount = amount * ?', [rate]);

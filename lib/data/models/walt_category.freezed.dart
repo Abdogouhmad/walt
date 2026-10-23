@@ -15,7 +15,10 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$WaltCategory {
 
-@HiveField(0) int get id;@HiveField(1) String get name;@HiveField(2) String get icon;@HiveField(3) String get color;@HiveField(4) String get type;@HiveField(5) bool get isDefault;
+@HiveField(0) int get id;@HiveField(1) String get name;/// Material icon key, retained as the fallback when no artwork is set and
+/// as the icon used by compact chart legends.
+@HiveField(2) String get icon;@HiveField(3) String get color;@HiveField(4) String get type;@HiveField(5) bool get isDefault;/// Asset path or app-documents-relative file path.
+@HiveField(6) CategoryImageSource get imageSource;@HiveField(7) String? get imagePath;
 /// Create a copy of WaltCategory
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +31,16 @@ $WaltCategoryCopyWith<WaltCategory> get copyWith => _$WaltCategoryCopyWithImpl<W
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WaltCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.type, type) || other.type == type)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WaltCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.type, type) || other.type == type)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault)&&(identical(other.imageSource, imageSource) || other.imageSource == imageSource)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,color,type,isDefault);
+int get hashCode => Object.hash(runtimeType,id,name,icon,color,type,isDefault,imageSource,imagePath);
 
 @override
 String toString() {
-  return 'WaltCategory(id: $id, name: $name, icon: $icon, color: $color, type: $type, isDefault: $isDefault)';
+  return 'WaltCategory(id: $id, name: $name, icon: $icon, color: $color, type: $type, isDefault: $isDefault, imageSource: $imageSource, imagePath: $imagePath)';
 }
 
 
@@ -48,7 +51,7 @@ abstract mixin class $WaltCategoryCopyWith<$Res>  {
   factory $WaltCategoryCopyWith(WaltCategory value, $Res Function(WaltCategory) _then) = _$WaltCategoryCopyWithImpl;
 @useResult
 $Res call({
-@HiveField(0) int id,@HiveField(1) String name,@HiveField(2) String icon,@HiveField(3) String color,@HiveField(4) String type,@HiveField(5) bool isDefault
+@HiveField(0) int id,@HiveField(1) String name,@HiveField(2) String icon,@HiveField(3) String color,@HiveField(4) String type,@HiveField(5) bool isDefault,@HiveField(6) CategoryImageSource imageSource,@HiveField(7) String? imagePath
 });
 
 
@@ -65,7 +68,7 @@ class _$WaltCategoryCopyWithImpl<$Res>
 
 /// Create a copy of WaltCategory
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? type = null,Object? isDefault = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? type = null,Object? isDefault = null,Object? imageSource = null,Object? imagePath = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -73,7 +76,9 @@ as String,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,imageSource: null == imageSource ? _self.imageSource : imageSource // ignore: cast_nullable_to_non_nullable
+as CategoryImageSource,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -155,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@HiveField(0)  int id, @HiveField(1)  String name, @HiveField(2)  String icon, @HiveField(3)  String color, @HiveField(4)  String type, @HiveField(5)  bool isDefault)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@HiveField(0)  int id, @HiveField(1)  String name, @HiveField(2)  String icon, @HiveField(3)  String color, @HiveField(4)  String type, @HiveField(5)  bool isDefault, @HiveField(6)  CategoryImageSource imageSource, @HiveField(7)  String? imagePath)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WaltCategory() when $default != null:
-return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDefault);case _:
+return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDefault,_that.imageSource,_that.imagePath);case _:
   return orElse();
 
 }
@@ -176,10 +181,10 @@ return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDe
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@HiveField(0)  int id, @HiveField(1)  String name, @HiveField(2)  String icon, @HiveField(3)  String color, @HiveField(4)  String type, @HiveField(5)  bool isDefault)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@HiveField(0)  int id, @HiveField(1)  String name, @HiveField(2)  String icon, @HiveField(3)  String color, @HiveField(4)  String type, @HiveField(5)  bool isDefault, @HiveField(6)  CategoryImageSource imageSource, @HiveField(7)  String? imagePath)  $default,) {final _that = this;
 switch (_that) {
 case _WaltCategory():
-return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDefault);}
+return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDefault,_that.imageSource,_that.imagePath);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -193,10 +198,10 @@ return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDe
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@HiveField(0)  int id, @HiveField(1)  String name, @HiveField(2)  String icon, @HiveField(3)  String color, @HiveField(4)  String type, @HiveField(5)  bool isDefault)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@HiveField(0)  int id, @HiveField(1)  String name, @HiveField(2)  String icon, @HiveField(3)  String color, @HiveField(4)  String type, @HiveField(5)  bool isDefault, @HiveField(6)  CategoryImageSource imageSource, @HiveField(7)  String? imagePath)?  $default,) {final _that = this;
 switch (_that) {
 case _WaltCategory() when $default != null:
-return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDefault);case _:
+return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDefault,_that.imageSource,_that.imagePath);case _:
   return null;
 
 }
@@ -208,15 +213,20 @@ return $default(_that.id,_that.name,_that.icon,_that.color,_that.type,_that.isDe
 @JsonSerializable()
 
 class _WaltCategory implements WaltCategory {
-  const _WaltCategory({@HiveField(0) required this.id, @HiveField(1) required this.name, @HiveField(2) required this.icon, @HiveField(3) required this.color, @HiveField(4) required this.type, @HiveField(5) this.isDefault = false});
+  const _WaltCategory({@HiveField(0) required this.id, @HiveField(1) required this.name, @HiveField(2) required this.icon, @HiveField(3) required this.color, @HiveField(4) required this.type, @HiveField(5) this.isDefault = false, @HiveField(6) this.imageSource = CategoryImageSource.asset, @HiveField(7) this.imagePath});
   factory _WaltCategory.fromJson(Map<String, dynamic> json) => _$WaltCategoryFromJson(json);
 
 @override@HiveField(0) final  int id;
 @override@HiveField(1) final  String name;
+/// Material icon key, retained as the fallback when no artwork is set and
+/// as the icon used by compact chart legends.
 @override@HiveField(2) final  String icon;
 @override@HiveField(3) final  String color;
 @override@HiveField(4) final  String type;
 @override@JsonKey()@HiveField(5) final  bool isDefault;
+/// Asset path or app-documents-relative file path.
+@override@JsonKey()@HiveField(6) final  CategoryImageSource imageSource;
+@override@HiveField(7) final  String? imagePath;
 
 /// Create a copy of WaltCategory
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WaltCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.type, type) || other.type == type)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WaltCategory&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.icon, icon) || other.icon == icon)&&(identical(other.color, color) || other.color == color)&&(identical(other.type, type) || other.type == type)&&(identical(other.isDefault, isDefault) || other.isDefault == isDefault)&&(identical(other.imageSource, imageSource) || other.imageSource == imageSource)&&(identical(other.imagePath, imagePath) || other.imagePath == imagePath));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,icon,color,type,isDefault);
+int get hashCode => Object.hash(runtimeType,id,name,icon,color,type,isDefault,imageSource,imagePath);
 
 @override
 String toString() {
-  return 'WaltCategory(id: $id, name: $name, icon: $icon, color: $color, type: $type, isDefault: $isDefault)';
+  return 'WaltCategory(id: $id, name: $name, icon: $icon, color: $color, type: $type, isDefault: $isDefault, imageSource: $imageSource, imagePath: $imagePath)';
 }
 
 
@@ -251,7 +261,7 @@ abstract mixin class _$WaltCategoryCopyWith<$Res> implements $WaltCategoryCopyWi
   factory _$WaltCategoryCopyWith(_WaltCategory value, $Res Function(_WaltCategory) _then) = __$WaltCategoryCopyWithImpl;
 @override @useResult
 $Res call({
-@HiveField(0) int id,@HiveField(1) String name,@HiveField(2) String icon,@HiveField(3) String color,@HiveField(4) String type,@HiveField(5) bool isDefault
+@HiveField(0) int id,@HiveField(1) String name,@HiveField(2) String icon,@HiveField(3) String color,@HiveField(4) String type,@HiveField(5) bool isDefault,@HiveField(6) CategoryImageSource imageSource,@HiveField(7) String? imagePath
 });
 
 
@@ -268,7 +278,7 @@ class __$WaltCategoryCopyWithImpl<$Res>
 
 /// Create a copy of WaltCategory
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? type = null,Object? isDefault = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? icon = null,Object? color = null,Object? type = null,Object? isDefault = null,Object? imageSource = null,Object? imagePath = freezed,}) {
   return _then(_WaltCategory(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -276,7 +286,9 @@ as String,icon: null == icon ? _self.icon : icon // ignore: cast_nullable_to_non
 as String,color: null == color ? _self.color : color // ignore: cast_nullable_to_non_nullable
 as String,type: null == type ? _self.type : type // ignore: cast_nullable_to_non_nullable
 as String,isDefault: null == isDefault ? _self.isDefault : isDefault // ignore: cast_nullable_to_non_nullable
-as bool,
+as bool,imageSource: null == imageSource ? _self.imageSource : imageSource // ignore: cast_nullable_to_non_nullable
+as CategoryImageSource,imagePath: freezed == imagePath ? _self.imagePath : imagePath // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

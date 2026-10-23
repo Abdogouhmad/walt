@@ -20,7 +20,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -80,11 +80,31 @@ class DatabaseHelper {
         period TEXT NOT NULL,
         alert_at REAL NOT NULL DEFAULT 0.8,
         created_at INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+        name TEXT DEFAULT '',
+        category_ids TEXT DEFAULT '',
+        is_pinned INTEGER NOT NULL DEFAULT 0,
+        pin_order INTEGER NOT NULL DEFAULT 0,
+        accent_color TEXT,
 
         FOREIGN KEY (category_id) REFERENCES categories (id)
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS budget_period_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        budget_id INTEGER NOT NULL,
+        start_ms INTEGER NOT NULL,
+        end_ms INTEGER NOT NULL,
+        limit_amount REAL NOT NULL,
+        UNIQUE(budget_id, start_ms)
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_budget_snapshot_budget '
+      'ON budget_period_snapshots(budget_id, start_ms)',
+    );
     await _createIndexes(db);
     debugPrint('✅ Database tables created successfully.');
   }
@@ -119,6 +139,96 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE accounts ADD COLUMN profile_pic TEXT');
     }
     if (oldVersion < 3) {
+      await _createIndexes(db);
+    }
+    if (oldVersion < 4) {
+      try {
+        await db.execute('ALTER TABLE budgets ADD COLUMN name TEXT DEFAULT ""');
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE budgets ADD COLUMN category_ids TEXT DEFAULT ''",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          'ALTER TABLE budgets ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          'ALTER TABLE budgets ADD COLUMN pin_order INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE budgets ADD COLUMN accent_color TEXT');
+      } catch (_) {}
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS budget_period_snapshots (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          budget_id INTEGER NOT NULL,
+          start_ms INTEGER NOT NULL,
+          end_ms INTEGER NOT NULL,
+          limit_amount REAL NOT NULL,
+          UNIQUE(budget_id, start_ms)
+        )
+      ''');
+    }
+    if (oldVersion < 5) {
+      // Ensure pinning exists for databases upgraded partway.
+      try {
+        await db.execute('ALTER TABLE budgets ADD COLUMN name TEXT DEFAULT ""');
+      } catch (_) {}
+      try {
+        await db.execute(
+          "ALTER TABLE budgets ADD COLUMN category_ids TEXT DEFAULT ''",
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          'ALTER TABLE budgets ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      try {
+        await db.execute(
+          'ALTER TABLE budgets ADD COLUMN pin_order INTEGER NOT NULL DEFAULT 0',
+        );
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE budgets ADD COLUMN accent_color TEXT');
+      } catch (_) {}
+    }
+    if (oldVersion < 6) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS budget_period_snapshots (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          budget_id INTEGER NOT NULL,
+          start_ms INTEGER NOT NULL,
+          end_ms INTEGER NOT NULL,
+          limit_amount REAL NOT NULL,
+          UNIQUE(budget_id, start_ms)
+        )
+      ''');
+
+      // Older rows only knew their primary category. Backfill the multi-category
+      // column so both the DAO and the picker see a complete selection.
+      await db.execute(
+        'UPDATE budgets SET category_ids = CAST(category_id AS TEXT) '
+        "WHERE category_ids IS NULL OR TRIM(category_ids) = ''",
+      );
+
+      // A migration must not leave Home's pinned section empty: the first
+      // budget the user ever created is the least surprising thing to pin.
+      await db.execute(
+        'UPDATE budgets SET is_pinned = 1, pin_order = 0 '
+        'WHERE id = (SELECT MIN(id) FROM budgets) '
+        'AND NOT EXISTS (SELECT 1 FROM budgets WHERE is_pinned = 1)',
+      );
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_budget_snapshot_budget '
+        'ON budget_period_snapshots(budget_id, start_ms)',
+      );
       await _createIndexes(db);
     }
   }

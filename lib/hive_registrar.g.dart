@@ -7,12 +7,14 @@ import 'package:walt/data/models/walt_category.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(CategoryImageSourceAdapter());
     registerAdapter(WaltCategoryAdapter());
   }
 }
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(CategoryImageSourceAdapter());
     registerAdapter(WaltCategoryAdapter());
   }
 }

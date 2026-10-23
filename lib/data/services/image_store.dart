@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-/// Local-only image storage for user-picked avatars.
+/// Local-only image storage for user-picked avatars and category images.
 ///
 /// Walt is privacy-first: images are copied into the app's own documents
 /// directory and never uploaded anywhere. Copying matters because
@@ -14,7 +14,8 @@ import 'package:path_provider/path_provider.dart';
 class ImageStore {
   const ImageStore._();
 
-  static const String _folder = 'profile';
+  static const String _profileFolder = 'profile';
+  static const String _categoryFolder = 'categories';
 
   /// Copies [source] into the app documents directory and returns the new
   /// absolute path. Returns null if the source is missing or the copy fails.
@@ -24,7 +25,7 @@ class ImageStore {
       if (!await source.exists()) return null;
 
       final dir = Directory(
-        p.join((await getApplicationDocumentsDirectory()).path, _folder),
+        p.join((await getApplicationDocumentsDirectory()).path, _profileFolder),
       );
       if (!await dir.exists()) await dir.create(recursive: true);
 
@@ -42,8 +43,48 @@ class ImageStore {
     }
   }
 
-  /// Whether [path] still exists on disk. Used to drop a stale avatar path
-  /// instead of rendering a broken image.
+  /// Copies a picked image into the category images folder and returns the
+  /// app-documents-relative path (e.g. `categories/foo.png`) so it survives
+  /// base directory changes and is never stored as a raw cache path.
+  static Future<String?> importCategoryImage(String sourcePath) async {
+    try {
+      final source = File(sourcePath);
+      if (!await source.exists()) return null;
+
+      final docs = await getApplicationDocumentsDirectory();
+      final dir = Directory(p.join(docs.path, _categoryFolder));
+      if (!await dir.exists()) await dir.create(recursive: true);
+
+      final extension = p.extension(sourcePath).isEmpty
+          ? '.png'
+          : p.extension(sourcePath);
+      final name = 'cat_${DateTime.now().millisecondsSinceEpoch}$extension';
+      final target = File(p.join(dir.path, name));
+      await source.copy(target.path);
+      return p.join(_categoryFolder, name);
+    } catch (e) {
+      debugPrint('ImageStore: could not import category $sourcePath — $e');
+      return null;
+    }
+  }
+
+  /// Resolves an app-documents-relative image path to an absolute path.
+  static Future<String?> resolveRelativePath(String? relativePath) async {
+    if (relativePath == null || relativePath.trim().isEmpty) return null;
+    final docs = await getApplicationDocumentsDirectory();
+    return p.join(docs.path, relativePath);
+  }
+
+  /// Synchronously resolve a relative path using a cached documents dir when
+  /// possible; callers fall back to assets or show placeholder if missing.
+  static String? resolveRelativePathSync(
+    String? relativePath,
+    String documentsDir,
+  ) {
+    if (relativePath == null || relativePath.trim().isEmpty) return null;
+    return p.join(documentsDir, relativePath);
+  }
+
   /// Whether [path] still points at a readable file.
   ///
   /// Synchronous because it is called from `build()`. The cost is a single

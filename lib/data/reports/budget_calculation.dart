@@ -83,9 +83,11 @@ class BudgetCalculation {
 
 /// Computes [budget]'s consumption over its current window from [transactions].
 ///
-/// Only expenses in the budget's category and inside the window count. Income,
-/// transactions from other categories and transactions from previous periods
-/// are all ignored — that is the rollover behaviour.
+/// Only expenses in one of the budget's categories and inside the window count.
+/// A transaction shared by two selected categories is still counted once,
+/// because the category check is a membership test rather than an iteration.
+/// Income, transactions from other categories and transactions from previous
+/// periods are all ignored — that is the rollover behaviour.
 BudgetCalculation calculateBudget({
   required WaltBudget budget,
   required List<WaltTransaction> transactions,
@@ -97,10 +99,12 @@ BudgetCalculation calculateBudget({
     reference,
   );
 
+  final categoryIds = budget.effectiveCategoryIds.toSet();
+
   var spent = 0.0;
   for (final t in transactions) {
     if (t.type.toLowerCase() != 'expense') continue;
-    if (t.categoryId != budget.categoryId) continue;
+    if (!categoryIds.contains(t.categoryId)) continue;
     if (!window.contains(t.date)) continue;
     spent += t.amount;
   }
@@ -111,4 +115,22 @@ BudgetCalculation calculateBudget({
     spent: spent,
     alertAt: budget.alertAt,
   );
+}
+
+/// Spending for an arbitrary [window], used by budget history where each period
+/// gets its own limit snapshot rather than the current one.
+double spendingInWindow({
+  required WaltBudget budget,
+  required List<WaltTransaction> transactions,
+  required BudgetWindow window,
+}) {
+  final categoryIds = budget.effectiveCategoryIds.toSet();
+  var spent = 0.0;
+  for (final t in transactions) {
+    if (t.type.toLowerCase() != 'expense') continue;
+    if (!categoryIds.contains(t.categoryId)) continue;
+    if (!window.contains(t.date)) continue;
+    spent += t.amount;
+  }
+  return spent;
 }
