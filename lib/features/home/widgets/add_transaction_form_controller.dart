@@ -125,17 +125,14 @@ class AddTransactionFormController {
     onChanged?.call();
 
     // A budget selected before the sheet's budget list refreshed could no
-    // longer exist, or may no longer cover the chosen category. Dropping the
-    // link is safer than persisting an invalid one; the transaction still
-    // counts by category.
+    // longer exist. Dropping the link is safer than persisting a dangling id;
+    // the transaction still counts by category. The category is deliberately
+    // not checked: an explicit link wins even when the category sits outside
+    // the budget's categories.
     var budgetId = type == 'expense' ? selectedBudgetId : null;
     if (budgetId != null) {
-      final categoryId = selectedCategoryId!;
       final budgets = ref.read(budgetProvider).value ?? const <WaltBudget>[];
-      final stillValid = budgets.any(
-        (b) => b.id == budgetId && b.effectiveCategoryIds.contains(categoryId),
-      );
-      if (!stillValid) budgetId = null;
+      if (!budgets.any((b) => b.id == budgetId)) budgetId = null;
     }
 
     final transaction = WaltTransaction(

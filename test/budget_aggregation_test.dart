@@ -41,6 +41,22 @@ void main() {
       expect(result.remaining, 125);
     });
 
+    test('an explicit link counts even outside the budget categories', () {
+      final budget = testBudget(id: 1, categoryId: 7);
+      final linked = testExpense(
+        id: 1,
+        amount: 35,
+        date: DateTime(2026, 3, 5),
+        categoryId: 99,
+        budgetId: budget.id,
+      );
+
+      expect(
+        calculateBudget(budget: budget, transactions: [linked], now: now).spent,
+        35,
+      );
+    });
+
     test('an explicit budget link beats shared-category matching', () {
       final groceries = testBudget(id: 1, categoryId: 7);
       final eatingOut = testBudget(id: 2, categoryId: 7);

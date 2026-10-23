@@ -5,9 +5,10 @@ import 'package:walt_ui/walt_ui.dart';
 
 /// The optional "Budget" row of the add-transaction form.
 ///
-/// Only budgets that include the selected category are offered, so the choice
-/// can never book an expense against something unrelated. "No budget" is the
-/// default and keeps the legacy category-based attribution.
+/// Every budget is offered for an expense: choosing one books the transaction
+/// against it explicitly, and that link takes precedence over category
+/// matching. "No budget" is the default and keeps the legacy category-based
+/// attribution.
 class AddTransactionBudgetSection extends StatelessWidget {
   const AddTransactionBudgetSection({
     super.key,

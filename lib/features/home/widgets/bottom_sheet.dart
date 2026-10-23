@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:walt/data/models/walt_budget.dart';
 import 'package:walt/features/home/widgets/add_transaction_amount.dart';
 import 'package:walt/features/home/widgets/add_transaction_budget.dart';
 import 'package:walt/features/home/widgets/add_transaction_category.dart';
@@ -83,18 +82,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     // the Save button can always scroll fully clear of the keyboard.
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    // Only budgets that consume the chosen category are meaningful here. The
-    // picker is expense-only because budgets never count income.
-    final selectedCategoryId = _form.selectedCategoryId;
-    final matchingBudgets =
-        _form.type == 'expense' && selectedCategoryId != null
-        ? ref
-              .watch(budgetProgressProvider)
-              .where(
-                (p) =>
-                    p.budget.effectiveCategoryIds.contains(selectedCategoryId),
-              )
-              .toList(growable: false)
+    // Every budget is selectable for an expense. Picking one links the
+    // transaction to it explicitly, so the category does not have to be one of
+    // the budget's categories; the link wins when progress is calculated.
+    final availableBudgets = _form.type == 'expense'
+        ? ref.watch(budgetProgressProvider)
         : const <BudgetProgress>[];
 
     return Form(
@@ -136,18 +128,15 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               anchorKey: _form.categoryKey,
               onChanged: (id) => setState(() {
                 _form.selectedCategoryId = id;
-                // The budget list is scoped to the category, so a previous
-                // choice may no longer apply.
-                _form.selectedBudgetId = null;
                 _form.categoryError = false;
               }),
               onRetry: () => ref.read(categoryProvider.notifier).refresh(),
             ),
 
-            if (matchingBudgets.isNotEmpty) ...[
+            if (availableBudgets.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.md),
               AddTransactionBudgetSection(
-                budgets: matchingBudgets,
+                budgets: availableBudgets,
                 selectedBudgetId: _form.selectedBudgetId,
                 currency: currency,
                 onChanged: (id) => setState(() => _form.selectedBudgetId = id),
