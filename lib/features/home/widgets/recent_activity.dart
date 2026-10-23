@@ -8,6 +8,7 @@ import 'package:walt/features/transactions/widgets/transaction_detail_sheet.dart
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt/shared/widgets/category_artwork.dart';
 import 'package:walt_ui/walt_ui.dart';
 
 /// Home's "Recent" section: the latest few transactions as one grouped list.
@@ -91,13 +92,24 @@ class RecentActivity extends ConsumerWidget {
     Map<int, WaltCategory> categoryById,
     String currency,
   ) {
+    // A deleted or not-yet-loaded category must not borrow another category's
+    // name and icon: that labels someone's spending as the wrong thing. Build a
+    // neutral stand-in for the id the transaction actually points at.
     final category =
-        categoryById[transaction.categoryId] ?? categoryById.values.first;
+        categoryById[transaction.categoryId] ??
+        WaltCategory(
+          id: transaction.categoryId,
+          name: 'Uncategorized',
+          icon: 'category',
+          color:
+              '#${(Theme.of(context).colorScheme.primary.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
+          type: transaction.type,
+        );
     final isIncome = transaction.type.toLowerCase() == 'income';
 
     return GroupedListTile(
       onTap: () => showTransactionDetailSheet(context, transaction),
-      leading: CategoryAvatar(icon: category.icon, color: category.color),
+      leading: CategoryArtwork(category: category, size: 40),
       title: Text(transaction.merchant ?? 'Unknown'),
       subtitle: Text(category.name),
       trailing: AmountText(

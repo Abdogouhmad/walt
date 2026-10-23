@@ -36,9 +36,15 @@ class CategoryAvatar extends StatelessWidget {
   });
 
   /// Parses a `#RRGGBB` string, returning null when malformed.
+  ///
+  /// Anything other than six hexadecimal digits is rejected rather than
+  /// coerced: `int.tryParse('FF')` would quietly produce a colour for an empty
+  /// string, which turns "no colour" into opaque blue instead of letting the
+  /// caller fall back to the theme palette.
   static Color? parseHex(String? hex) {
     if (hex == null) return null;
-    final cleaned = hex.replaceAll('#', '');
+    final cleaned = hex.replaceAll('#', '').trim();
+    if (!RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(cleaned)) return null;
     final value = int.tryParse('FF$cleaned', radix: 16);
     return value == null ? null : Color(value);
   }

@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 
+import 'package:walt/data/models/walt_category.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/features/transactions/widgets/transaction_detail_sheet.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
+import 'package:walt/shared/widgets/category_artwork.dart';
 import 'package:walt_ui/walt_ui.dart';
 
 /// Shared time formatter — `DateFormat('HH:mm')` per row per rebuild is
@@ -20,17 +22,9 @@ final _timeFormat = DateFormat('HH:mm');
 /// needs and not what a *read* one does.
 class TxList extends ConsumerWidget {
   final WaltTransaction transaction;
-  final String categoryName;
-  final String categoryIcon;
-  final String? categoryColor;
+  final WaltCategory category;
 
-  const TxList({
-    super.key,
-    required this.transaction,
-    required this.categoryName,
-    required this.categoryIcon,
-    this.categoryColor,
-  });
+  const TxList({super.key, required this.transaction, required this.category});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,10 +50,10 @@ class TxList extends ConsumerWidget {
       ),
       child: GroupedListTile(
         onTap: () => showTransactionDetailSheet(context, transaction),
-        leading: CategoryAvatar(icon: categoryIcon, color: categoryColor),
+        leading: CategoryArtwork(category: category, size: 40),
         title: Text(transaction.merchant ?? 'Unknown Merchant'),
         subtitle: Text(
-          '$categoryName • ${_timeFormat.format(transaction.date)}',
+          '${category.name} • ${_timeFormat.format(transaction.date)}',
         ),
         trailing: AmountText(
           amount: transaction.amount,

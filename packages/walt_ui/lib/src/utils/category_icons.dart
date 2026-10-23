@@ -21,6 +21,11 @@ class CategoryIcons {
     'shopping_basket_outlined': Icons.shopping_basket_outlined,
     'work_outline': Icons.work_outline,
     'attach_money': Icons.attach_money,
+    'celebration': Icons.celebration,
+    'flight': Icons.flight,
+    'school': Icons.school,
+    'redeem': Icons.redeem,
+    'savings': Icons.savings,
   };
 
   static IconData getIcon(String name) {

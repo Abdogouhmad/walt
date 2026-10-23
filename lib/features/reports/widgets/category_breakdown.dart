@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:walt/data/models/walt_category.dart';
+import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
+import 'package:walt/shared/widgets/category_artwork.dart';
 import 'package:walt_ui/walt_ui.dart';
 
 /// The category legend beneath the chart: one grouped row per category with
@@ -17,6 +20,11 @@ class CategoryBreakdown extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final charts = WaltChartColors.of(context);
+    final categoryById = {
+      for (final category
+          in ref.watch(categoryProvider).value ?? const <WaltCategory>[])
+        category.id: category,
+    };
 
     return report.when(
       data: (data) {
@@ -45,9 +53,17 @@ class CategoryBreakdown extends ConsumerWidget {
               children: [
                 for (final (index, item) in data.categories.indexed)
                   GroupedListTile(
-                    leading: CategoryAvatar(
-                      icon: item.icon,
-                      color: item.color,
+                    leading: CategoryArtwork(
+                      category:
+                          categoryById[item.categoryId] ??
+                          WaltCategory(
+                            id: item.categoryId,
+                            name: item.name,
+                            icon: item.icon,
+                            color: item.color,
+                            type: 'expense',
+                          ),
+                      size: 40,
                       seriesIndex: index,
                     ),
                     title: Text(item.name),

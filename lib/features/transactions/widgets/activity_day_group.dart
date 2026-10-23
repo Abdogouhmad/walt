@@ -36,12 +36,19 @@ class ActivityDayGroup extends StatelessWidget {
                     child: Builder(
                       builder: (context) {
                         final category =
-                            categoryById[transactions[i].categoryId];
+                            categoryById[transactions[i].categoryId] ??
+                            const WaltCategory(
+                              id: 0,
+                              name: 'Unknown',
+                              icon: 'category',
+                              // No accent: let the artwork use the theme
+                              // palette rather than a hardcoded grey.
+                              color: '',
+                              type: 'expense',
+                            );
                         return TxList(
                           transaction: transactions[i],
-                          categoryName: category?.name ?? 'Unknown',
-                          categoryIcon: category?.icon ?? 'category',
-                          categoryColor: category?.color,
+                          category: category,
                         );
                       },
                     ),

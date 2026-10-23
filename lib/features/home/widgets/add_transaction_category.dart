@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:walt/data/models/walt_category.dart';
-import 'package:walt/features/home/widgets/category_widget.dart';
+import 'package:walt/features/categories/category_editor_sheet.dart';
+import 'package:walt/shared/widgets/category_picker.dart';
 import 'package:walt_ui/walt_ui.dart';
 
-/// The category chip picker of the add-transaction sheet, plus its
+/// The category picker of the add-transaction sheet, plus its
 /// "select a category" error line.
 class AddTransactionCategorySection extends StatelessWidget {
   final String type;
@@ -13,7 +15,7 @@ class AddTransactionCategorySection extends StatelessWidget {
   final bool hasError;
 
   /// Anchor used to scroll the section into view when the save was blocked
-  /// only because no chip is selected.
+  /// only because no category is selected.
   final GlobalKey anchorKey;
   final ValueChanged<int?> onChanged;
   final VoidCallback onRetry;
@@ -37,7 +39,47 @@ class AddTransactionCategorySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Category', key: anchorKey, style: textTheme.labelLarge),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Category',
+                key: anchorKey,
+                style: textTheme.labelLarge,
+              ),
+            ),
+            PopupMenuButton<String>(
+              tooltip: 'Category options',
+              icon: const Icon(Icons.more_horiz_rounded),
+              onSelected: (value) async {
+                if (value == 'new') {
+                  final created = await showCategoryEditor(context);
+                  if (created != null) onChanged(created.id);
+                } else if (value == 'manage') {
+                  await showCategoryManager(context);
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'new',
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.add_rounded),
+                    title: Text('New category'),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'manage',
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.tune_rounded),
+                    title: Text('Manage categories'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         const SizedBox(height: AppSpacing.sm),
 
         categories.when(
@@ -55,20 +97,55 @@ class AddTransactionCategorySection extends StatelessWidget {
                 color: scheme.error,
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                'Failed to load categories',
-                style: TextStyle(color: scheme.error, fontSize: 13),
+              Expanded(
+                child: Text(
+                  'Failed to load categories',
+                  maxLines: 2,
+                  style: TextStyle(color: scheme.error, fontSize: 13),
+                ),
               ),
-              const Spacer(),
               TextButton(onPressed: onRetry, child: const Text('Retry')),
             ],
           ),
           data: (all) {
             final filtered = all.where((c) => c.type == type).toList();
-            return CategoryPicker(
-              categories: filtered,
-              selected: selectedCategoryId,
-              onChanged: onChanged,
+            WaltCategory? selected;
+            for (final category in filtered) {
+              if (category.id == selectedCategoryId) {
+                selected = category;
+                break;
+              }
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (selected != null) ...[
+                  SelectedCategoryPreview(category: selected),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+                CategoryPicker(
+                  categories: filtered,
+                  selectedIds: {?selectedCategoryId},
+                  onToggle: (category) => onChanged(category.id),
+                  onCreate: () async {
+                    final created = await showCategoryEditor(context);
+                    if (created != null && created.type == type) {
+                      onChanged(created.id);
+                    }
+                  },
+                  onLongPress: (category) async {
+                    final deleted = await showCategoryActions(
+                      context,
+                      category: category,
+                    );
+                    if (!context.mounted) return;
+                    if (deleted && category.id == selectedCategoryId) {
+                      onChanged(null);
+                    }
+                  },
+                ),
+              ],
             );
           },
         ),
