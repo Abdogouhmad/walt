@@ -2,9 +2,13 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class PdfHeader extends pw.StatelessWidget {
-  final String monthName;
+  /// The report kind, such as "Monthly Report" or "Full History Report".
+  final String title;
 
-  PdfHeader({required this.monthName});
+  /// The period the report covers, such as "March 2026" or "All time".
+  final String period;
+
+  PdfHeader({required this.title, required this.period});
 
   @override
   pw.Widget build(pw.Context context) {
@@ -38,14 +42,14 @@ class PdfHeader extends pw.StatelessWidget {
               crossAxisAlignment: pw.CrossAxisAlignment.end,
               children: [
                 pw.Text(
-                  'Monthly Report',
+                  title,
                   style: pw.TextStyle(
                     fontSize: 16,
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
                 pw.Text(
-                  monthName,
+                  period,
                   style: const pw.TextStyle(
                     fontSize: 14,
                     color: PdfColors.blue700,

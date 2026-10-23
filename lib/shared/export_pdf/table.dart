@@ -9,10 +9,15 @@ class PdfTable extends pw.StatelessWidget {
   final Map<int, WaltCategory> categoryMap;
   final String currency;
 
+  /// Shown instead of the table when there is nothing to report. The default
+  /// fits a monthly report; the full-history export passes its own wording.
+  final String emptyMessage;
+
   PdfTable({
     required this.transactions,
     required this.categoryMap,
     required this.currency,
+    this.emptyMessage = 'No transactions recorded for this month.',
   });
 
   @override
@@ -22,7 +27,7 @@ class PdfTable extends pw.StatelessWidget {
         child: pw.Padding(
           padding: const pw.EdgeInsets.symmetric(vertical: 40),
           child: pw.Text(
-            'No transactions recorded for this month.',
+            emptyMessage,
             style: pw.TextStyle(
               fontStyle: pw.FontStyle.italic,
               color: PdfColors.grey500,
@@ -47,8 +52,10 @@ class PdfTable extends pw.StatelessWidget {
         3: const pw.FixedColumnWidth(100),
       },
       children: [
-        // Header
+        // Header. `repeat` keeps the column labels at the top of every page
+        // once a long history spills past the first one.
         pw.TableRow(
+          repeat: true,
           decoration: const pw.BoxDecoration(
             color: PdfColors.blueGrey50,
             borderRadius: pw.BorderRadius.only(

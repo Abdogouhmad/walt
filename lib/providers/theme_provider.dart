@@ -34,6 +34,16 @@ class ThemeController extends Notifier<ThemeSettings> {
     }
   }
 
+  /// Re-reads the store after a backup restore, which replaces the whole
+  /// settings box behind this provider's back.
+  ///
+  /// The startup [bootstrap] snapshot is deliberately dropped: keeping it would
+  /// make a later rebuild resurrect the pre-restore colours.
+  Future<void> reloadFromStore() async {
+    bootstrap = null;
+    state = _read();
+  }
+
   /// Applies [next] and writes every appearance key.
   ///
   /// One write for the whole value: the four keys are a single user decision,
