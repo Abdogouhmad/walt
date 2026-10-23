@@ -25,13 +25,16 @@ BudgetProgress testBudgetProgress({
   );
   return BudgetProgress(
     budget: budget,
-    category: WaltCategory(
-      id: id,
-      name: 'Category $id',
-      icon: 'icon',
-      color: '#000000',
-      type: 'expense',
-    ),
+    categories: [
+      WaltCategory(
+        id: id,
+        name: 'Category $id',
+        icon: 'icon',
+        color: '#000000',
+        type: 'expense',
+      ),
+    ],
+    now: anchor ?? DateTime(2026, 3, 18),
     calculation: BudgetCalculation(
       window: window,
       limit: limit,

@@ -41,12 +41,17 @@ Widget _host(Widget child) => ProviderScope(
 
 /// Every top-level screen's app bar, paired with a finder for its title so the
 /// measurement can be attributed to the right bar.
-const _screens = <String, (String, Widget)>{
-  'Home': ('WALT', HomeScreen()),
-  'Activity': ('Activity', TransactionListScreen()),
-  'Budgets': ('Budgets', BudgetsScreen()),
-  'Reports': ('Reports', ReportsScreen()),
-  'Settings': ('Settings', SettingsScreen()),
+///
+/// `largeTitle` marks the one deliberate exception: Budgets uses
+/// `SliverAppBar.large`, so its title grows into the bar as the list scrolls
+/// under it. It is still measured, against the large bar's own height, rather
+/// than being skipped.
+const _screens = <String, (String, Widget, bool)>{
+  'Home': ('WALT', HomeScreen(), false),
+  'Activity': ('Activity', TransactionListScreen(), false),
+  'Budgets': ('Budgets', BudgetsScreen(), true),
+  'Reports': ('Reports', ReportsScreen(), false),
+  'Settings': ('Settings', SettingsScreen(), false),
 };
 
 void main() {
@@ -87,25 +92,28 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
 
+        final largeTitle = entry.value.$3;
         final bar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
         final expanded = bar.expandedHeight ?? kToolbarHeight;
-
         // `SliverAppBar.large` is 152 and `.medium` is 112. Both leave the title
-        // floating well below the top edge. A plain SliverAppBar is just the
-        // 56 toolbar, which is as tight as this can go without hiding the title.
+        // floating well below the top edge. A plain SliverAppBar is just the 56
+        // toolbar, which is as tight as this can go without hiding the title.
+        // Budgets opts into the large bar on purpose, so it is measured against
+        // that height instead of the compact one.
+        final maxHeight = largeTitle ? 152.0 : kToolbarHeight;
         expect(
           expanded,
-          lessThanOrEqualTo(kToolbarHeight + 0.01),
+          lessThanOrEqualTo(maxHeight + 0.01),
           reason:
-              '${entry.key} reserves ${expanded.toStringAsFixed(0)}px above the title; a compact '
-              'bar is ${kToolbarHeight}px',
+              '${entry.key} reserves ${expanded.toStringAsFixed(0)}px above the title; '
+              'the limit for this bar is ${maxHeight.toStringAsFixed(0)}px',
         );
 
         // The title itself must sit at the top, not below a large-title gap.
         final title = tester.getRect(find.text(entry.value.$1).first);
         expect(
           title.top,
-          lessThanOrEqualTo(kToolbarHeight + 0.01),
+          lessThanOrEqualTo(maxHeight + 0.01),
           reason: '${entry.key} pushes its title down to ${title.top}px',
         );
       });
