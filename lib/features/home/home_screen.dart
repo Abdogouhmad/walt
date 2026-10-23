@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:walt/features/home/widgets/balance_hero.dart';
+import 'package:walt/features/home/widgets/home_summary_card.dart';
+import 'package:walt/features/home/widgets/pinned_budgets_section.dart';
 import 'package:walt/features/home/widgets/recent_activity.dart';
-import 'package:walt/features/home/widgets/weekly_spending_chart.dart';
 import 'package:walt/shared/profile_app_bar_action.dart';
 import 'package:walt_ui/walt_ui.dart';
 
@@ -32,10 +32,9 @@ class HomeScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const BalanceHero(),
+                    const HomeSummaryCard(),
                     const SizedBox(height: AppSpacing.lg),
-                    const WeeklySpendingChart(),
-                    const SizedBox(height: AppSpacing.sm),
+                    const PinnedBudgetsSection(),
                     const RecentActivity(),
                     SizedBox(
                       height:

@@ -54,6 +54,23 @@ class TransactionNotifier extends Notifier<AsyncValue<List<WaltTransaction>>> {
 /// Day the home week-recap has selected. `null` means "no filter" (all recent).
 final selectedDayProvider = StateProvider<DateTime?>((ref) => null);
 
+/// Account card selected on Home, or `null` for every account.
+///
+/// Home is a summary, not a ledger: picking an account narrows the balance,
+/// the week chart and the recent list together so the three never disagree
+/// about which slice of spending the user is looking at.
+final homeAccountIdProvider = StateProvider<int?>((ref) => null);
+
+/// Transactions in the account currently selected on Home.
+final homeTransactionsProvider = Provider<List<WaltTransaction>>((ref) {
+  final transactions = ref.watch(transactionProvider).value ?? const [];
+  final accountId = ref.watch(homeAccountIdProvider);
+  if (accountId == null) return transactions;
+  return transactions
+      .where((tx) => tx.accountId == accountId)
+      .toList(growable: false);
+});
+
 /// Recent transactions, newest first, limited to a handful for the home list.
 ///
 /// No day selected means "the latest transactions", full stop — not a window
@@ -61,7 +78,7 @@ final selectedDayProvider = StateProvider<DateTime?>((ref) => null);
 /// entry is older than it, which reads as an empty home screen while the Activity
 /// tab lists the very same rows.
 final recentTransactionsProvider = Provider<List<WaltTransaction>>((ref) {
-  final transactions = ref.watch(transactionProvider).value ?? const [];
+  final transactions = ref.watch(homeTransactionsProvider);
   final selected = ref.watch(selectedDayProvider);
   final maxItems = ref.watch(recentActivityLimitProvider);
 
@@ -83,13 +100,29 @@ final recentActivityLimitProvider = StateProvider<int>((ref) => 5);
 /// Expense totals per weekday for the week containing [selectedDayProvider],
 /// Monday first, always exactly seven entries.
 final weekSpendingProvider = Provider<List<double>>((ref) {
-  final transactions = ref.watch(transactionProvider).value ?? const [];
+  final transactions = ref.watch(homeTransactionsProvider);
   final selected = ref.watch(selectedDayProvider);
   return spendingByWeekday(
     transactions: transactions,
     anchor: selected ?? DateTime.now(),
   );
 });
+
+/// Balance, income and expenses for the account selected on Home.
+final homeSummaryProvider =
+    Provider<({double income, double expenses, double balance})>((ref) {
+      final transactions = ref.watch(homeTransactionsProvider);
+      double income = 0;
+      double expenses = 0;
+      for (final tx in transactions) {
+        if (tx.type.toLowerCase() == 'income') {
+          income += tx.amount;
+        } else {
+          expenses += tx.amount;
+        }
+      }
+      return (income: income, expenses: expenses, balance: income - expenses);
+    });
 
 // load the transactions by day like today, yesterday, and date
 final transactionsByDayProvider = Provider<Map<String, List<WaltTransaction>>>((
@@ -122,19 +155,3 @@ final transactionsByDayProvider = Provider<Map<String, List<WaltTransaction>>>((
   }
   return grouped;
 });
-
-/// Balance summary across every transaction.
-final summaryProvider =
-    Provider<({double income, double expenses, double balance})>((ref) {
-      final transactions = ref.watch(transactionProvider).value ?? const [];
-      double income = 0;
-      double expenses = 0;
-      for (var tx in transactions) {
-        if (tx.type.toLowerCase() == 'income') {
-          income += tx.amount;
-        } else {
-          expenses += tx.amount;
-        }
-      }
-      return (income: income, expenses: expenses, balance: income - expenses);
-    });
