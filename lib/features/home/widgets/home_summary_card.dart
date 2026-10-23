@@ -21,8 +21,6 @@ import 'package:walt_ui/walt_ui.dart';
 class HomeSummaryCard extends ConsumerWidget {
   const HomeSummaryCard({super.key});
 
-  static const double _chartHeight = 148;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -108,7 +106,12 @@ class HomeSummaryCard extends ConsumerWidget {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -124,9 +127,9 @@ class HomeSummaryCard extends ConsumerWidget {
                         ref.read(selectedDayProvider.notifier).state = null;
                       },
                     ),
-                    const SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Expanded(
                           child: Column(
@@ -135,11 +138,11 @@ class HomeSummaryCard extends ConsumerWidget {
                             children: [
                               Text(
                                 'Total balance',
-                                style: theme.textTheme.labelLarge?.copyWith(
+                                style: theme.textTheme.labelMedium?.copyWith(
                                   color: scheme.onSurfaceVariant,
                                 ),
                               ),
-                              const SizedBox(height: AppSpacing.xs),
+                              const SizedBox(height: 2),
                               AmountText(
                                 amount: summary.balance,
                                 currency: currency,
@@ -147,36 +150,36 @@ class HomeSummaryCard extends ConsumerWidget {
                                 showSign: false,
                                 color: scheme.onSurface,
                                 animate: true,
-                                fontSize: 40,
-                                style: theme.textTheme.displayMedium,
+                                fontSize: 32,
+                                style: theme.textTheme.headlineMedium,
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.md),
-                        _AccountBadge(account: account, accent: accent),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: StatPill(
-                            label: 'Income',
-                            amount: _amount(summary.income, currency),
-                            icon: Icons.south_west_rounded,
-                            foreground: WaltColors.of(context).income,
-                            background: WaltColors.of(context).incomeContainer,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: StatPill(
-                            label: 'Expenses',
-                            amount: _amount(summary.expenses, currency),
-                            icon: Icons.north_east_rounded,
-                            foreground: WaltColors.of(context).expense,
-                            background: WaltColors.of(context).expenseContainer,
+                        const SizedBox(width: AppSpacing.sm),
+                        // Capped so a long income/expense figure or a large
+                        // text scale cannot squeeze the balance off the card;
+                        // the stat labels ellipsize instead.
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 168),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _MiniStat(
+                                icon: Icons.south_west_rounded,
+                                label: 'Income',
+                                amount: _amount(summary.income, currency),
+                                color: WaltColors.of(context).income,
+                              ),
+                              const SizedBox(height: 2),
+                              _MiniStat(
+                                icon: Icons.north_east_rounded,
+                                label: 'Expenses',
+                                amount: _amount(summary.expenses, currency),
+                                color: WaltColors.of(context).expense,
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -187,10 +190,10 @@ class HomeSummaryCard extends ConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
                 AppSpacing.md,
-                AppSpacing.lg,
-                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.md,
+                AppSpacing.md,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -205,37 +208,36 @@ class HomeSummaryCard extends ConsumerWidget {
                           children: [
                             Text(
                               'This week',
-                              style: theme.textTheme.titleMedium,
+                              style: theme.textTheme.titleSmall,
                             ),
-                            const SizedBox(height: 2),
                             Text(
                               selectedDay == null
                                   ? 'Tap a bar to filter'
                                   : dayLabel(activeDay),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                              style: theme.textTheme.labelSmall?.copyWith(
                                 color: scheme.onSurfaceVariant,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.md),
+                      const SizedBox(width: AppSpacing.sm),
                       Text(
                         MoneyFormat.withCode(weekTotal, currency: currency),
-                        style: theme.textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.xs),
                   Semantics(
                     label: _chartSemantics(days, amounts, currency),
                     child: SizedBox(
-                      height: _chartHeight,
+                      height: 72,
                       child: BarChart(
                         _chartData(
                           context: context,
@@ -345,7 +347,7 @@ class HomeSummaryCard extends ConsumerWidget {
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 24,
+            reservedSize: 20,
             getTitlesWidget: (value, meta) {
               final index = value.toInt();
               if (index < 0 || index >= days.length) {
@@ -354,7 +356,7 @@ class HomeSummaryCard extends ConsumerWidget {
               final highlighted = sameDay(days[index], activeDay);
               return SideTitleWidget(
                 meta: meta,
-                space: 6,
+                space: 4,
                 child: Text(
                   _initials[days[index].weekday - 1],
                   style: theme.textTheme.labelSmall?.copyWith(
@@ -374,7 +376,7 @@ class HomeSummaryCard extends ConsumerWidget {
           barRods: [
             BarChartRodData(
               toY: amounts[index],
-              width: 22,
+              width: 16,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppRadius.xs),
               ),
@@ -518,37 +520,62 @@ class _AccountChip extends StatelessWidget {
   }
 }
 
-/// The account's initial in a tonal squircle, mirroring a category artwork.
-class _AccountBadge extends StatelessWidget {
-  const _AccountBadge({required this.account, required this.accent});
+/// One of the two small income/expense figures beside the balance.
+///
+/// A full [StatPill] was a second and third card inside the card; at a glance
+/// the two figures only need to be readable, not boxed.
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({
+    required this.icon,
+    required this.label,
+    required this.amount,
+    required this.color,
+  });
 
-  final WaltAccount? account;
-  final Color accent;
+  final IconData icon;
+  final String label;
+  final String amount;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final initial = (account?.name.trim().isNotEmpty ?? false)
-        ? account!.name.trim().characters.first.toUpperCase()
-        : null;
+    final scheme = theme.colorScheme;
 
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      alignment: Alignment.center,
-      child: initial == null
-          ? Icon(Icons.account_balance_wallet_rounded, color: accent)
-          : Text(
-              initial,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: accent,
-                fontWeight: FontWeight.w700,
+    return Semantics(
+      label: '$label: $amount',
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: AppSpacing.xs),
+          Flexible(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$label ',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  TextSpan(
+                    text: amount,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+          ),
+        ],
+      ),
     );
   }
 }

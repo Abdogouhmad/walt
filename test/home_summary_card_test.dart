@@ -105,5 +105,14 @@ void main() {
       );
       expect(chip.shape, isA<StadiumBorder>());
     });
+
+    testWidgets('stays compact so the rest of Home fits', (tester) async {
+      await _pump(tester, 1.0);
+
+      final card = tester.getSize(find.byType(HomeSummaryCard));
+      // The card is a summary, not a dashboard: the pinned budgets and recent
+      // activity below it are the point of the screen.
+      expect(card.height, lessThan(320));
+    });
   });
 }
