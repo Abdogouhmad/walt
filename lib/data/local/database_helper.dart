@@ -20,9 +20,52 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
+    );
+  }
+
+  /// Runs `PRAGMA table_info` and returns the column names of [table].
+  ///
+  /// Migrations ask this before every `ALTER TABLE ... ADD COLUMN` so they are
+  /// idempotent. A user who installed a broken build, or an earlier upgrade
+  /// that only got partway, still ends up with a complete schema instead of an
+  /// exception and an unusable app.
+  Future<Set<String>> _columnsOf(Database db, String table) async {
+    final rows = await db.rawQuery('PRAGMA table_info($table)');
+    return {
+      for (final row in rows)
+        if (row['name'] case final String name) name,
+    };
+  }
+
+  Future<void> _addColumnIfMissing(
+    Database db, {
+    required String table,
+    required String column,
+    required String definition,
+  }) async {
+    final columns = await _columnsOf(db, table);
+    if (columns.contains(column)) return;
+    await db.execute('ALTER TABLE $table ADD COLUMN $column $definition');
+  }
+
+  Future<void> _createBudgetSnapshots(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS budget_period_snapshots (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        budget_id INTEGER NOT NULL,
+        start_ms INTEGER NOT NULL,
+        end_ms INTEGER NOT NULL,
+        limit_amount REAL NOT NULL,
+        UNIQUE(budget_id, start_ms)
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_budget_snapshot_budget '
+      'ON budget_period_snapshots(budget_id, start_ms)',
     );
   }
 
@@ -91,21 +134,7 @@ class DatabaseHelper {
       )
     ''');
 
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS budget_period_snapshots (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        budget_id INTEGER NOT NULL,
-        start_ms INTEGER NOT NULL,
-        end_ms INTEGER NOT NULL,
-        limit_amount REAL NOT NULL,
-        UNIQUE(budget_id, start_ms)
-      )
-    ''');
-
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_budget_snapshot_budget '
-      'ON budget_period_snapshots(budget_id, start_ms)',
-    );
+    await _createBudgetSnapshots(db);
     await _createIndexes(db);
     debugPrint('✅ Database tables created successfully.');
   }
@@ -116,6 +145,9 @@ class DatabaseHelper {
   /// a temporary B-tree on every list/report load — the Activity screen, the
   /// home recap and the budget progress all order by `date DESC`. Created with
   /// `IF NOT EXISTS` so it is safe to run from both `onCreate` and `onUpgrade`.
+  ///
+  /// Upgrade paths must call this **after** all columns exist: the budget index
+  /// below references `transactions.budget_id`, which only arrives in v7.
   Future<void> _createIndexes(Database db) async {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_tx_date ON transactions(date DESC)',
@@ -139,80 +171,30 @@ class DatabaseHelper {
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     debugPrint('🔄 Upgrading database from v$oldVersion to v$newVersion');
+
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE accounts ADD COLUMN profile_pic TEXT');
+      await _addColumnIfMissing(
+        db,
+        table: 'accounts',
+        column: 'profile_pic',
+        definition: 'TEXT',
+      );
     }
-    if (oldVersion < 3) {
-      await _createIndexes(db);
-    }
+
+    // v4 introduced multi-category budgets and per-period snapshots.
     if (oldVersion < 4) {
-      try {
-        await db.execute('ALTER TABLE budgets ADD COLUMN name TEXT DEFAULT ""');
-      } catch (_) {}
-      try {
-        await db.execute(
-          "ALTER TABLE budgets ADD COLUMN category_ids TEXT DEFAULT ''",
-        );
-      } catch (_) {}
-      try {
-        await db.execute(
-          'ALTER TABLE budgets ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0',
-        );
-      } catch (_) {}
-      try {
-        await db.execute(
-          'ALTER TABLE budgets ADD COLUMN pin_order INTEGER NOT NULL DEFAULT 0',
-        );
-      } catch (_) {}
-      try {
-        await db.execute('ALTER TABLE budgets ADD COLUMN accent_color TEXT');
-      } catch (_) {}
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS budget_period_snapshots (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          budget_id INTEGER NOT NULL,
-          start_ms INTEGER NOT NULL,
-          end_ms INTEGER NOT NULL,
-          limit_amount REAL NOT NULL,
-          UNIQUE(budget_id, start_ms)
-        )
-      ''');
+      await _addBudgetColumns(db);
+      await _createBudgetSnapshots(db);
     }
+
+    // A database upgraded by an early v4 build could be missing some of the
+    // budget columns; re-checking is cheap and keeps the upgrade idempotent.
     if (oldVersion < 5) {
-      // Ensure pinning exists for databases upgraded partway.
-      try {
-        await db.execute('ALTER TABLE budgets ADD COLUMN name TEXT DEFAULT ""');
-      } catch (_) {}
-      try {
-        await db.execute(
-          "ALTER TABLE budgets ADD COLUMN category_ids TEXT DEFAULT ''",
-        );
-      } catch (_) {}
-      try {
-        await db.execute(
-          'ALTER TABLE budgets ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0',
-        );
-      } catch (_) {}
-      try {
-        await db.execute(
-          'ALTER TABLE budgets ADD COLUMN pin_order INTEGER NOT NULL DEFAULT 0',
-        );
-      } catch (_) {}
-      try {
-        await db.execute('ALTER TABLE budgets ADD COLUMN accent_color TEXT');
-      } catch (_) {}
+      await _addBudgetColumns(db);
     }
+
     if (oldVersion < 6) {
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS budget_period_snapshots (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          budget_id INTEGER NOT NULL,
-          start_ms INTEGER NOT NULL,
-          end_ms INTEGER NOT NULL,
-          limit_amount REAL NOT NULL,
-          UNIQUE(budget_id, start_ms)
-        )
-      ''');
+      await _createBudgetSnapshots(db);
 
       // Older rows only knew their primary category. Backfill the multi-category
       // column so both the DAO and the picker see a complete selection.
@@ -228,24 +210,57 @@ class DatabaseHelper {
         'WHERE id = (SELECT MIN(id) FROM budgets) '
         'AND NOT EXISTS (SELECT 1 FROM budgets WHERE is_pinned = 1)',
       );
+    }
 
-      await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_budget_snapshot_budget '
-        'ON budget_period_snapshots(budget_id, start_ms)',
-      );
-      await _createIndexes(db);
-    }
-    if (oldVersion < 7) {
-      // Transactions can now be booked against one specific budget. Existing
-      // rows stay NULL, which preserves the old category-based attribution.
-      try {
-        await db.execute(
-          'ALTER TABLE transactions ADD COLUMN budget_id INTEGER',
-        );
-      } catch (_) {}
-      await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_tx_budget ON transactions(budget_id)',
+    if (oldVersion < 8) {
+      // v7 added this column; v8 is an idempotent repair for databases that a
+      // broken v7 build left without it. Existing rows stay NULL, which keeps
+      // the old category-based attribution.
+      await _addColumnIfMissing(
+        db,
+        table: 'transactions',
+        column: 'budget_id',
+        definition: 'INTEGER',
       );
     }
+
+    // Run every index last, once all referenced columns are guaranteed to
+    // exist. Creating `idx_tx_budget` in the v6 step used to fail an upgrade
+    // from v3 with "no such column: budget_id" and the app could not open its
+    // database at all.
+    await _createIndexes(db);
+  }
+
+  Future<void> _addBudgetColumns(Database db) async {
+    await _addColumnIfMissing(
+      db,
+      table: 'budgets',
+      column: 'name',
+      definition: 'TEXT DEFAULT ""',
+    );
+    await _addColumnIfMissing(
+      db,
+      table: 'budgets',
+      column: 'category_ids',
+      definition: "TEXT DEFAULT ''",
+    );
+    await _addColumnIfMissing(
+      db,
+      table: 'budgets',
+      column: 'is_pinned',
+      definition: 'INTEGER NOT NULL DEFAULT 0',
+    );
+    await _addColumnIfMissing(
+      db,
+      table: 'budgets',
+      column: 'pin_order',
+      definition: 'INTEGER NOT NULL DEFAULT 0',
+    );
+    await _addColumnIfMissing(
+      db,
+      table: 'budgets',
+      column: 'accent_color',
+      definition: 'TEXT',
+    );
   }
 }
