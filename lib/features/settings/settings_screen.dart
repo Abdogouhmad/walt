@@ -6,6 +6,7 @@ import 'package:walt/features/settings/widgets/about_info_dialog.dart';
 import 'package:walt/features/settings/widgets/appearance_screen.dart';
 import 'package:walt/features/settings/widgets/budget_alerts_section.dart';
 import 'package:walt/features/settings/widgets/currency_selection_screen.dart';
+import 'package:walt/features/settings/widgets/data_section.dart';
 import 'package:walt/features/settings/widgets/fingerprint_section.dart';
 import 'package:walt/features/settings/widgets/profile/header.dart';
 import 'package:walt/features/settings/widgets/settings_action_tile.dart';
@@ -71,6 +72,7 @@ class SettingsScreen extends ConsumerWidget {
 
                     const FingerprintSection(),
                     const BudgetAlertsSection(),
+                    const DataSection(),
 
                     const SectionHeader(title: 'Others'),
                     GroupedList(
