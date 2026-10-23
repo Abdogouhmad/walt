@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import 'package:walt/data/models/walt_budget.dart';
 import 'package:walt/data/models/walt_transaction.dart';
 import 'package:walt/features/transactions/widgets/transaction_detail_header.dart';
 import 'package:walt/features/transactions/widgets/transaction_detail_row.dart';
 import 'package:walt/features/transactions/widgets/transaction_note_block.dart';
 import 'package:walt/providers/account_provider.dart';
+import 'package:walt/providers/budget_provider.dart';
 import 'package:walt/providers/category_provider.dart';
 import 'package:walt/providers/settings_provider.dart';
 import 'package:walt_ui/walt_ui.dart';
@@ -65,6 +67,12 @@ class TransactionDetailSheet extends ConsumerWidget {
         ? null
         : accountById[transaction.accountId];
 
+    final budgets = ref.watch(budgetProvider).value ?? const <WaltBudget>[];
+    final budgetById = {for (final b in budgets) b.id: b};
+    final budget = transaction.budgetId == null
+        ? null
+        : budgetById[transaction.budgetId];
+
     final note = transaction.note?.trim() ?? '';
     // The add form trims the field before saving, so an "empty" merchant can
     // be an empty *string* rather than a null.
@@ -115,6 +123,14 @@ class TransactionDetailSheet extends ConsumerWidget {
                 icon: Icons.account_balance_wallet_rounded,
                 label: 'Account',
                 value: account.name,
+              ),
+            if (budget != null)
+              TransactionDetailRow(
+                icon: Icons.track_changes_rounded,
+                label: 'Budget',
+                value: budget.name.trim().isEmpty
+                    ? 'Budget'
+                    : budget.name.trim(),
               ),
           ],
         ),

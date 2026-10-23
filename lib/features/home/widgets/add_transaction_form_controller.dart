@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:walt/data/models/walt_budget.dart';
 import 'package:walt/data/models/walt_transaction.dart';
+import 'package:walt/providers/budget_provider.dart';
 import 'package:walt/providers/report_provider.dart';
 import 'package:walt/providers/transaction_provider.dart';
 import 'package:walt_ui/walt_ui.dart';
@@ -38,6 +40,11 @@ class AddTransactionFormController {
 
   String type;
   int? selectedCategoryId; // null until categories load
+
+  /// Optional budget the expense is booked against. Null keeps the legacy
+  /// category-based attribution; the picker only offers budgets that include
+  /// the selected category.
+  int? selectedBudgetId;
   DateTime selectedDate = DateTime.now();
   bool isSaving = false;
 
@@ -117,11 +124,26 @@ class AddTransactionFormController {
     isSaving = true;
     onChanged?.call();
 
+    // A budget selected before the sheet's budget list refreshed could no
+    // longer exist, or may no longer cover the chosen category. Dropping the
+    // link is safer than persisting an invalid one; the transaction still
+    // counts by category.
+    var budgetId = type == 'expense' ? selectedBudgetId : null;
+    if (budgetId != null) {
+      final categoryId = selectedCategoryId!;
+      final budgets = ref.read(budgetProvider).value ?? const <WaltBudget>[];
+      final stillValid = budgets.any(
+        (b) => b.id == budgetId && b.effectiveCategoryIds.contains(categoryId),
+      );
+      if (!stillValid) budgetId = null;
+    }
+
     final transaction = WaltTransaction(
       id: DateTime.now().millisecondsSinceEpoch,
       amount: double.parse(amountController.text.trim()),
       type: type,
       categoryId: selectedCategoryId!,
+      budgetId: budgetId,
       merchant: merchantController.text.trim(),
       note: noteController.text.trim(),
       date: selectedDate,
