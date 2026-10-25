@@ -52,10 +52,15 @@ class ThemeController extends Notifier<ThemeSettings> {
   Future<void> _apply(ThemeSettings next) async {
     state = next;
     try {
-      await _hive.setThemePalette(next.palette.name);
-      await _hive.setThemeMode(next.mode.name);
-      await _hive.setThemeAmoled(next.amoled);
-      await _hive.setThemeCustomSeed(next.customSeed?.toARGB32());
+      // The four keys are independent box writes. Firing them together keeps a
+      // colour-picker drag (one apply per pointer move) from paying four
+      // sequential round-trips per frame.
+      await Future.wait([
+        _hive.setThemePalette(next.palette.name),
+        _hive.setThemeMode(next.mode.name),
+        _hive.setThemeAmoled(next.amoled),
+        _hive.setThemeCustomSeed(next.customSeed?.toARGB32()),
+      ]);
     } catch (e) {
       debugPrint('Could not persist theme settings: $e');
     }

@@ -55,7 +55,7 @@ class TransactionDetailSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final semantic = WaltColors.of(context);
     final currency = ref.watch(settingsProvider.select((s) => s.currency));
-    final isIncome = transaction.type.toLowerCase() == 'income';
+    final isIncome = transaction.isIncome;
 
     final categories = ref.watch(categoryProvider).value ?? const [];
     final categoryById = {for (final c in categories) c.id: c};

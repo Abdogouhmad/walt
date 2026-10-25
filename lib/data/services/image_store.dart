@@ -68,6 +68,34 @@ class ImageStore {
     }
   }
 
+  /// Deletes a category image that is no longer referenced.
+  ///
+  /// Category edits and deletions used to leave every replaced or removed photo
+  /// behind in the app's documents directory. The guard is deliberate: only
+  /// files under the `categories/` folder can be deleted, so a damaged store
+  /// cannot point this at an arbitrary file.
+  static Future<void> deleteCategoryImage(String? storedPath) async {
+    if (storedPath == null || storedPath.trim().isEmpty) return;
+
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final normalized = p.normalize(storedPath.trim());
+      final absolute = p.isAbsolute(normalized)
+          ? normalized
+          : p.join(docs.path, normalized);
+      final categoryDirectory = p.normalize(p.join(docs.path, _categoryFolder));
+      if (!p.isWithin(categoryDirectory, absolute)) {
+        debugPrint('ImageStore: refused to delete outside $categoryDirectory');
+        return;
+      }
+
+      final file = File(absolute);
+      if (await file.exists()) await file.delete();
+    } catch (e) {
+      debugPrint('ImageStore: could not delete $storedPath — $e');
+    }
+  }
+
   /// Resolves an app-documents-relative image path to an absolute path.
   static Future<String?> resolveRelativePath(String? relativePath) async {
     if (relativePath == null || relativePath.trim().isEmpty) return null;

@@ -28,6 +28,13 @@ class BoundedMemo<K, V extends Object> {
   /// the cap is actually enforced rather than trusting the implementation.
   int get length => _entries.length;
 
+  /// Drops [key] so the next request rebuilds it.
+  ///
+  /// Useful for values that are only conditionally cacheable: an asynchronous
+  /// lookup that resolves to "not found" should not keep that answer for the
+  /// life of the process, because the thing it looked for may appear later.
+  void remove(K key) => _entries.remove(key);
+
   /// The cached [value] for [key], built with [build] on the first request (and
   /// again after an eviction).
   V getOrPut(K key, V Function() build) {

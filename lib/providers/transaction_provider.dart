@@ -82,16 +82,26 @@ final recentTransactionsProvider = Provider<List<WaltTransaction>>((ref) {
   final selected = ref.watch(selectedDayProvider);
   final maxItems = ref.watch(recentActivityLimitProvider);
 
-  final candidates = transactions.where((tx) {
-    if (selected == null) return true;
+  // `transactionProvider` is loaded with `ORDER BY date DESC`, and
+  // `homeTransactionsProvider` only filters that list, so the newest rows are
+  // already at the front. Sorting the whole history on every rebuild was
+  // O(n log n) work to show five rows; stopping at the limit makes it O(k).
+  if (selected == null) {
+    return transactions.take(maxItems).toList(growable: false);
+  }
+
+  final selectedDay = dateOnly(selected);
+  final recent = <WaltTransaction>[];
+  for (final tx in transactions) {
     // A day selected in the recap filters to that day. Matching on the calendar
     // day (not the instant) is what keeps this working: transactions are stamped
     // with the moment they were added, so they carry a time-of-day, and comparing
     // against a midnight boundary would drop them.
-    return daysBetween(dateOnly(selected), dateOnly(tx.date)) == 0;
-  }).toList()..sort((a, b) => b.date.compareTo(a.date));
-
-  return candidates.take(maxItems).toList();
+    if (daysBetween(selectedDay, dateOnly(tx.date)) != 0) continue;
+    recent.add(tx);
+    if (recent.length == maxItems) break;
+  }
+  return recent;
 });
 
 /// Home shows at most five recent items.
@@ -115,7 +125,7 @@ final homeSummaryProvider =
       double income = 0;
       double expenses = 0;
       for (final tx in transactions) {
-        if (tx.type.toLowerCase() == 'income') {
+        if (tx.isIncome) {
           income += tx.amount;
         } else {
           expenses += tx.amount;
@@ -130,17 +140,16 @@ final transactionsByDayProvider = Provider<Map<String, List<WaltTransaction>>>((
 ) {
   final transactions = ref.watch(transactionProvider).value ?? const [];
 
-  // Sort transactions by date descending (newest first)
-  final sortedTransactions = List<WaltTransaction>.from(transactions)
-    ..sort((a, b) => b.date.compareTo(a.date));
-
+  // The DAO returns newest first and every mutation reloads through it, so the
+  // list is already in the order the Activity screen renders. Re-sorting (and
+  // copying) the entire history on every change was redundant work per rebuild.
   final Map<String, List<WaltTransaction>> grouped = {};
   final now = DateTime.now();
-  final today = DateTime(now.year, now.month, now.day);
-  final yesterday = DateTime(now.year, now.month, now.day - 1);
+  final today = dateOnly(now);
+  final yesterday = addDays(today, -1);
 
-  for (var tx in sortedTransactions) {
-    final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
+  for (final tx in transactions) {
+    final txDate = dateOnly(tx.date);
     String key;
 
     if (txDate.isAtSameMomentAs(today)) {
@@ -151,7 +160,7 @@ final transactionsByDayProvider = Provider<Map<String, List<WaltTransaction>>>((
       key = _dayHeaderFormat.format(tx.date);
     }
 
-    grouped.putIfAbsent(key, () => []).add(tx);
+    (grouped[key] ??= []).add(tx);
   }
   return grouped;
 });

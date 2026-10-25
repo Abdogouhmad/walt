@@ -169,12 +169,14 @@ class CategoryNotifier extends Notifier<AsyncValue<List<WaltCategory>>> {
   bool _backfillDefaultImages(List<WaltCategory> categories) {
     var changed = false;
     final byName = {for (final d in _defaults) d.name.toLowerCase(): d};
-    for (final category in categories) {
+    for (var i = 0; i < categories.length; i++) {
+      final category = categories[i];
       if (category.hasImage) continue;
       final def = byName[category.name.toLowerCase()];
       if (def == null || def.icon != category.icon) continue;
-      final index = categories.indexOf(category);
-      categories[index] = category.copyWith(
+      // Index directly: `indexOf` inside the loop made the backfill O(n²) for
+      // a list the user can grow with custom categories.
+      categories[i] = category.copyWith(
         imageSource: CategoryImageSource.asset,
         imagePath: def.image,
       );

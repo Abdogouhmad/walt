@@ -91,7 +91,7 @@ bool transactionCountsForBudget(
   WaltTransaction transaction,
   WaltBudget budget,
 ) {
-  if (transaction.type.toLowerCase() != 'expense') return false;
+  if (!transaction.isExpense) return false;
   final budgetId = transaction.budgetId;
   if (budgetId != null) return budgetId == budget.id;
   return budget.effectiveCategoryIds.contains(transaction.categoryId);

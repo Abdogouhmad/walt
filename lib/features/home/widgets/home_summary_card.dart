@@ -25,7 +25,8 @@ class HomeSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final accounts = ref.watch(accountProvider).value ?? const <WaltAccount>[];
+    final accountsAsync = ref.watch(accountProvider);
+    final accounts = accountsAsync.value ?? const <WaltAccount>[];
     final selectedAccountId = ref.watch(homeAccountIdProvider);
     final summary = ref.watch(homeSummaryProvider);
     final totals = ref.watch(weekSpendingProvider);
@@ -44,7 +45,7 @@ class HomeSummaryCard extends ConsumerWidget {
     // the selected id is gone; the next frame renders "All accounts".
     if (selectedAccountId != null &&
         account == null &&
-        ref.watch(accountProvider).hasValue) {
+        accountsAsync.hasValue) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(homeAccountIdProvider.notifier).state = null;
       });

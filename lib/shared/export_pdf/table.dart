@@ -73,7 +73,7 @@ class PdfTable extends pw.StatelessWidget {
         // Rows
         ...transactions.map((tx) {
           final category = categoryMap[tx.categoryId];
-          final isIncome = tx.type == 'income';
+          final isIncome = tx.isIncome;
 
           return pw.TableRow(
             decoration: const pw.BoxDecoration(

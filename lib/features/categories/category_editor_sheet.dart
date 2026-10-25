@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -104,6 +106,10 @@ Future<bool> confirmAndDeleteCategory(
     debugPrint('CategoryEditor: delete failed — $e');
   }
 
+  if (failure == null && category.imageSource == CategoryImageSource.file) {
+    await ImageStore.deleteCategoryImage(category.imagePath);
+  }
+
   if (!context.mounted) return false;
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(failure ?? '“${category.name}” deleted')),
@@ -130,6 +136,15 @@ class _CategoryEditorSheetState extends ConsumerState<CategoryEditorSheet> {
   late CategoryImageSource _imageSource;
   String? _imagePath;
 
+  /// The image the category had when the sheet opened, if any.
+  String? _originalImagePath;
+
+  /// Images imported during this edit but not committed yet. They are removed
+  /// when the sheet closes without saving instead of accumulating in the app's
+  /// documents directory.
+  final Set<String> _pendingImages = <String>{};
+
+  bool _saved = false;
   bool _saving = false;
 
   /// A new category has no stored accent yet, so the first build waits for
@@ -151,10 +166,18 @@ class _CategoryEditorSheetState extends ConsumerState<CategoryEditorSheet> {
     _awaitingThemeColor = category == null;
     _imageSource = category?.imageSource ?? CategoryImageSource.asset;
     _imagePath = category?.imagePath;
+    _originalImagePath = category?.imageSource == CategoryImageSource.file
+        ? category?.imagePath
+        : null;
   }
 
   @override
   void dispose() {
+    if (!_saved) {
+      for (final path in _pendingImages) {
+        unawaited(ImageStore.deleteCategoryImage(path));
+      }
+    }
     _nameController.dispose();
     super.dispose();
   }
@@ -185,6 +208,18 @@ class _CategoryEditorSheetState extends ConsumerState<CategoryEditorSheet> {
         _showError('Could not save that image. Try another one.');
         return;
       }
+
+      // Replacing an earlier *uncommitted* pick can free that file right away.
+      // The category's original image is kept until the edit is saved, so
+      // cancelling the sheet never destroys the current artwork.
+      final previous = _imagePath;
+      if (previous != null &&
+          previous != _originalImagePath &&
+          _pendingImages.remove(previous)) {
+        unawaited(ImageStore.deleteCategoryImage(previous));
+      }
+      _pendingImages.add(relative);
+
       setState(() {
         _imageSource = CategoryImageSource.file;
         _imagePath = relative;
@@ -229,6 +264,7 @@ class _CategoryEditorSheetState extends ConsumerState<CategoryEditorSheet> {
           imagePath: _imagePath,
         );
       }
+      _commitImageChanges();
       if (!mounted) return;
       Navigator.pop(context, saved);
     } on CategoryNameTakenException catch (e) {
@@ -240,6 +276,29 @@ class _CategoryEditorSheetState extends ConsumerState<CategoryEditorSheet> {
       debugPrint('CategoryEditor: save failed — $e');
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  /// Marks the edit as committed and removes images it no longer references.
+  ///
+  /// Deletion is fire-and-forget: it is housekeeping, and a failure here must
+  /// never turn a successful save into an error dialog.
+  void _commitImageChanges() {
+    _saved = true;
+    final committed = _imageSource == CategoryImageSource.file
+        ? _imagePath
+        : null;
+
+    // The picked image is now referenced by the saved category.
+    if (committed != null) _pendingImages.remove(committed);
+    for (final path in _pendingImages) {
+      unawaited(ImageStore.deleteCategoryImage(path));
+    }
+    _pendingImages.clear();
+
+    final original = _originalImagePath;
+    if (original != null && original != committed) {
+      unawaited(ImageStore.deleteCategoryImage(original));
     }
   }
 

@@ -28,3 +28,16 @@ sealed class WaltTransaction with _$WaltTransaction {
   factory WaltTransaction.fromJson(Map<String, dynamic> json) =>
       _$WaltTransactionFromJson(json);
 }
+
+/// Type helpers shared by every screen, export and calculation.
+///
+/// `type` is free-form text (`'income'` / `'expense'`) and is compared
+/// case-insensitively everywhere a transaction is summed or colour-coded. Two
+/// exports used an exact match instead, so a backup restored from a store that
+/// spelt the type `Income` showed income as spending. One definition keeps the
+/// whole app agreeing on what a type means.
+extension WaltTransactionTypeX on WaltTransaction {
+  bool get isIncome => type.toLowerCase() == 'income';
+
+  bool get isExpense => type.toLowerCase() == 'expense';
+}

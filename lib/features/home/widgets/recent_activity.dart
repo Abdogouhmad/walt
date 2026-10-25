@@ -105,7 +105,7 @@ class RecentActivity extends ConsumerWidget {
               '#${(Theme.of(context).colorScheme.primary.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}',
           type: transaction.type,
         );
-    final isIncome = transaction.type.toLowerCase() == 'income';
+    final isIncome = transaction.isIncome;
 
     return GroupedListTile(
       onTap: () => showTransactionDetailSheet(context, transaction),

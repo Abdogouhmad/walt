@@ -14,6 +14,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-10-25
+
+### Added
+
+- **Categories can be artwork, not just an icon.** A category can use one of
+  the bundled silhouettes or a photo from your gallery, and Add Transaction and
+  budgets now share one picker with a selected check badge. Category deletion is
+  refused while transactions or budgets still use it, so spending is never
+  silently reassigned.
+- **Settings → Data can take your data with you.** Export the full history as a
+  spreadsheet-friendly CSV or a printable PDF, back up every record, category,
+  image and setting as one JSON file, and restore it later. Files are created
+  on-device and handed to the share sheet; a restore writes a safety copy of the
+  data it is about to replace.
+
+### Changed
+
+- **Category photos are cleaned up when they are no longer used.** Replacing a
+  photo, changing a category back to a bundled silhouette, deleting the category
+  or closing the editor without saving no longer leaves the discarded image
+  behind in the app's storage.
+
+### Performance
+
+- **Home and Activity no longer re-sort the whole ledger.** The database already
+  returns newest first, so the recent list stops after the five rows it shows
+  and day grouping walks the list once instead of copying and sorting it on
+  every rebuild.
+- **Category images decode at the size they are drawn**, and the resolved-path
+  cache is bounded instead of growing with every photo ever opened.
+- **Exports, backups and appearance changes do less waiting.** Independent
+  reads run together, backup images are read and restored in parallel, and the
+  four appearance keys are written together while a colour picker is dragged.
+- **Category loading is linear again.** Seeding bundled artwork no longer scans
+  the category list once per category.
+
+### Fixed
+
+- **PDF exports count every transaction.** Type matching is now
+  case-insensitive, so a stored `Income` is no longer exported as spending.
+  Exporting also no longer reorders the live list it was handed.
+- **Refreshing accounts no longer flashes zero.** A refresh after a restore or a
+  currency change keeps the current balances until the new ones arrive.
+- **Exporting a CSV builds its date formatter once**, not once per row.
+
 ## [1.0.10] - 2026-10-22
 
 ### Fixed

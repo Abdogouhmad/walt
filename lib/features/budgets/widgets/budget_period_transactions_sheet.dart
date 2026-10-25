@@ -53,7 +53,7 @@ class BudgetPeriodTransactionsSheet extends ConsumerWidget {
 
     final categoryIds = budget.effectiveCategoryIds.toSet();
     final filtered = transactions.where((tx) {
-      if (tx.type.toLowerCase() != 'expense') return false;
+      if (!tx.isExpense) return false;
       if (!categoryIds.contains(tx.categoryId)) return false;
       return summary.window.contains(tx.date);
     }).toList()..sort((a, b) => b.date.compareTo(a.date));

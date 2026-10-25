@@ -28,7 +28,7 @@ class TxList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isIncome = transaction.type.toLowerCase() == 'income';
+    final isIncome = transaction.isIncome;
     final currency = ref.watch(settingsProvider.select((s) => s.currency));
 
     return Slidable(

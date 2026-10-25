@@ -18,7 +18,10 @@ class AccountNotifier extends Notifier<AsyncValue<List<WaltAccount>>> {
 
   Future<void> loadAccounts() async {
     try {
-      state = const AsyncValue.loading();
+      // Only the first load needs a spinner. A refresh after a restore or a
+      // currency change should keep the current balances visible until the new
+      // ones land, instead of flashing every dependent card back to zero.
+      if (!state.hasValue) state = const AsyncValue.loading();
       final accounts = await _dao.getAllAccounts();
       if (ref.mounted) {
         state = AsyncValue.data(accounts);

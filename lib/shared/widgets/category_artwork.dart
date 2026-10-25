@@ -51,7 +51,14 @@ class CategoryArtwork extends StatefulWidget {
 }
 
 class _CategoryArtworkState extends State<CategoryArtwork> {
-  static final Map<String, Future<String?>> _resolvedPaths = {};
+  /// Resolved image paths, shared by every tile showing the same artwork.
+  ///
+  /// Bounded because imported photos can come and go with categories; an
+  /// unbounded map would keep a future (and its path) per image for the life of
+  /// the process. Failed lookups are evicted below so a restored file appears
+  /// without restarting the app.
+  static final BoundedMemo<String, Future<String?>> _resolvedPaths =
+      BoundedMemo<String, Future<String?>>(64);
 
   Future<String?>? _fileFuture;
   String? _sourcePath;
@@ -81,7 +88,15 @@ class _CategoryArtworkState extends State<CategoryArtwork> {
     }
     final path = category.imagePath!;
     _sourcePath = path;
-    _fileFuture = _resolvedPaths.putIfAbsent(path, () => _resolve(path));
+    _fileFuture = _resolvedPaths.getOrPut(
+      path,
+      () => _resolve(path).then((resolved) {
+        // A missing file is a temporary state, not an immutable fact: a backup
+        // restore can put the artwork back. Do not cache the absence.
+        if (resolved == null) _resolvedPaths.remove(path);
+        return resolved;
+      }),
+    );
   }
 
   static Future<String?> _resolve(String stored) async {
@@ -105,6 +120,12 @@ class _CategoryArtworkState extends State<CategoryArtwork> {
       seriesIndex: widget.seriesIndex,
     );
     final radius = widget.radius ?? widget.size * 0.32;
+    // Decode at the size the tile is actually drawn. An imported phone photo
+    // can be tens of megapixels; decoding it full-size for a 40 px row costs
+    // megabytes of image cache per tile.
+    final decodeExtent = widget.size > 0
+        ? (widget.size * MediaQuery.devicePixelRatioOf(context)).ceil()
+        : null;
     final background =
         widget.background ?? accent.withValues(alpha: widget.filled ? 0.14 : 0);
 
@@ -125,6 +146,7 @@ class _CategoryArtworkState extends State<CategoryArtwork> {
         child: Image.asset(
           widget.category.imagePath!,
           fit: BoxFit.contain,
+          cacheWidth: decodeExtent,
           color: accent,
           colorBlendMode: BlendMode.srcIn,
           errorBuilder: (_, _, _) => fallback,
@@ -147,6 +169,7 @@ class _CategoryArtworkState extends State<CategoryArtwork> {
               fit: BoxFit.cover,
               width: widget.size,
               height: widget.size,
+              cacheWidth: decodeExtent,
               errorBuilder: (_, _, _) => fallback,
             ),
           );

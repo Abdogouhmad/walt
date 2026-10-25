@@ -71,14 +71,17 @@ class PdfExportService {
     final String currency = _hiveService.getCurrency();
 
     // Newest first, so the export reads the same way as the activity list.
-    transactions.sort((a, b) => b.date.compareTo(a.date));
+    // Sort a copy: the caller's list (a provider snapshot or a DAO result) must
+    // not be reordered as a side effect of exporting it.
+    final ordered = List<WaltTransaction>.of(transactions)
+      ..sort((a, b) => b.date.compareTo(a.date));
 
     final pdf = pw.Document();
 
     double totalIncome = 0;
     double totalExpense = 0;
-    for (final transaction in transactions) {
-      if (transaction.type == 'income') {
+    for (final transaction in ordered) {
+      if (transaction.isIncome) {
         totalIncome += transaction.amount;
       } else {
         totalExpense += transaction.amount;
@@ -108,7 +111,7 @@ class PdfExportService {
           ),
           pw.SizedBox(height: 10),
           PdfTable(
-            transactions: transactions,
+            transactions: ordered,
             categoryMap: categoryMap,
             currency: currency,
             emptyMessage: emptyMessage,

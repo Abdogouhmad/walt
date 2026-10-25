@@ -36,23 +36,28 @@ class BudgetNotifier extends Notifier<AsyncValue<List<WaltBudget>>> {
       // Snapshot the current limit before the cards render. This is what makes
       // an edit next month unable to rewrite what this month allowed. A failure
       // here must not hide the budgets, so each write is best-effort.
-      for (final budget in budgets) {
-        try {
-          final window = BudgetWindow.forPeriod(
-            BudgetPeriodX.parse(budget.period),
-            DateTime.now(),
-          );
-          await _snapshots.ensureCurrentSnapshot(
-            budgetId: budget.id,
-            window: window,
-            limit: budget.amount,
-          );
-        } catch (e) {
-          debugPrint('BudgetNotifier: could not snapshot ${budget.id} — $e');
-        }
-      }
+      //
+      // One anchor for the whole batch keeps every budget in the same period,
+      // and running the writes together avoids a per-budget round-trip on the
+      // first load after a restart.
+      final now = DateTime.now();
+      await Future.wait([
+        for (final budget in budgets) _ensureSnapshot(budget, now),
+      ]);
       return budgets;
     });
+  }
+
+  Future<void> _ensureSnapshot(WaltBudget budget, DateTime now) async {
+    try {
+      await _snapshots.ensureCurrentSnapshot(
+        budgetId: budget.id,
+        window: BudgetWindow.forPeriod(BudgetPeriodX.parse(budget.period), now),
+        limit: budget.amount,
+      );
+    } catch (e) {
+      debugPrint('BudgetNotifier: could not snapshot ${budget.id} — $e');
+    }
   }
 
   /// Mutations keep the previous list visible while the write happens, so
@@ -208,7 +213,7 @@ final budgetProgressProvider = Provider<List<BudgetProgress>>((ref) {
   final linkedByBudget = <int, List<WaltTransaction>>{};
   final unassignedByCategory = <int, List<WaltTransaction>>{};
   for (final t in transactions) {
-    if (t.type.toLowerCase() != 'expense') continue;
+    if (!t.isExpense) continue;
     final budgetId = t.budgetId;
     if (budgetId != null) {
       (linkedByBudget[budgetId] ??= []).add(t);

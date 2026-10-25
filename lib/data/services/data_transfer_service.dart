@@ -54,7 +54,10 @@ class BackupPreview {
   final Map<String, List<Map<String, dynamic>>> tables;
 
   final Map<String, dynamic> settings;
-  final List<Map<String, dynamic>> categories;
+
+  /// Parsed once, when the file is validated. Restoring reuses these models
+  /// instead of decoding the same JSON a second time.
+  final List<WaltCategory> categories;
 
   /// Documents-relative path to base64 bytes for user-created artwork.
   final Map<String, String> files;
@@ -154,10 +157,18 @@ class DataTransferService {
   /// lossless data.
   Future<DataTransferSummary> exportTransactionsCsv() async {
     await _hiveService.ensureSettingsOpen();
-    final transactions = await _transactionDao.getAllTransactions();
-    final categories = await _hiveService.getAllCategories();
-    final accounts = await _accountDao.getAllAccounts();
-    final budgets = await _budgetDao.getAllBudgets();
+
+    // The four stores are independent. Start them together instead of paying
+    // each query's latency in series; the awaits below only collect results.
+    final transactionsFuture = _transactionDao.getAllTransactions();
+    final categoriesFuture = _hiveService.getAllCategories();
+    final accountsFuture = _accountDao.getAllAccounts();
+    final budgetsFuture = _budgetDao.getAllBudgets();
+
+    final transactions = await transactionsFuture;
+    final categories = await categoriesFuture;
+    final accounts = await accountsFuture;
+    final budgets = await budgetsFuture;
     final currency = _hiveService.getCurrency();
 
     final categoryNames = <int, String>{
@@ -178,6 +189,10 @@ class DataTransferService {
       }
     }
 
+    // Built once per export, not once per row: a full history can be thousands
+    // of rows, and DateFormat construction is not free.
+    final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
+
     final csv = StringBuffer()
       // Excel only detects UTF-8 automatically when the BOM is present, which
       // matters for accents and non-Latin category names.
@@ -189,7 +204,7 @@ class DataTransferService {
       csv
         ..write(
           <String>[
-            _csv(DateFormat('yyyy-MM-dd HH:mm').format(transaction.date)),
+            _csv(dateFormat.format(transaction.date)),
             _csv(transaction.type),
             // Keep the stored precision: the backup is exact, and a CSV that
             // rounds 12.345 to 12.35 quietly disagrees with the app.
@@ -312,18 +327,16 @@ class DataTransferService {
     }
 
     final settings = Map<String, dynamic>.from(settingsRaw);
-    final categories = <Map<String, dynamic>>[];
+    final categories = <WaltCategory>[];
     for (final item in categoriesRaw) {
       if (item is! Map) {
         throw const BackupException('That backup has damaged category data.');
       }
-      final json = Map<String, dynamic>.from(item);
       try {
-        WaltCategory.fromJson(json);
+        categories.add(WaltCategory.fromJson(Map<String, dynamic>.from(item)));
       } catch (_) {
         throw const BackupException('That backup has damaged category data.');
       }
-      categories.add(json);
     }
 
     final tables = <String, List<Map<String, dynamic>>>{};
@@ -410,10 +423,7 @@ class DataTransferService {
     final safety = await _writeCurrentDataBackup(prefix: 'walt-pre-restore');
 
     final settings = Map<String, dynamic>.from(preview.settings);
-    final categories = <WaltCategory>[
-      for (final json in preview.categories)
-        WaltCategory.fromJson(Map<String, dynamic>.from(json)),
-    ];
+    final categories = List<WaltCategory>.of(preview.categories);
     final tables = <String, List<Map<String, dynamic>>>{
       for (final entry in preview.tables.entries)
         entry.key: <Map<String, dynamic>>[
@@ -541,6 +551,7 @@ class DataTransferService {
       'backups',
       fileName,
       _prettyJson.convert(payload),
+      inDocuments: documents,
     );
     return _LocalBackup(
       file: file,
@@ -641,9 +652,12 @@ class DataTransferService {
   Future<File> _writeExport(
     String folder,
     String fileName,
-    String contents,
-  ) async {
-    final documents = await getApplicationDocumentsDirectory();
+    String contents, {
+    Directory? inDocuments,
+  }) async {
+    // Backup building has already resolved the documents directory; asking
+    // path_provider for it again is an unnecessary platform round-trip.
+    final documents = inDocuments ?? await getApplicationDocumentsDirectory();
     final directory = Directory(p.join(documents.path, 'walt', folder));
     if (!await directory.exists()) {
       await directory.create(recursive: true);
@@ -736,16 +750,30 @@ class DataTransferService {
       if (relative != null) paths.add(relative);
     }
 
-    final files = <String, String>{};
-    for (final relative in paths) {
-      final absolute = p.isAbsolute(relative)
-          ? relative
-          : p.join(documents.path, relative);
-      final file = File(absolute);
-      if (!await file.exists()) continue;
-      files[relative] = base64Encode(await file.readAsBytes());
-    }
-    return files;
+    // Reading the artwork is I/O-bound and the files are independent, so let
+    // them be read together. The number of user images is small, and the
+    // finished backup holds all their bytes anyway.
+    final entries = await Future.wait([
+      for (final relative in paths) _readFileAsBase64(documents, relative),
+    ]);
+
+    return <String, String>{
+      for (final entry in entries)
+        if (entry != null) entry.key: entry.value,
+    };
+  }
+
+  /// Reads one documents-relative file, or returns null when it is gone.
+  Future<MapEntry<String, String>?> _readFileAsBase64(
+    Directory documents,
+    String relative,
+  ) async {
+    final absolute = p.isAbsolute(relative)
+        ? relative
+        : p.join(documents.path, relative);
+    final file = File(absolute);
+    if (!await file.exists()) return null;
+    return MapEntry(relative, base64Encode(await file.readAsBytes()));
   }
 
   /// Rewrites document paths in the backup to the current sandbox.
@@ -828,14 +856,21 @@ class DataTransferService {
       decoded[entry.key] = _decodeBase64(entry.value);
     }
 
-    var restored = 0;
-    for (final entry in decoded.entries) {
-      final file = File(p.normalize(p.join(documents.path, entry.key)));
-      await file.parent.create(recursive: true);
-      await file.writeAsBytes(entry.value, flush: true);
-      restored++;
-    }
-    return restored;
+    await Future.wait([
+      for (final entry in decoded.entries)
+        _writeRestoredFile(documents, entry.key, entry.value),
+    ]);
+    return decoded.length;
+  }
+
+  Future<void> _writeRestoredFile(
+    Directory documents,
+    String relative,
+    List<int> bytes,
+  ) async {
+    final file = File(p.normalize(p.join(documents.path, relative)));
+    await file.parent.create(recursive: true);
+    await file.writeAsBytes(bytes, flush: true);
   }
 
   static List<int> _decodeBase64(String value) {
